@@ -5,7 +5,7 @@ import FooterSection from "@/components/FooterSection";
 import HeroSection from "@/components/HeroSection";
 import MarqueeSection from "@/components/MarqueeSection";
 import NavBar from "@/components/NavBar";
-import ProductSection from "@/components/ProductSection";
+// import ProductSection from "@/components/ProductSection";
 
 export default function Home() {
   return (
