@@ -2,42 +2,39 @@
 
 import { useState } from "react";
 import { MenuIcon, X } from "lucide-react";
-// import MainButton from "./MainButton";
-
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
 
 function NavBar() {
+  const router = useRouter();
   const links = [
     {
-      route: "/",
-      name: "Customer",
+      route: "/calendar",
+      name: "Calendar",
       badgeCount: 0,
     },
     {
-      route: "/",
-      name: "Changelog",
+      route: "/about-us",
+      name: "About Us",
       badgeCount: 0,
     },
     {
-      route: "/",
-      name: "Help",
-      badgeCount: 0,
-    },
-    {
-      route: "/",
-      name: "Careers",
-      badgeCount: 4,
-    },
-    {
-      route: "/",
-      name: "Pricing",
+      route: "/api",
+      name: "API",
       badgeCount: 0,
     },
   ];
   const [menu, setMenu] = useState(false);
   const toggleMenu = () => {
     setMenu(!menu);
+  };
+
+  const handleNavigation = (route: string) => {
+    router.push(route);
+    if (menu) {
+      setMenu(false);
+    }
   };
 
   return (
@@ -56,6 +53,7 @@ function NavBar() {
               <div key={index} className="flex gap-2">
                 <p
                   className={`hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray`}
+                  onClick={() => handleNavigation(item.route)}
                 >
                   {item.name}
                 </p>
@@ -108,6 +106,7 @@ function NavBar() {
                 <div key={index} className="flex gap-2">
                   <p
                     className={`hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray`}
+                    onClick={() => handleNavigation(item.route)}
                   >
                     {item.name}
                   </p>

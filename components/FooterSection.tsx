@@ -5,18 +5,9 @@ import Image from "next/image";
 import img from "@/public/images/ew-logo-dark.png";
 function FooterSection() {
   const data = {
-    product: [
-      "Changelog",
-      "Customer stories",
-      "Security",
-      "Chrome extension",
-      "iOS App",
-      "Android App",
-      "Zapier",
-      "Integromat",
-    ],
+    product: ["Changelog", "Customer stories", "Security"],
     company: ["About", "Careers", "Blog", "Startip program"],
-    attioFor: ["Startups", "Dear flow"],
+    attioFor: ["Startups", "Investors"],
     support: ["Help Center", "Talk to support", "API docs", "System status"],
   };
   return (
@@ -54,7 +45,7 @@ function FooterSection() {
           </div>
         </div>
         <div>
-          <p className="text-[#9098A0] mb-[12px]">Attio for</p>
+          <p className="text-[#9098A0] mb-[12px]">EarningsWave for</p>
           <div className="flex flex-col gap-3">
             {data.attioFor.map((item, index) => (
               <p key={index} className="text-[#555E67] hover:cursor-pointer">

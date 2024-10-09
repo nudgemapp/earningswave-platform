@@ -1,12 +1,21 @@
 "use client";
 
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 import img from "@/public/images/ew-logo.svg";
 
 const Logo = () => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push("/");
+  };
+
   return (
-    <div className="w-48 h-12 relative">
+    <div
+      className="w-48 h-12 relative cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105"
+      onClick={handleClick}
+    >
       <Image
         src={img}
         alt="logo"
