@@ -1,14 +1,37 @@
+"use client";
+
 import React from "react";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import { EmailModal } from "./modals/email-modal";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import img from "@/public/images/ew-logo-dark.png";
+import img from "@/public/images/ew-logo-dark-noBG.png";
 function FooterSection() {
+  const router = useRouter();
   const data = {
-    product: ["Changelog", "Customer stories", "Security"],
-    company: ["About", "Careers", "Blog", "Startip program"],
-    attioFor: ["Startups", "Investors"],
-    support: ["Help Center", "Talk to support", "API docs", "System status"],
+    product: [
+      { name: "Changelog", url: "#" },
+      { name: "Customer stories", url: "#" },
+      { name: "Security", url: "#" },
+    ],
+    company: [
+      { name: "About", url: "/about-us" },
+      { name: "Careers", url: "#" },
+      { name: "Blog", url: "#" },
+      { name: "Startup program", url: "#" },
+    ],
+    attioFor: [
+      { name: "Startups", url: "#" },
+      { name: "Investors", url: "#" },
+    ],
+    support: [
+      { name: "Help Center", url: "#" },
+      { name: "Talk to support", url: "#" },
+      { name: "API docs", url: "#" },
+      { name: "System status", url: "#" },
+    ],
   };
   return (
     <section className="bg-[#232529] px-4 md:px-[94px] py-[90px]">
@@ -25,54 +48,69 @@ function FooterSection() {
 
       <div className="mt-[32px] pb-[50px] flex justify-between w-full gap-8 flex-col md:flex-row flex-wrap">
         <div>
-          <p className="text-[#9098A0] mb-[12px]">Product</p>
+          <p className="text-white mb-[12px] font-medium">Product</p>
           <div className="flex flex-col gap-3">
             {data.product.map((item, index) => (
-              <p key={index} className="text-[#555E67] hover:cursor-pointer">
-                {item}
-              </p>
+              <Link
+                key={index}
+                href={item.url}
+                className="text-[#E0E0E0] hover:text-white"
+              >
+                {item.name}
+              </Link>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[#9098A0] mb-[12px]">Company</p>
+          <p className="text-white mb-[12px] font-medium">Company</p>
           <div className="flex flex-col gap-3">
             {data.company.map((item, index) => (
-              <p key={index} className="text-[#555E67] hover:cursor-pointer">
-                {item}
-              </p>
+              <Link
+                key={index}
+                href={item.url}
+                className="text-[#E0E0E0] hover:text-white"
+              >
+                {item.name}
+              </Link>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[#9098A0] mb-[12px]">EarningsWave for</p>
+          <p className="text-white mb-[12px] font-medium">EarningsWave for</p>
           <div className="flex flex-col gap-3">
             {data.attioFor.map((item, index) => (
-              <p key={index} className="text-[#555E67] hover:cursor-pointer">
-                {item}
+              <p
+                key={index}
+                className="text-[#E0E0E0] hover:cursor-pointer hover:text-white"
+              >
+                {item.name}
               </p>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[#9098A0] mb-[12px]">Support</p>
+          <p className="text-white mb-[12px] font-medium">Support</p>
           <div className="flex flex-col gap-3">
             {data.support.map((item, index) => (
-              <p key={index} className="text-[#555E67] hover:cursor-pointer">
-                {item}
+              <p
+                key={index}
+                className="text-[#E0E0E0] hover:cursor-pointer hover:text-white"
+              >
+                {item.name}
               </p>
             ))}
           </div>
         </div>
         <div className="min-w-[300px]">
-          <p className="font-medium text-[#9098A0] mb-4">Ready to build?</p>
+          <p className="font-medium text-white mb-4">Ready to build?</p>
           <div className="flex flex-col gap-[12px] justify-start">
-            <Button className="border-none bg-[#31373D] hover:bg-[#31373D] rounded-[12px]">
+            <Button
+              className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
+              onClick={() => router.push("/sign-up")}
+            >
               Start for free
             </Button>
-            <Button className="rounded-[12px] border-[1px] border-[#EDEEF0] bg-transparent hover:bg-transparent text-white">
-              Talk to sales
-            </Button>
+            <EmailModal />
           </div>
         </div>
       </div>

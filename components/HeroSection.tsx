@@ -6,6 +6,7 @@ import HeroHeaderSection from "./HeroHeaderSection";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { EmailModal } from "./modals/email-modal";
 
 function HeroSection() {
   const router = useRouter();
@@ -58,9 +59,7 @@ function HeroSection() {
           >
             Start for free
           </Button>
-          <Button className="rounded-[12px] border-[1px] border-[#EDEEF0] bg-white hover:bg-white text-[#31373D]">
-            Talk to sales
-          </Button>
+          <EmailModal />
         </motion.div>
 
         {/* <div className="flex w-full justify-center">

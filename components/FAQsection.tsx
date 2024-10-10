@@ -1,8 +1,8 @@
 "use client";
 
-import clsx from "clsx";
+import { motion, AnimatePresence } from "framer-motion";
 import { MinusIcon, PlusIcon } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 const items = [
   {
@@ -44,32 +44,88 @@ const AccordionItem = ({
   question: string;
   answer: string;
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div
-      className="py-7 border-b border-black/30 hover:cursor-pointer hover:bg-gray-200/70 hover:rounded-lg"
-      onClick={() => setIsOpen(!isOpen)}
+    <motion.div
+      className="border-b border-black/30 overflow-hidden"
+      initial={false}
+      animate={{
+        backgroundColor: isOpen ? "rgba(229, 231, 235, 0.5)" : "transparent",
+      }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center">
-        <span className="flex-1 text-lg font-bold">{question}</span>
-        {isOpen ? <MinusIcon /> : <PlusIcon />}
-      </div>
-      <div className={clsx("mt-4", { hidden: !isOpen, "": isOpen === true })}>
-        {answer}
-      </div>
-    </div>
+      <motion.header
+        className="py-7 flex items-center cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ backgroundColor: "rgba(229, 231, 235, 0.3)" }}
+        transition={{ duration: 0.2 }}
+      >
+        <motion.span
+          className="flex-1 text-lg font-bold"
+          initial={false}
+          animate={{ color: isOpen ? "#000" : "#1a202c" }}
+        >
+          {question}
+        </motion.span>
+        <motion.div
+          initial={false}
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {isOpen ? <MinusIcon /> : <PlusIcon />}
+        </motion.div>
+      </motion.header>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial="collapsed"
+            animate="open"
+            exit="collapsed"
+            variants={{
+              open: { opacity: 1, height: "auto", marginBottom: 15 },
+              collapsed: { opacity: 0, height: 0, marginBottom: 0 },
+            }}
+            transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+          >
+            <motion.div
+              variants={{ collapsed: { scale: 0.8 }, open: { scale: 1 } }}
+              transition={{ duration: 0.4 }}
+              className="text-gray-600"
+            >
+              {answer}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
 const FAQsection = () => {
   return (
-    <div className="mx-auto py-[72px] sm:py-24">
+    <motion.div
+      className="mx-auto py-[72px] sm:py-24"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="container">
-        <h2 className="text-center text-5xl sm:text-6xl sm:max-w-[648px] mx-auto font-bold tracking-tighter">
+        <motion.h2
+          className="text-center text-5xl sm:text-6xl sm:max-w-[648px] mx-auto font-bold tracking-tighter"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           Frequently asked questions
-        </h2>
-        <div className="mt-12 max-w-[648px] mx-auto">
+        </motion.h2>
+        <motion.div
+          className="mt-12 max-w-[648px] mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           {items.map((item) => (
             <AccordionItem
               key={item.id}
@@ -77,9 +133,9 @@ const FAQsection = () => {
               answer={item.answer}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
