@@ -95,7 +95,7 @@ export default function AboutUs() {
           </motion.div>
 
           <motion.div
-            className="text-center"
+            className="text-center py-16"
             variants={fadeInUp}
             transition={transition}
           >
@@ -120,7 +120,7 @@ export default function AboutUs() {
           </motion.div>
         </motion.div>
       </section>
-      <section id="how-it-works" className="container py-8 md:py-12 lg:py-24">
+      <section id="how-it-works" className=" mx-auto">
         <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
           <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
             How It Works
@@ -145,7 +145,7 @@ export default function AboutUs() {
           </ol>
         </div>
       </section>
-      <section id="join" className="container py-8 md:py-12 lg:py-24">
+      <section id="join" className="container py-8 md:py-12 lg:py-24 mx-auto">
         <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
           <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
             Join the Financial Data Revolution

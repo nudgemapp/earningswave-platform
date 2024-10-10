@@ -70,10 +70,15 @@ function NavBar() {
 
           {/* Buttons - Right */}
           <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
-            <Button className="bg-white border text-[#31373D] border-[#EDEEF0] hover:bg-white">
+            <Button
+              className="bg-white border text-[#31373D] border-[#EDEEF0] hover:bg-white"
+              onClick={() => router.push("/sign-in")}
+            >
               Sign in
             </Button>
-            <Button>Start for free</Button>
+            <Button onClick={() => router.push("/sign-up")}>
+              Start for free
+            </Button>
           </div>
         </div>
       </div>

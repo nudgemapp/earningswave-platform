@@ -18,7 +18,7 @@ function AlertSection() {
       <div className="inline-flex gap-3 text-white font-semibold text-[12px] md:text-[16px]">
         <div>
           Try out our new financial API!
-          <Link href="/api-docs" className="underline underline-offset-4 pl-3">
+          <Link href="/api" className="underline underline-offset-4 pl-3">
             Learn more
           </Link>
         </div>

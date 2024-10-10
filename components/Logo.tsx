@@ -2,10 +2,16 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import img from "@/public/images/ew-logo.svg";
+import lightImg from "@/public/images/ew-logo-noBG.png";
+import darkImg from "@/public/images/ew-logo-dark-noBG.png";
 
-const Logo = () => {
+interface LogoProps {
+  dark?: boolean;
+}
+
+const Logo: React.FC<LogoProps> = ({ dark = false }) => {
   const router = useRouter();
+  const img = dark ? darkImg : lightImg;
 
   const handleClick = () => {
     router.push("/");

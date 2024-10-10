@@ -5,8 +5,11 @@ import { motion, useInView } from "framer-motion";
 import HeroHeaderSection from "./HeroHeaderSection";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 function HeroSection() {
+  const router = useRouter();
+
   const ref1 = useRef(null);
   const ref2 = useRef(null);
   const ref3 = useRef(null);
@@ -49,7 +52,12 @@ function HeroSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="flex gap-[12px] justify-center"
         >
-          <Button className="border-none rounded-[12px]">Start for free</Button>
+          <Button
+            className="border-none rounded-[12px]"
+            onClick={() => router.push("/sign-up")}
+          >
+            Start for free
+          </Button>
           <Button className="rounded-[12px] border-[1px] border-[#EDEEF0] bg-white hover:bg-white text-[#31373D]">
             Talk to sales
           </Button>

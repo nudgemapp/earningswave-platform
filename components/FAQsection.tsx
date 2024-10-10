@@ -48,7 +48,7 @@ const AccordionItem = ({
 
   return (
     <div
-      className="py-7 border-b border-black/30"
+      className="py-7 border-b border-black/30 hover:cursor-pointer hover:bg-gray-200/70 hover:rounded-lg"
       onClick={() => setIsOpen(!isOpen)}
     >
       <div className="flex items-center">
