@@ -64,7 +64,7 @@ function NavBar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
-          className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0" // Removed mt-[5rem] here
+          className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0"
         >
           {/* DESKTOP */}
           <div className="hidden lg:block bg-white p-4">
@@ -163,7 +163,7 @@ function NavBar() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button onClick={() => router.push("/sign-up")}>
-                    Start for free
+                    Sign up{" "}
                   </Button>
                 </motion.div>
               </div>
@@ -254,11 +254,16 @@ function NavBar() {
                     </div>
                   ))}
                   <div className="flex flex-col gap-[20px] select-none">
-                    <Button className="bg-white text-[#31373D] border-[#EDEEF0] hover:bg-white">
+                    <Button
+                      className="bg-white text-[#31373D] border-[#EDEEF0] hover:bg-white"
+                      onClick={() => router.push("/sign-in")}
+                    >
                       Sign in
                     </Button>
 
-                    <Button>Start for free</Button>
+                    <Button onClick={() => router.push("/sign-up")}>
+                      Sign up
+                    </Button>
                   </div>
                 </div>
               </div>

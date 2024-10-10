@@ -61,7 +61,7 @@ function HeroSection() {
             className="border-none rounded-[12px]"
             onClick={() => router.push("/sign-up")}
           >
-            Start for free
+            Sign up{" "}
           </Button>
           <EmailModal />
         </motion.div>

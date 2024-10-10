@@ -71,7 +71,7 @@ function FooterSection() {
               className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
               onClick={() => router.push("/sign-up")}
             >
-              Start for free
+              Sign up{" "}
             </Button>
             <EmailModal />
           </div>
