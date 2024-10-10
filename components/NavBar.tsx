@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
+import Image from "next/image";
+import lightImg from "@/public/images/ew-logo-noBG.png";
 
-// Custom hook for mount animation
 function useMount() {
   const [mounted, setMounted] = useState(false);
 
@@ -63,7 +64,7 @@ function NavBar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
-          className="md:sticky md:top-0 md:shadow-none z-20 mt-[5rem] md:mt-0"
+          className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0" // Removed mt-[5rem] here
         >
           {/* DESKTOP */}
           <div className="hidden lg:block bg-white p-4">
@@ -171,26 +172,44 @@ function NavBar() {
 
           {/* MOBILE */}
           <div
-            className={`block lg:hidden shadow-sm fixed top-0 w-full z-[999] bg-white py-4 animate-in fade-in zoom-in  ${
-              menu ? " bg-primary py-2" : ""
-            } `}
+            className={`block lg:hidden shadow-sm fixed top-0 left-0 right-0 z-[999] bg-white py-4 ${
+              menu ? "bg-primary py-2" : ""
+            }`}
           >
-            <div className="flex justify-between mx-[10px]">
-              <div className="flex gap-[50px] text-[16px] items-center select-none">
-                <Logo />
-              </div>
-              <div className="flex items-center gap-[40px]">
+            <div className="flex justify-between items-center px-4">
+              <div className="flex items-center gap-2">
                 {menu ? (
                   <X
-                    className="cursor-pointer animate-in fade-in zoom-in text-black"
+                    className="cursor-pointer animate-in fade-in zoom-in text-black z-10 ml-2"
                     onClick={toggleMenu}
                   />
                 ) : (
-                  <MenuIcon />
+                  <MenuIcon
+                    className="cursor-pointer text-black z-10 ml-2"
+                    onClick={toggleMenu}
+                  />
                 )}
+                <div className="relative w-48 h-14 right-12">
+                  <Image
+                    src={lightImg}
+                    alt="logo"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw z-0"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              </div>
+              <div>
+                <Button
+                  className="text-base px-4 py-2 font-semibold"
+                  onClick={() => router.push("/sign-up")}
+                >
+                  Sign Up
+                </Button>
               </div>
             </div>
-            {menu ? (
+            {menu && (
               <div className="my-8 select-none animate-in slide-in-from-right">
                 <div className="flex flex-col gap-8 mt-8 mx-4">
                   {links.map((item, index) => (
@@ -240,8 +259,6 @@ function NavBar() {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div></div>
             )}
           </div>
         </motion.div>

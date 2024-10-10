@@ -18,7 +18,8 @@ function AlertSection() {
           exit={{ opacity: 0, y: -50 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "bg-primary mx-4 flex justify-between p-[12px] rounded-[12px] mt-4"
+            "bg-primary mx-4 flex justify-between p-2 lg:p-[12px] rounded-[12px] mt-3 lg:mt-4",
+            "hidden sm:flex"
           )}
         >
           <div />
