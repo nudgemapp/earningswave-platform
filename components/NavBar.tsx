@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MenuIcon, X, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
 
@@ -41,26 +42,46 @@ function NavBar() {
   };
 
   return (
-    <div className="md:sticky md:top-0 md:shadow-none z-20 mt-[5rem] md:mt-0">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="md:sticky md:top-0 md:shadow-none z-20 mt-[5rem] md:mt-0"
+    >
       {/* DESKTOP */}
       <div className="hidden lg:block animate-in fade-in zoom-in bg-white p-4">
         <div className="flex items-center mx-4">
           {/* Logo - Left */}
-          <div className="flex-shrink-0 w-1/4">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="flex-shrink-0 w-1/4"
+          >
             <Logo />
-          </div>
+          </motion.div>
 
           {/* Links - Center */}
           <div className="flex-grow flex justify-center gap-[20px] xl:gap-[50px] text-[16px] items-center select-none">
             {links.map((item, index) => (
-              <div key={index} className="flex gap-2 relative group">
+              <motion.div
+                key={index}
+                className="flex gap-2 relative group"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 {item.dropdownItems ? (
                   <>
-                    <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray transition-colors duration-200">
+                    <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray transition-colors duration-200 relative">
                       {item.name}
                       <ChevronDown
                         size={16}
                         className="group-hover:rotate-180 transition-transform duration-200"
+                      />
+                      <motion.div
+                        className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"
+                        initial={{ scaleX: 0 }}
+                        whileHover={{ scaleX: 1 }}
+                        transition={{ duration: 0.2 }}
                       />
                     </p>
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
@@ -87,6 +108,12 @@ function NavBar() {
                     onClick={() => handleNavigation(item.route)}
                   >
                     {item.name}
+                    <motion.div
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"
+                      initial={{ scaleX: 0 }}
+                      whileHover={{ scaleX: 1 }}
+                      transition={{ duration: 0.2 }}
+                    />
                   </p>
                 )}
                 {item.badgeCount ? (
@@ -96,21 +123,25 @@ function NavBar() {
                 ) : (
                   <div />
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
 
           {/* Buttons - Right */}
           <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
-            <Button
-              className="bg-white border text-[#31373D] border-[#EDEEF0] hover:bg-white"
-              onClick={() => router.push("/sign-in")}
-            >
-              Sign in
-            </Button>
-            <Button onClick={() => router.push("/sign-up")}>
-              Start for free
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                className="bg-white border text-[#31373D] border-[#EDEEF0] hover:bg-white"
+                onClick={() => router.push("/sign-in")}
+              >
+                Sign in
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => router.push("/sign-up")}>
+                Start for free
+              </Button>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -190,7 +221,7 @@ function NavBar() {
           <div></div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
