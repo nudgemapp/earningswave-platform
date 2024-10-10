@@ -106,7 +106,7 @@ const BlogPostPage = () => {
         <ol className="list-decimal list-inside mb-4">
           <li>
             <strong>Financial Analysis</strong>: Analysts can quickly pull data
-            to perform in-depth analysis of a company's financial health,
+            to perform in-depth analysis of a company&apos;s financial health,
             including profitability, liquidity, solvency, and efficiency ratios.
             This rapid access to data allows for more frequent and comprehensive
             analyses, enabling analysts to spot trends and make recommendations
@@ -347,11 +347,11 @@ const BlogPostPage = () => {
           and alternative data sources.
         </p>
         <p>
-          Whether you're a financial analyst seeking to streamline your research
-          process, an investor looking to make data-driven decisions, or a
-          developer building financial applications, leveraging a public company
-          financial data API can significantly enhance your capabilities and
-          efficiency.
+          Whether you&apos;re a financial analyst seeking to streamline your
+          research process, an investor looking to make data-driven decisions,
+          or a developer building financial applications, leveraging a public
+          company financial data API can significantly enhance your capabilities
+          and efficiency.
         </p>
         <p>
           As the financial world continues to evolve and the volume of available

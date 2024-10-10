@@ -104,10 +104,10 @@ const BlogPostPage = () => {
         <p>
           One of the most powerful features of earnings calendar APIs is the
           ability to specify custom date ranges for queries. Both EOD Historical
-          Data and FMP allow users to set 'from' and 'to' parameters in their
-          API calls, typically using the YYYY-MM-DD format. This flexibility
-          enables analysts to focus on specific time periods relevant to their
-          research or trading strategies.
+          Data and FMP allow users to set &apos;from&apos; and &apos;to&apos;
+          parameters in their API calls, typically using the YYYY-MM-DD format.
+          This flexibility enables analysts to focus on specific time periods
+          relevant to their research or trading strategies.
         </p>
 
         <h3 className="text-xl font-semibold mt-6 mb-3">
@@ -190,15 +190,16 @@ const BlogPostPage = () => {
           Earnings Surprises Tracking
         </h3>
         <p>
-          An earnings surprise occurs when a company's reported earnings differ
-          significantly from analysts' expectations. Earnings calendar APIs
-          often include data on these surprises, allowing users to:
+          An earnings surprise occurs when a company&apos;s reported earnings
+          differ significantly from analysts&apos; expectations. Earnings
+          calendar APIs often include data on these surprises, allowing users
+          to:
         </p>
         <ul className="list-disc list-inside mb-4">
           <li>
             Identify companies that consistently beat or miss expectations
           </li>
-          <li>Analyze the market's reaction to earnings surprises</li>
+          <li>Analyze the market&apos;s reaction to earnings surprises</li>
           <li>
             Develop trading strategies based on historical surprise patterns
           </li>
@@ -229,7 +230,7 @@ const BlogPostPage = () => {
         <ul className="list-disc list-inside mb-4">
           <li>
             Fundamental analysts can use historical earnings data to assess a
-            company's financial health and growth trajectory
+            company&apos;s financial health and growth trajectory
           </li>
           <li>
             Quantitative analysts can incorporate earnings data into complex
@@ -302,7 +303,7 @@ const BlogPostPage = () => {
           consider:
         </p>
         <ul className="list-disc list-inside mb-4">
-          <li>The provider's reputation in the industry</li>
+          <li>The provider&apos;s reputation in the industry</li>
           <li>Their data sourcing and verification processes</li>
           <li>User reviews and testimonials</li>
         </ul>
@@ -314,8 +315,8 @@ const BlogPostPage = () => {
         </p>
         <ul className="list-disc list-inside mb-4">
           <li>
-            Geographical coverage: Does it include the markets you're interested
-            in?
+            Geographical coverage: Does it include the markets you&apos;re
+            interested in?
           </li>
           <li>Historical data range: How far back does the data go?</li>
           <li>
@@ -427,7 +428,9 @@ const BlogPostPage = () => {
         <p>Keep abreast of any changes or updates to the API:</p>
         <ul className="list-disc list-inside mb-4">
           <li>Regularly review the API documentation for any changes</li>
-          <li>Subscribe to the provider's developer newsletter or changelog</li>
+          <li>
+            Subscribe to the provider&apos;s developer newsletter or changelog
+          </li>
           <li>
             Test any updates in a sandbox environment before deploying to
             production
@@ -476,7 +479,7 @@ const BlogPostPage = () => {
           potential for identifying valuable investment opportunities.
         </p>
         <p>
-          Whether you're an individual investor, a financial analyst, or a
+          Whether you&apos;re an individual investor, a financial analyst, or a
           fintech developer, integrating earnings calendar APIs into your
           workflow can provide a significant edge in understanding and
           capitalizing on market movements. As you embark on your journey with
@@ -486,8 +489,9 @@ const BlogPostPage = () => {
         </p>
         <p>
           In an increasingly data-driven financial landscape, mastering the use
-          of earnings calendar APIs is not just an advantage—it's a necessity
-          for staying competitive and making well-informed financial decisions.
+          of earnings calendar APIs is not just an advantage—it&apos;s a
+          necessity for staying competitive and making well-informed financial
+          decisions.
         </p>
       </motion.div>
     </motion.article>
