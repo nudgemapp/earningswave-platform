@@ -31,14 +31,14 @@ const BlogPostPage = () => {
         className="prose prose-lg max-w-none"
       >
         <p className="text-xl text-muted-foreground mb-8">
-          In today's fast-paced financial landscape, access to accurate and
-          up-to-date financial information is not just beneficial—it's crucial.
-          For businesses, investors, and financial analysts, the ability to
-          quickly retrieve and analyze public company financial data can mean
-          the difference between making informed decisions and missing out on
-          valuable opportunities. This is where public company financial data
-          APIs come into play, revolutionizing the way we access and utilize
-          financial information.
+          In today&apos;s fast-paced financial landscape, access to accurate and
+          up-to-date financial information is not just beneficial—it&apos;s
+          crucial. For businesses, investors, and financial analysts, the
+          ability to quickly retrieve and analyze public company financial data
+          can mean the difference between making informed decisions and missing
+          out on valuable opportunities. This is where public company financial
+          data APIs come into play, revolutionizing the way we access and
+          utilize financial information.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">
@@ -61,13 +61,13 @@ const BlogPostPage = () => {
         <ol className="list-decimal list-inside mb-4">
           <li>
             <strong>Income Statements</strong>: These provide a snapshot of a
-            company's revenues, expenses, and profitability over a specific
+            company&apos;s revenues, expenses, and profitability over a specific
             period.
           </li>
           <li>
             <strong>Balance Sheets</strong>: These offer insights into a
-            company's assets, liabilities, and shareholders' equity at a
-            particular point in time.
+            company&apos;s assets, liabilities, and shareholders&apos; equity at
+            a particular point in time.
           </li>
           <li>
             <strong>Cash Flow Statements</strong>: These track the inflows and
@@ -267,7 +267,7 @@ const BlogPostPage = () => {
           </li>
           <li>
             <strong>Overreliance on Automation</strong>: While APIs can greatly
-            streamline data collection and analysis, there's a risk of
+            streamline data collection and analysis, there&apos;s a risk of
             over-relying on automated processes. Human oversight and
             interpretation remain crucial, especially for complex financial
             decisions.
