@@ -189,7 +189,10 @@ function NavBar() {
                     onClick={toggleMenu}
                   />
                 )}
-                <div className="relative w-48 h-14 right-12">
+                <div
+                  className="relative w-48 h-14 right-12"
+                  onClick={() => handleNavigation("/")}
+                >
                   <Image
                     src={lightImg}
                     alt="logo"

@@ -9,7 +9,7 @@ const APIPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-gradient-to-b from-[#FFFFFF] to-[#D2DCFFF] py-8  overflow-x-clip"
+      className="bg-gradient-to-b from-[#FFFFFF] to-[#D2DCFFF] py-8  overflow-x-clip mt-24 sm:mt-0"
     >
       <div className="mx-auto pb-40">
         <motion.div
