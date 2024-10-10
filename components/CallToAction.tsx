@@ -4,16 +4,16 @@ import React, { useState } from "react";
 
 const CallToAction = () => {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setMessage("");
 
     try {
-      const response = await fetch("/api/collect-email", {
+      const response = await fetch("/api/email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,17 +21,22 @@ const CallToAction = () => {
         body: JSON.stringify({ email }),
       });
 
-      if (response.ok) {
-        setMessage("Email collected successfully!");
-        setEmail("");
-      } else {
-        const data = await response.json();
-        setMessage(data.message || "An error occurred. Please try again.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit email");
       }
+
+      setMessage("Email collected successfully!");
+      setEmail("");
     } catch (error) {
-      setMessage("An error occurred. Please try again.");
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("An error occurred. Please try again.");
+      }
+      console.error("Error submitting email:", error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -59,9 +64,9 @@ const CallToAction = () => {
           <button
             type="submit"
             className="bg-black text-white h-12 rounded-lg px-5 disabled:bg-gray-400"
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? "Submitting..." : "Get access"}
+            {isSubmitting ? "Submitting..." : "Get access"}
           </button>
         </form>
         {message && <p className="mt-4 text-white">{message}</p>}

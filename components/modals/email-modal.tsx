@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +18,12 @@ import { motion } from "framer-motion";
 export function EmailModal() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    setError("");
+    setMessage("");
 
     try {
       const response = await fetch("/api/email", {
@@ -32,15 +35,19 @@ export function EmailModal() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit email");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit email");
       }
 
-      // Handle successful submission (e.g., show a success message, close the modal)
-      console.log("Email submitted successfully");
+      setMessage("Email collected successfully!");
       setEmail("");
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.error("Error submitting email:", err);
+    } catch (error) {
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("An error occurred. Please try again.");
+      }
+      console.error("Error submitting email:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -65,35 +72,39 @@ export function EmailModal() {
             Enter your email address to receive updates and promotions.
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-6 space-y-4">
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-700"
-            >
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <DialogFooter className="mt-6">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-white hover:bg-primary-dark transition-colors duration-200"
-              onClick={handleSubmit}
-            >
-              Subscribe
-            </Button>
-          </motion.div>
-        </DialogFooter>
+          <DialogFooter className="mt-6">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                type="submit"
+                className="w-full bg-primary text-white hover:bg-primary-dark transition-colors duration-200 disabled:bg-gray-400"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Subscribe"}
+              </Button>
+            </motion.div>
+          </DialogFooter>
+        </form>
+        {message && <p className="mt-4 text-center text-sm">{message}</p>}
       </DialogContent>
     </Dialog>
   );
