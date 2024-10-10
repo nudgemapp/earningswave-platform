@@ -29,10 +29,11 @@ function HeroSection() {
           animate={isInView1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className={cn(
-            "text-4xl md:text-[92px] text-center text-primary md:leading-[5.5rem] my-8"
+            "text-center text-3xl md:text-[64px] md:leading-[70px] font-bold tracking-tighter bg-gradient-to-b from-black to-[#001E80] text-transparent bg-clip-text mt-5 my-8"
           )}
         >
-          Powerful APIs for <br /> Financial Insights
+          Your competitive edge <br />
+          in earnings analysis
         </motion.div>
 
         <motion.p
@@ -40,10 +41,11 @@ function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mb-8 text-[22px] text-center text-[#31373D]"
+          className="text-center text-[22px] leading-[30px] tracking-tight text-[#010D3E] mt-5 mb-8"
         >
-          Powerful, flexible and data-driven, EarningsWave makes it easy to
-          analyse financial data.
+          Navigate earnings season with ease. Our user-friendly interface <br />
+          and guided analysis tools make it simple to extract valuable <br />
+          insights from boring and lengthy earnings repots.
         </motion.p>
 
         <motion.div

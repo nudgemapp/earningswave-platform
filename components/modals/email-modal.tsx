@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 
-export function EmailModal() {
+export function EmailModal({ title = "Talk to sales" }: { title?: string }) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -60,7 +60,7 @@ export function EmailModal() {
           variant="outline"
           className="bg-white text-primary hover:bg-gray-100 transition-colors duration-200"
         >
-          Talk to sales
+          {title}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-white rounded-lg shadow-lg">
