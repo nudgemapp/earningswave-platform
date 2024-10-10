@@ -103,11 +103,11 @@ export default function AboutUs() {
               Our Mission
             </h3>
             <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
-              We're revolutionizing financial analysis by providing instant,
-              AI-powered insights from earnings calls and reports. EarningsWave
-              democratizes access to premium financial data, simplifying
-              investment research and fostering more informed decision-making in
-              the financial markets.
+              We&apos;re revolutionizing financial analysis by providing
+              instant, AI-powered insights from earnings calls and reports.
+              EarningsWave democratizes access to premium financial data,
+              simplifying investment research and fostering more informed
+              decision-making in the financial markets.
             </p>
             <div className="flex justify-center items-center">
               <Link href="/dashboard">
@@ -152,7 +152,7 @@ export default function AboutUs() {
           </h2>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
             EarningsWave is transforming financial analysis with AI-powered
-            insights. Don't fall behind.
+            insights. Don&apos;t fall behind.
           </p>
           <Link
             href="/sign-up"

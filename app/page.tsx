@@ -3,8 +3,8 @@ import CallToAction from "@/components/CallToAction";
 import FAQsection from "@/components/FAQsection";
 import FooterSection from "@/components/FooterSection";
 import HeroSection from "@/components/HeroSection";
-import MarqueeSection from "@/components/MarqueeSection";
 import NavBar from "@/components/NavBar";
+// import MarqueeSection from "@/components/MarqueeSection";
 // import ProductSection from "@/components/ProductSection";
 
 export default function Home() {

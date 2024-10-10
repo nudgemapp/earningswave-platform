@@ -53,7 +53,7 @@ export default function AuthenticationPage() {
                 &ldquo;Unlock the power of financial data with our suite of
                 APIs. From real-time earnings reports to comprehensive market
                 analysis, EarningsWave provides the tools you need to make
-                informed decisions in today's fast-paced financial
+                informed decisions in today&#39;s fast-paced financial
                 landscape.&rdquo;
               </p>
               <footer className="text-sm">
