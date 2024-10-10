@@ -11,20 +11,11 @@ import img from "@/public/images/ew-logo-dark-noBG.png";
 function FooterSection() {
   const router = useRouter();
   const data = {
-    product: [
-      { name: "Changelog", url: "#" },
-      { name: "Customer stories", url: "#" },
-      { name: "Security", url: "#" },
-    ],
     company: [
       { name: "About", url: "/about-us" },
       { name: "Careers", url: "#" },
       { name: "Blog", url: "#" },
       { name: "Startup program", url: "#" },
-    ],
-    attioFor: [
-      { name: "Startups", url: "#" },
-      { name: "Investors", url: "#" },
     ],
     support: [
       { name: "Help Center", url: "#" },
@@ -45,22 +36,7 @@ function FooterSection() {
           priority
         />
       </div>
-
       <div className="mt-[32px] pb-[50px] flex justify-between w-full gap-8 flex-col md:flex-row flex-wrap">
-        <div>
-          <p className="text-white mb-[12px] font-medium">Product</p>
-          <div className="flex flex-col gap-3">
-            {data.product.map((item, index) => (
-              <Link
-                key={index}
-                href={item.url}
-                className="text-[#E0E0E0] hover:text-white"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        </div>
         <div>
           <p className="text-white mb-[12px] font-medium">Company</p>
           <div className="flex flex-col gap-3">
@@ -72,19 +48,6 @@ function FooterSection() {
               >
                 {item.name}
               </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="text-white mb-[12px] font-medium">EarningsWave for</p>
-          <div className="flex flex-col gap-3">
-            {data.attioFor.map((item, index) => (
-              <p
-                key={index}
-                className="text-[#E0E0E0] hover:cursor-pointer hover:text-white"
-              >
-                {item.name}
-              </p>
             ))}
           </div>
         </div>
