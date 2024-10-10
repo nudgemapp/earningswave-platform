@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { blogPosts } from "../page";
+import { blogPosts } from "../blogData";
 
 const BlogIdPage = () => {
   const { id } = useParams();
