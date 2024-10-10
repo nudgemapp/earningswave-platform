@@ -26,7 +26,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/(marketing)/calendar"
+    "app/(marketing)/earnings"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,13 +1,13 @@
 "use client";
 
+import { EmailModal } from "@/components/modals/email-modal";
 import { motion } from "framer-motion";
 
-const CalendarPage = () => {
+const EarningsPage = () => {
   const features = [
     "Weekly Earnings Calendar",
     "Earnings Estimates & Actuals",
     "Live or Replay Earnings Calls",
-    "Realtime Stock News",
     "Quarterly Call Transcripts",
     "AI Summaries of Investor Calls",
     "Earnings Alerts to Email or SMS",
@@ -18,7 +18,7 @@ const CalendarPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-12 py-20 md:py-32 text-center"
+      className="space-y-12 pt-4 pb-32 text-center"
     >
       <div className="container flex max-w-[64rem] flex-col items-center gap-4 mx-auto">
         <motion.h1
@@ -27,7 +27,7 @@ const CalendarPage = () => {
           transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
           className="font-bold text-4xl lg:text-5xl pb-4"
         >
-          EarningsWave Calendar
+          EarningsWave
         </motion.h1>
         <motion.p
           initial={{ y: 20, opacity: 0 }}
@@ -71,16 +71,14 @@ const CalendarPage = () => {
           whileTap={{ scale: 0.95 }}
           className="inline-block mt-8"
         >
-          <a
-            href="/signup"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
-          >
-            Get Started with EarningsWave
-          </a>
+          <EmailModal
+            title="Get Started with EarningsWave"
+            buttonColor="black"
+          />
         </motion.div>
       </motion.div>
     </motion.section>
   );
 };
 
-export default CalendarPage;
+export default EarningsPage;

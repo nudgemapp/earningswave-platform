@@ -2,8 +2,12 @@
 
 import { motion } from "framer-motion";
 import { EmailModal } from "@/components/modals/email-modal";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const APIPage = () => {
+  const router = useRouter();
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -38,12 +42,12 @@ const APIPage = () => {
           className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32 flex justify-center space-x-4 mt-8"
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <a
-              href="/api-docs"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2"
+            <Button
+              className="border-none rounded-[12px]"
+              onClick={() => router.push("/")}
             >
               View docs
-            </a>
+            </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <EmailModal title="Book a call" />

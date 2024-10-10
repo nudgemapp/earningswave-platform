@@ -15,7 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 
-export function EmailModal({ title = "Talk to sales" }: { title?: string }) {
+export function EmailModal({
+  title = "Talk to sales",
+  buttonColor = "white",
+}: {
+  title?: string;
+  buttonColor?: "white" | "black";
+}) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,8 +63,14 @@ export function EmailModal({ title = "Talk to sales" }: { title?: string }) {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
-          className="bg-white text-primary hover:bg-gray-100 transition-colors duration-200"
+          className={`
+            ${
+              buttonColor === "black"
+                ? "bg-black text-white hover:bg-gray-800"
+                : "bg-white text-primary hover:bg-gray-100"
+            } 
+            transition-colors duration-200
+          `}
         >
           {title}
         </Button>
