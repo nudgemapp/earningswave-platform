@@ -1,4 +1,4 @@
-import prismadb from "../../../lib/prismadb";
+import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const existingEmail = await prismadb.email.findUnique({
+    const existingEmail = await prisma.email.findUnique({
       where: {
         address: email,
       },
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return new NextResponse("Email already exists", { status: 409 });
     }
 
-    const data = await prismadb.email.create({
+    const data = await prisma.email.create({
       data: {
         address: email,
       },
