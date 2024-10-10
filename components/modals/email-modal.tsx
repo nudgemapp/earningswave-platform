@@ -15,6 +15,36 @@ import { motion } from "framer-motion";
 
 export function EmailModal() {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit email");
+      }
+
+      // Handle successful submission (e.g., show a success message, close the modal)
+      console.log("Email submitted successfully");
+      setEmail("");
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Error submitting email:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog>
@@ -58,11 +88,7 @@ export function EmailModal() {
             <Button
               type="submit"
               className="w-full bg-primary text-white hover:bg-primary-dark transition-colors duration-200"
-              onClick={() => {
-                // Handle form submission here
-                console.log("Submitted email:", email);
-                // You might want to add form validation and API call here
-              }}
+              onClick={handleSubmit}
             >
               Subscribe
             </Button>
