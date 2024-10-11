@@ -2,11 +2,10 @@
 
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import HeroHeaderSection from "./HeroHeaderSection";
-import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { EmailModal } from "./modals/email-modal";
+import { cn } from "@/lib/utils";
 
 function HeroSection() {
   const router = useRouter();
@@ -21,7 +20,7 @@ function HeroSection() {
 
   return (
     <section className="mt-24 sm:mt-0">
-      <HeroHeaderSection />
+      {/* <HeroHeaderSection /> */}
       <div>
         <motion.div
           ref={ref1}
@@ -58,12 +57,12 @@ function HeroSection() {
           className="flex gap-[12px] justify-center"
         >
           <Button
-            className="border-none rounded-[12px]"
+            className="border-none rounded-[12px] text-2xl py-6 px-12"
             onClick={() => router.push("/sign-up")}
           >
-            Sign up{" "}
+            Sign up
           </Button>
-          <EmailModal />
+          <EmailModal enlarge={true} />
         </motion.div>
 
         {/* <div className="flex w-full justify-center">

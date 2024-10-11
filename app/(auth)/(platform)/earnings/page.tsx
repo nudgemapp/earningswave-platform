@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, FilterIcon } from "lucide-react";
 import { useState } from "react";
 import PlatformNavbar from "@/components/PlatformNavbar";
+import NavBar from "@/components/NavBar";
 
 const EarningsPage = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
@@ -33,9 +34,9 @@ const EarningsPage = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col">
-      <PlatformNavbar />
+      <NavBar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-gray-100 pb-4 px-6">
+        <div className="bg-gray-100 py-4 px-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <button

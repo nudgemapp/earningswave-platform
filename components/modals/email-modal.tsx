@@ -18,9 +18,11 @@ import { motion } from "framer-motion";
 export function EmailModal({
   title = "Talk to sales",
   buttonColor = "white",
+  enlarge = false,
 }: {
   title?: string;
   buttonColor?: "white" | "black";
+  enlarge?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +72,7 @@ export function EmailModal({
                 : "bg-white text-primary hover:bg-gray-100"
             } 
             transition-colors duration-200
+            ${enlarge ? "text-2xl py-6 px-12" : ""}
           `}
         >
           {title}
