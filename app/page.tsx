@@ -16,8 +16,10 @@ export default function Home() {
       <div className="sticky top-0 z-50">
         <NavBar />
       </div>
-      <div className="mt-8 md:mt-[81px] flex flex-col gap-12 md:gap-[150px] px-4 md:px-[100px]">
+      <div className="pt-20">
         <HeroSection />
+      </div>
+      <div className="mt-8 md:mt-[81px] flex flex-col gap-12 md:gap-[150px] px-4 md:px-[100px]">
         {/* <MarqueeSection /> */}
         {/* <CRMSection /> */}
         {/* <DataModellingSection /> */}
