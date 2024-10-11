@@ -27,4 +27,13 @@ export const blogPosts: BlogPost[] = [
     category: "Finance",
     url: "public-company-financial-data-api-empowering-financial-analysis-and-decision-making",
   },
+  {
+    id: 3,
+    title: "Stock Market News API: Powering Real-Time Financial Insights",
+    excerpt:
+      "Learn how stock market news APIs are transforming the way investors access and analyze real-time financial information.",
+    date: "October 9, 2024",
+    category: "Finance",
+    url: "stock-market-news-api-powering-real-time-financial-insights",
+  },
 ];
