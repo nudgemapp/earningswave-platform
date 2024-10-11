@@ -40,7 +40,7 @@ const BlogPage = () => {
               className="border-b border-gray-200 pb-8"
             >
               <Link
-                href={`/blog/${post.id}`}
+                href={`/blog/${post.url}`}
                 className="block hover:opacity-80 transition-opacity"
               >
                 <h2 className="text-2xl font-semibold mb-2">{post.title}</h2>

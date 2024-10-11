@@ -4,6 +4,7 @@ interface BlogPost {
   excerpt: string;
   date: string;
   category: string;
+  url: string;
 }
 
 export const blogPosts: BlogPost[] = [
@@ -14,6 +15,7 @@ export const blogPosts: BlogPost[] = [
       "Explore the power of earnings calendar APIs in financial analysis and decision-making processes.",
     date: "October 7, 2024",
     category: "Finance",
+    url: "earnings-calendar-api-your-gateway-to-critical-financial-data",
   },
   {
     id: 2,
@@ -23,5 +25,6 @@ export const blogPosts: BlogPost[] = [
       "Discover how public company financial data APIs are revolutionizing access to crucial financial information.",
     date: "October 8, 2024",
     category: "Finance",
+    url: "public-company-financial-data-api-empowering-financial-analysis-and-decision-making",
   },
 ];
