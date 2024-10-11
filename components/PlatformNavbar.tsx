@@ -3,7 +3,7 @@
 import Logo from "./Logo";
 import { useState } from "react";
 import Link from "next/link";
-import { Archive, ArchiveIcon, ArchiveRestore, Search } from "lucide-react";
+import { ArchiveRestore, Search } from "lucide-react";
 
 const PlatformNavbar = () => {
   const [activeTab, setActiveTab] = useState("Calendar");

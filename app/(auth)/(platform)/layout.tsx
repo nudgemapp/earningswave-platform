@@ -1,5 +1,3 @@
-import PlatformNavbar from "@/components/PlatformNavbar";
-
 const PlatformLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <main className="flex flex-col min-h-screen">
