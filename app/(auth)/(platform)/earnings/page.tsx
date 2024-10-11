@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, FilterIcon } from "lucide-react";
 import { useState } from "react";
-import PlatformNavbar from "@/components/PlatformNavbar";
 import NavBar from "@/components/NavBar";
+// import PlatformNavbar from "@/components/PlatformNavbar";
 
 const EarningsPage = () => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
