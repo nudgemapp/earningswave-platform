@@ -7,7 +7,6 @@ import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useAuthModal } from "@/store/AuthModalStore";
-import { AuthModal } from "@/components/modals/auth-modal";
 // import PlatformNavbar from "@/components/PlatformNavbar";
 
 export default function EarningsPage() {
