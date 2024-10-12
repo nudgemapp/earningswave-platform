@@ -163,7 +163,7 @@ function NavBar() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button onClick={() => router.push("/sign-up")}>
-                    Sign up{" "}
+                    Sign up
                   </Button>
                 </motion.div>
               </div>
@@ -197,7 +197,7 @@ function NavBar() {
               </div>
               {!menu && (
                 <Button
-                  className="text-sm px-4 py-2 rounded-full"
+                  className="text-base px-6 py-3 rounded-full font-bold"
                   onClick={() => router.push("/sign-up")}
                 >
                   Sign Up
@@ -205,8 +205,8 @@ function NavBar() {
               )}
             </div>
             {menu && (
-              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white">
-                <nav className="flex-grow flex flex-col justify-center items-center px-6 py-8">
+              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white overflow-hidden">
+                <nav className="flex-grow flex flex-col justify-center items-center px-6">
                   {links.map((item, index) => (
                     <div key={index} className="text-center w-full">
                       {item.dropdownItems ? (
@@ -239,7 +239,7 @@ function NavBar() {
                         </p>
                       )}
                       {index < links.length - 1 && (
-                        <div className="w-1/2 h-px bg-gray-200 mx-auto my-2"></div>
+                        <div className="w-1/2 h-px bg-gray-200 mx-auto"></div>
                       )}
                     </div>
                   ))}

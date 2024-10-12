@@ -13,12 +13,10 @@ export async function POST(req: Request) {
     }
 
     await sendEmail({
-      to: "guevaraeu1@gmail.com",
-      subject: "New Email Submission",
-      body: `New email submitted: ${email}`,
+      to: "matt@nudgem.com",
+      subject: "New EarningsWave Email Submission",
+      body: `New EarningsWave email submitted: ${email}`,
     });
-
-    console.log("sent");
 
     const existingEmail = await prisma.email.findUnique({
       where: {
