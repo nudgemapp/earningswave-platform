@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import img from "@/public/images/ew-logo-dark-noBG.png";
+
 function FooterSection() {
   const router = useRouter();
   const data = {
