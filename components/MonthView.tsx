@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
-import cocaCola from "@/public/images/coca-cola.png";
-import Amazon from "@/public/images/amazon.png";
-import apple from "@/public/images/apple.png";
-import google from "@/public/images/google.png";
 import { Calendar } from "lucide-react";
+import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -41,18 +38,16 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const companyLogos = [cocaCola, Amazon, apple, google];
-
   const getRandomLogos = () => {
     if (Math.random() < 0.05) {
       // 5% chance of "No earnings"
       return "no_earnings";
     }
     const numLogos = Math.floor(Math.random() * 5); // 0 to 4 logos
-    return shuffle([...companyLogos]).slice(0, numLogos);
+    return shuffle([...companyNames]).slice(0, numLogos);
   };
 
-  const shuffle = (array: typeof companyLogos) => {
+  const shuffle = (array: string[]) => {
     return array.sort(() => Math.random() - 0.5);
   };
 
@@ -101,14 +96,14 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
                     <NoEarnings />
                   </div>
                 ) : (
-                  dayContent.map((logo, logoIndex) => (
+                  dayContent.map((company, logoIndex) => (
                     <div
                       key={logoIndex}
-                      className="w-10 h-10 m-0.5 relative bg-white border border-gray-200 rounded-sm overflow-hidden"
+                      className="w-10 h-10 m-0.5 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10"
                     >
                       <Image
-                        src={logo}
-                        alt="Company logo"
+                        src={`https://logo.clearbit.com/${company.toLowerCase()}.com`}
+                        alt={`${company} logo`}
                         layout="fill"
                         objectFit="contain"
                       />
