@@ -90,25 +90,27 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
               }`}
             >
               <span className="text-xs">{date.getDate()}</span>
-              <div className="flex flex-wrap justify-center items-center mt-1 h-24">
+              <div className="flex-grow flex flex-wrap justify-center items-center mt-1">
                 {dayContent === "no_earnings" ? (
                   <div className="w-full h-full">
                     <NoEarnings />
                   </div>
                 ) : (
-                  dayContent.map((company, logoIndex) => (
-                    <div
-                      key={logoIndex}
-                      className="w-10 h-10 m-0.5 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10"
-                    >
-                      <Image
-                        src={`https://logo.clearbit.com/${company.toLowerCase()}.com`}
-                        alt={`${company} logo`}
-                        layout="fill"
-                        objectFit="contain"
-                      />
-                    </div>
-                  ))
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1 w-full h-full">
+                    {dayContent.map((company, logoIndex) => (
+                      <div
+                        key={logoIndex}
+                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10"
+                      >
+                        <Image
+                          src={`https://logo.clearbit.com/${company.toLowerCase()}.com`}
+                          alt={`${company} logo`}
+                          layout="fill"
+                          objectFit="contain"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

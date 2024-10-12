@@ -33,7 +33,7 @@ export default function EarningsPage() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <NavBar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden pt-20 sm:pt-0">
         <CalendarNavbar
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
@@ -47,7 +47,6 @@ export default function EarningsPage() {
           <MonthView currentDate={currentDate} />
         )}
       </div>
-      <AuthModal />
     </div>
   );
 }
