@@ -40,8 +40,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   const getRandomLogos = () => {
     if (Math.random() < 0.05) {
-      // 5% chance of "No earnings"
-      return "no_earnings";
+      return [];
     }
     const numLogos = Math.floor(Math.random() * 5); // 0 to 4 logos
     return shuffle([...companyNames]).slice(0, numLogos);
@@ -91,7 +90,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
             >
               <span className="text-xs">{date.getDate()}</span>
               <div className="flex-grow flex flex-wrap justify-center items-center mt-1">
-                {dayContent === "no_earnings" ? (
+                {dayContent.length === 0 ? (
                   <div className="w-full h-full">
                     <NoEarnings />
                   </div>
