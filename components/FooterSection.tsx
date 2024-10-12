@@ -14,13 +14,13 @@ function FooterSection() {
     company: [
       { name: "About", url: "/about-us" },
       { name: "Careers", url: "#" },
-      { name: "Blog", url: "#" },
+      { name: "Blog", url: "/blog" },
       { name: "Startup program", url: "#" },
     ],
     support: [
       { name: "Help Center", url: "#" },
       { name: "Talk to support", url: "#" },
-      { name: "API docs", url: "#" },
+      { name: "API docs", url: "/api" },
       { name: "System status", url: "#" },
     ],
   };
@@ -55,12 +55,13 @@ function FooterSection() {
           <p className="text-white mb-[12px] font-medium">Support</p>
           <div className="flex flex-col gap-3">
             {data.support.map((item, index) => (
-              <p
+              <Link
                 key={index}
+                href={item.url}
                 className="text-[#E0E0E0] hover:cursor-pointer hover:text-white"
               >
                 {item.name}
-              </p>
+              </Link>
             ))}
           </div>
         </div>
@@ -71,7 +72,7 @@ function FooterSection() {
               className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
               onClick={() => router.push("/sign-up")}
             >
-              Sign up{" "}
+              Sign up
             </Button>
             <EmailModal />
           </div>
