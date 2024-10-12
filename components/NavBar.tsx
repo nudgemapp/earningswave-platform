@@ -182,7 +182,7 @@ function NavBar() {
                   )}
                 </button>
                 <div
-                  className="relative right-12 w-36 h-10 z-0"
+                  className="relative right-16 w-48 h-14 z-0"
                   onClick={() => handleNavigation("/")}
                 >
                   <Image
