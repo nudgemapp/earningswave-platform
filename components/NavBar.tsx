@@ -171,61 +171,55 @@ function NavBar() {
           </div>
 
           {/* MOBILE */}
-          <div
-            className={`block lg:hidden shadow-sm fixed top-0 left-0 right-0 z-[999] bg-white py-4 ${
-              menu ? "bg-primary py-2" : ""
-            }`}
-          >
-            <div className="flex justify-between items-center px-4">
+          <div className="block lg:hidden fixed inset-0 z-[999] bg-white">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
               <div className="flex items-center gap-2">
-                {menu ? (
-                  <X
-                    className="cursor-pointer animate-in fade-in zoom-in text-black z-10 ml-2"
-                    onClick={toggleMenu}
-                  />
-                ) : (
-                  <MenuIcon
-                    className="cursor-pointer text-black z-10 ml-2"
-                    onClick={toggleMenu}
-                  />
-                )}
+                <button onClick={toggleMenu} className="p-2 z-10">
+                  {menu ? (
+                    <X className="w-6 h-6 text-gray-800" />
+                  ) : (
+                    <MenuIcon className="w-6 h-6 text-gray-800" />
+                  )}
+                </button>
                 <div
-                  className="relative w-48 h-14 right-12"
+                  className="relative right-12 w-36 h-10 z-0"
                   onClick={() => handleNavigation("/")}
                 >
                   <Image
                     src={lightImg}
                     alt="logo"
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw z-0"
+                    sizes="(max-width: 768px) 100vw"
                     className="object-contain"
                     priority
                   />
                 </div>
               </div>
-              <div>
+              {!menu && (
                 <Button
-                  className="text-base px-4 py-2 font-semibold"
+                  className="text-sm px-4 py-2 rounded-full"
                   onClick={() => router.push("/sign-up")}
                 >
                   Sign Up
                 </Button>
-              </div>
+              )}
             </div>
             {menu && (
-              <div className="my-8 select-none animate-in slide-in-from-right">
-                <div className="flex flex-col gap-8 mt-8 mx-4">
+              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white">
+                <nav className="flex-grow flex flex-col justify-center items-center px-6 py-8">
                   {links.map((item, index) => (
-                    <div key={index} className="flex flex-col gap-2">
+                    <div key={index} className="text-center w-full">
                       {item.dropdownItems ? (
-                        <>
-                          <p className="font-[500] text-gray">{item.name}</p>
-                          <div className="ml-4 flex flex-col gap-2">
+                        <div className="py-6">
+                          <p className="font-semibold text-gray-800 mb-4 text-2xl">
+                            {item.name}
+                          </p>
+                          <div className="space-y-4">
                             {item.dropdownItems.map(
                               (dropdownItem, dropdownIndex) => (
                                 <p
                                   key={dropdownIndex}
-                                  className="hover:text-primary cursor-pointer text-gray transition-colors duration-200"
+                                  className="text-gray-600 hover:text-primary cursor-pointer transition-colors duration-200 text-xl"
                                   onClick={() =>
                                     handleNavigation(dropdownItem.route)
                                   }
@@ -235,36 +229,34 @@ function NavBar() {
                               )
                             )}
                           </div>
-                        </>
+                        </div>
                       ) : (
                         <p
-                          className={`hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray`}
+                          className="font-semibold text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 text-2xl py-6"
                           onClick={() => handleNavigation(item.route)}
                         >
                           {item.name}
                         </p>
                       )}
-                      {item.badgeCount ? (
-                        <div className="h-8 w-8 rounded-full bg-primary flex justify-center items-center font-semibold text-white">
-                          {item.badgeCount}
-                        </div>
-                      ) : (
-                        <div />
+                      {index < links.length - 1 && (
+                        <div className="w-1/2 h-px bg-gray-200 mx-auto my-2"></div>
                       )}
                     </div>
                   ))}
-                  <div className="flex flex-col gap-[20px] select-none">
-                    <Button
-                      className="bg-white text-[#31373D] border-[#EDEEF0] hover:bg-white"
-                      onClick={() => router.push("/sign-in")}
-                    >
-                      Sign in
-                    </Button>
-
-                    <Button onClick={() => router.push("/sign-up")}>
-                      Sign up
-                    </Button>
-                  </div>
+                </nav>
+                <div className="px-6 py-6 bg-gray-50">
+                  <Button
+                    className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
+                    onClick={() => router.push("/sign-in")}
+                  >
+                    Sign in
+                  </Button>
+                  <Button
+                    className="w-full text-xl py-4"
+                    onClick={() => router.push("/sign-up")}
+                  >
+                    Sign up
+                  </Button>
                 </div>
               </div>
             )}

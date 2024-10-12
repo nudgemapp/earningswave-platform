@@ -11,7 +11,6 @@ export default function EarningsPage() {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
 
-  // Calculate weekDays and weekDates
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const weekDates = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(currentDate);

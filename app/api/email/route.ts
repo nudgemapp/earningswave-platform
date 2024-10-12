@@ -1,16 +1,24 @@
 import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
+import { sendEmail } from "@/app/services/email-service";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email } = body;
+    const { email } = await req.json();
 
     if (!email || !email.includes("@")) {
       return new NextResponse("Valid email address is required", {
         status: 400,
       });
     }
+
+    await sendEmail({
+      to: "guevaraeu1@gmail.com",
+      subject: "New Email Submission",
+      body: `New email submitted: ${email}`,
+    });
+
+    console.log("sent");
 
     const existingEmail = await prisma.email.findUnique({
       where: {
