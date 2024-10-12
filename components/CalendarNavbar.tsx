@@ -38,71 +38,77 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   );
 
   return (
-    <div className="bg-gray-100 py-4 px-6">
+    <div className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <button
+          <Button
             onClick={() => navigateMonth(-1)}
-            className="p-2 rounded-full hover:bg-gray-200"
+            variant="ghost"
+            size="icon"
+            className="hover:bg-gray-100"
           >
             <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
-          </button>
-          <select
-            value={currentDate.getMonth()}
-            onChange={(e) => {
-              const newDate = new Date(currentDate);
-              newDate.setMonth(parseInt(e.target.value));
-              setCurrentDate(newDate);
-            }}
-            className="bg-white border border-gray-300 rounded-md px-2 py-1"
-          >
-            {months.map((month, index) => (
-              <option key={month} value={index}>
-                {month}
-              </option>
-            ))}
-          </select>
-          <select
-            value={currentDate.getFullYear()}
-            onChange={(e) => {
-              const newDate = new Date(currentDate);
-              newDate.setFullYear(parseInt(e.target.value));
-              setCurrentDate(newDate);
-            }}
-            className="bg-white border border-gray-300 rounded-md px-2 py-1"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-          <button
+          </Button>
+          <div className="flex items-center space-x-2 bg-gray-50 rounded-md p-1">
+            <select
+              value={currentDate.getMonth()}
+              onChange={(e) => {
+                const newDate = new Date(currentDate);
+                newDate.setMonth(parseInt(e.target.value));
+                setCurrentDate(newDate);
+              }}
+              className="bg-transparent text-gray-700 font-medium focus:outline-none"
+            >
+              {months.map((month, index) => (
+                <option key={month} value={index}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <select
+              value={currentDate.getFullYear()}
+              onChange={(e) => {
+                const newDate = new Date(currentDate);
+                newDate.setFullYear(parseInt(e.target.value));
+                setCurrentDate(newDate);
+              }}
+              className="bg-transparent text-gray-700 font-medium focus:outline-none"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Button
             onClick={() => navigateMonth(1)}
-            className="p-2 rounded-full hover:bg-gray-200"
+            variant="ghost"
+            size="icon"
+            className="hover:bg-gray-100"
           >
             <ChevronRightIcon className="h-5 w-5 text-gray-600" />
-          </button>
+          </Button>
         </div>
         <div className="flex items-center space-x-2">
           <Button
             onClick={() => setView("month")}
-            className="px-4 py-2 rounded-md"
             variant={view === "month" ? "default" : "outline"}
+            className="px-4 py-2"
           >
             Month
           </Button>
           <Button
             onClick={() => setView("week")}
-            className="px-4 py-2 rounded-md"
             variant={view === "week" ? "default" : "outline"}
+            className="px-4 py-2"
           >
             Week
           </Button>
           <Button
             onClick={() => setCurrentDate(new Date())}
-            className="px-4 py-2 rounded-md"
             variant="outline"
+            className="px-4 py-2"
           >
             Today
           </Button>
