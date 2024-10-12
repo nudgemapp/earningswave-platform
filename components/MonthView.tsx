@@ -22,13 +22,8 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
       days.push(new Date(year, month, i));
     }
 
-    // Add padding days from next month to complete the grid
-    const remainingDays = 42 - days.length; // 6 rows * 7 days
-    for (let i = 1; i <= remainingDays; i++) {
-      days.push(new Date(year, month + 1, i));
-    }
-
-    return days;
+    // Remove padding days from next month
+    return days.slice(0, firstDayOfMonth + daysInMonth);
   };
 
   const days = getDaysInMonth(currentDate);
@@ -40,7 +35,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
         {weekDays.map((day) => (
           <div
             key={day}
-            className="bg-gray-100 p-2 text-center text-sm font-medium text-gray-600"
+            className="bg-gray-100 py-1 text-center text-xs font-medium text-gray-600"
           >
             {day}
           </div>
@@ -48,7 +43,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
         {days.map((date, index) => (
           <div
             key={index}
-            className={`bg-white p-2 text-center flex flex-col ${
+            className={`bg-white p-1 text-center flex flex-col ${
               date.getMonth() !== currentDate.getMonth()
                 ? "text-gray-400"
                 : "text-gray-800"
@@ -58,10 +53,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
                 : ""
             }`}
           >
-            <span className="text-sm">{date.getDate()}</span>
-            <div className="flex-grow">
-              {/* Add your events or earnings data here */}
-            </div>
+            <span className="text-xs">{date.getDate()}</span>
           </div>
         ))}
       </div>
