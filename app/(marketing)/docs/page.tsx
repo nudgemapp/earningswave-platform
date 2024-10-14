@@ -1,9 +1,12 @@
 "use client";
 
-import { EmailModal } from "@/components/modals/email-modal";
+import { Button } from "@/components/ui/button";
+import { useEmailModal } from "@/store/EmailModalStore";
 import { motion } from "framer-motion";
 
 const DocsPage = () => {
+  const emailModal = useEmailModal();
+
   const features = [
     "Weekly Earnings Calendar",
     "Earnings Estimates & Actuals",
@@ -18,7 +21,7 @@ const DocsPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-12 pt-4 pb-32 text-center"
+      className="space-y-12 pb-32 text-center pt-32"
     >
       <div className="container flex max-w-[64rem] flex-col items-center gap-4 mx-auto">
         <motion.h1
@@ -71,10 +74,12 @@ const DocsPage = () => {
           whileTap={{ scale: 0.95 }}
           className="inline-block mt-8"
         >
-          <EmailModal
-            title="Get Started with EarningsWave"
-            buttonColor="black"
-          />
+          <Button
+            className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"
+            onClick={() => emailModal.onOpen()}
+          >
+            Get Started with EarningsWave
+          </Button>
         </motion.div>
       </motion.div>
     </motion.section>

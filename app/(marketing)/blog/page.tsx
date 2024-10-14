@@ -10,7 +10,7 @@ const BlogPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-12 pt-4 pb-32"
+      className="space-y-12 py-32"
     >
       <div className="container max-w-4xl mx-auto px-4">
         <motion.h1
