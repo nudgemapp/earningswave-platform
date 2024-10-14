@@ -2,12 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useEmailModal } from "@/store/EmailModalStore";
 
 const APIPage = () => {
   const emailModal = useEmailModal();
-  const router = useRouter();
 
   return (
     <motion.section
