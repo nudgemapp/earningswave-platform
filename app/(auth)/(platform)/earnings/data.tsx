@@ -40,3 +40,48 @@ export const companyNames = [
   "Costco",
   "Target",
 ];
+
+export const TranscriptData = {
+  url: "https://www.fool.com/earnings/call-transcripts/2024/10/11/oil-dri-of-america-odc-q4-2024-earnings-call-trans/",
+  date: "2024-10-11",
+  title: "Oil-Dri Of America (ODC) Q4 2024 Earnings Call Transcript",
+  company_info: {
+    company_name: "Oil-Dri Of America",
+    ticker_symbol: "ODC",
+    ticker_change: "3.14%",
+    date: "Oct 11, 2024",
+    time: "10:00 a.m. ET",
+  },
+  contents: ["Prepared Remarks", "Questions and Answers", "Call Participants"],
+  sections: {
+    "Prepared Remarks": [
+      {
+        name: "Operator",
+        text: "Good day, and thank you for standing by. Welcome to the Oil-Dri Corporation of America fourth-quarter and fiscal-year 2024 earnings discussion. [Operator instructions] Please be advised that today's conference is being recorded. I would now like to hand the conference over to your speaker today, president and CEO, Dan Jaffee. Please go ahead.",
+      },
+      {
+        name: "Daniel S. Jaffee",
+        text: "Thank you, Daniel, and welcome everyone to our fiscal year-end investor teleconference. We are expanding today to up to 45 minutes. If we have questions, we want to give you extra time. And we're also going to cover the very exciting Ultra Pet acquisition...",
+      },
+      {
+        name: "Leslie A. Garber",
+        text: "Yes. Thank you, Dan. Welcome, everyone. On today's call, comments may contain forward-looking statements regarding the company's performance in future periods. Actual results in those periods may materially differ...",
+      },
+    ],
+    "Questions & Answers": [
+      {
+        name: "Operator",
+        text: "[Operator signoff]",
+      },
+    ],
+  },
+  call_participants: [
+    "Daniel S. Jaffee -- Chairman, President, and Chief Executive Officer",
+    "Leslie A. Garber -- Director, Investor Relations",
+    "Chris Lamson -- Group Vice President, Retail and Wholesale",
+    "Susan M. Kreh -- Chief Financial Officer and Chief Information Officer",
+    "Wade Robey -- Vice President, Agriculture, and President, Amlan International",
+    "Laura Guest Scheland -- Chief Legal Officer and General Manager, Consumer Products Division",
+    "Aaron Christiansen -- Vice President, Operations",
+  ],
+};

@@ -14,13 +14,13 @@ export default function EarningsPage() {
     useCalendarStore();
   const authModal = useAuthModal();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      authModal.onOpen();
-    }, 5000);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     authModal.onOpen();
+  //   }, 5000);
 
-    return () => clearTimeout(timer);
-  }, [authModal]);
+  //   return () => clearTimeout(timer);
+  // }, [authModal]);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -30,9 +30,9 @@ export default function EarningsPage() {
   });
 
   return (
-    <div className="h-screen w-screen flex flex-col">
+    <div className="h-screen flex flex-col">
       <NavBar />
-      <div className="flex-1 flex flex-col overflow-hidden pt-20 sm:pt-0">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <CalendarNavbar
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
@@ -40,11 +40,13 @@ export default function EarningsPage() {
           view={view}
           setView={setView}
         />
-        {view === "week" ? (
-          <WeekView weekDays={weekDays} weekDates={weekDates} />
-        ) : (
-          <MonthView currentDate={currentDate} />
-        )}
+        <div className="flex-1 overflow-y-auto">
+          {view === "week" ? (
+            <WeekView weekDays={weekDays} weekDates={weekDates} />
+          ) : (
+            <MonthView currentDate={currentDate} />
+          )}
+        </div>
       </div>
     </div>
   );
