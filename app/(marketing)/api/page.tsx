@@ -14,16 +14,13 @@ const APIPage = () => {
       transition={{ duration: 0.5 }}
       className="bg-gradient-to-b from-[#FFFFFF] to-[#D2DCFFF] py-8  overflow-x-clip mt-24 sm:mt-0"
     >
-      <div className="mx-auto pb-40 pt-24">
+      <div className="mx-auto pb-40">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-[540px] mx-auto flex flex-col items-center"
         >
-          <div className="text-sm inline-flex border border-[#222]/10 px-3 py-1 rounded-lg tracking-tight">
-            Boost your productivity
-          </div>
           <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5">
             Earnings call transcripts on demand: Flexible access for every need
           </h2>

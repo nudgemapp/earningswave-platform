@@ -19,7 +19,7 @@ function HeroSection() {
 
   return (
     <section className="relative z-10 w-full">
-      <div className="container mx-auto px-4 flex flex-col justify-center h-full pb-16 py-32">
+      <div className="container mx-auto px-4 flex flex-col justify-center h-full pb-32 pt-8">
         <motion.div
           ref={ref1}
           initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView3 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex gap-[12px] justify-center"
+          className="flex gap-[12px] justify-center pt-4"
         >
           <Button
             className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12"
