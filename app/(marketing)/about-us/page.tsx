@@ -4,11 +4,14 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, Computer, Globe, TimerIcon } from "lucide-react";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useEmailModal } from "@/store/EmailModalStore";
+import Link from "next/link";
 
 export default function AboutUs() {
+  const emailModal = useEmailModal();
+
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -154,12 +157,12 @@ export default function AboutUs() {
             EarningsWave is transforming financial analysis with AI-powered
             insights. Don&apos;t fall behind.
           </p>
-          <Link
-            href="/sign-up"
+          <Button
+            onClick={() => emailModal.onOpen()}
             className={cn(buttonVariants({ size: "lg" }), "mt-4")}
           >
             Start Investing Today
-          </Link>
+          </Button>
         </div>
       </section>
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthModal } from "@/components/modals/auth-modal";
+import { EmailModal } from "@/components/modals/email-modal";
 import { useEffect, useState } from "react";
 
 export const ModalProvider = () => {
@@ -15,6 +16,7 @@ export const ModalProvider = () => {
   return (
     <>
       <AuthModal />
+      <EmailModal />
     </>
   );
 };

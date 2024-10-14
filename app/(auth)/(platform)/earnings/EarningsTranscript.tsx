@@ -1,9 +1,15 @@
-import { X } from "lucide-react";
+"use client";
+
+import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import React from "react";
 
+// import { X } from "lucide-react";
+
 interface TranscriptData {
-  url: string;
+  _id: { $oid: string };
+  href: string;
+  date: string;
   title: string;
   company_info: {
     company_name: string;
@@ -17,24 +23,27 @@ interface TranscriptData {
     [key: string]: Array<{ name: string; text: string }>;
   };
   call_participants: string[];
+  full_text: string;
 }
 
 interface EarningsTranscriptProps {
   transcriptData: TranscriptData;
-  onBack: () => void;
+  // onBack: () => void;
 }
 
 const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
-  onBack,
+  // onBack,
 }) => {
   return (
     <div className="p-4 bg-white overflow-y-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
+      <div className="flex flex-col items-start mb-4">
+        <div className="text-2xl font-bold mb-4">EarningsWave coming soon</div>
+        <Separator className="mb-4" />
+        <div className="flex items-center mt-4">
           <div className="w-12 h-12 mr-4 relative flex-shrink-0">
             <Image
-              src={`https://logo.clearbit.com/oil.com`}
+              src={`https://logo.clearbit.com/Tesla.com`}
               alt={`${transcriptData.company_info.company_name} logo`}
               layout="fill"
               objectFit="contain"
@@ -44,13 +53,6 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
             {transcriptData.company_info.company_name}
           </h2>
         </div>
-        <button
-          onClick={onBack}
-          className="text-gray-500 hover:text-gray-700 transition-colors"
-          aria-label="Close transcript"
-        >
-          <X size={24} />
-        </button>
       </div>
       <h2 className="text-xl font-semibold mb-4">{transcriptData.title}</h2>
 
@@ -99,7 +101,7 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
       </div>
 
       <a
-        href={transcriptData.url}
+        href={transcriptData.href}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:underline"

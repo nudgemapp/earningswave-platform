@@ -1,26 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
 import NavBar from "@/components/NavBar";
 import CalendarNavbar from "@/components/CalendarNavbar";
 import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { useAuthModal } from "@/store/AuthModalStore";
-// import PlatformNavbar from "@/components/PlatformNavbar";
+import { useEmailModal } from "@/store/EmailModalStore";
+import { useEffect } from "react";
 
 export default function EarningsPage() {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
-  const authModal = useAuthModal();
+  const emailModal = useEmailModal();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      authModal.onOpen();
-    }, 5000);
+    const hasModalBeenShown = localStorage.getItem("emailModalShown");
 
-    return () => clearTimeout(timer);
-  }, [authModal]);
+    if (!hasModalBeenShown) {
+      const timer = setTimeout(() => {
+        emailModal.onOpen();
+        localStorage.setItem("emailModalShown", "true");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [emailModal]);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const weekDates = Array.from({ length: 7 }, (_, i) => {

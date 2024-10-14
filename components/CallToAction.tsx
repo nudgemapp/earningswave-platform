@@ -26,7 +26,7 @@ const CallToAction = () => {
         throw new Error(errorData.message || "Failed to submit email");
       }
 
-      setMessage("Email collected successfully!");
+      setMessage("Account creation succesfull!");
       setEmail("");
     } catch (error) {
       if (error instanceof Error) {

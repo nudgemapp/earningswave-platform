@@ -9,24 +9,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/authDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
+import { useEmailModal } from "@/store/EmailModalStore";
 
-export function EmailModal({
-  title = "Talk to sales",
-  buttonColor = "white",
-  enlarge = false,
-}: {
-  title?: string;
-  buttonColor?: "white" | "black";
-  enlarge?: boolean;
-}) {
+export function EmailModal() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+
+  const emailModal = useEmailModal();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,8 +41,11 @@ export function EmailModal({
         throw new Error(errorData.message || "Failed to submit email");
       }
 
-      setMessage("Email collected successfully!");
+      setMessage("Account creation succesfull!");
       setEmail("");
+      setTimeout(() => {
+        emailModal.onClose();
+      }, 2000);
     } catch (error) {
       if (error instanceof Error) {
         setMessage(error.message);
@@ -62,22 +59,7 @@ export function EmailModal({
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          className={`
-            ${
-              buttonColor === "black"
-                ? "bg-black text-white hover:bg-gray-800"
-                : "bg-white text-primary hover:bg-gray-100"
-            } 
-            transition-colors duration-200
-            ${enlarge ? "text-2xl py-6 px-12" : ""}
-          `}
-        >
-          {title}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={emailModal.isOpen} onOpenChange={emailModal.onClose}>
       <DialogContent className="sm:max-w-[425px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary">

@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { EmailModal } from "@/components/modals/email-modal";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useEmailModal } from "@/store/EmailModalStore";
 
 const APIPage = () => {
+  const emailModal = useEmailModal();
   const router = useRouter();
 
   return (
@@ -15,7 +16,7 @@ const APIPage = () => {
       transition={{ duration: 0.5 }}
       className="bg-gradient-to-b from-[#FFFFFF] to-[#D2DCFFF] py-8  overflow-x-clip mt-24 sm:mt-0"
     >
-      <div className="mx-auto pb-40">
+      <div className="mx-auto pb-40 pt-24">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -25,10 +26,10 @@ const APIPage = () => {
           <div className="text-sm inline-flex border border-[#222]/10 px-3 py-1 rounded-lg tracking-tight">
             Boost your productivity
           </div>
-          <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter bg-gradient-to-b from-black to-[#001E80] text-transparent bg-clip-text mt-5">
+          <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5">
             Earnings call transcripts on demand: Flexible access for every need
           </h2>
-          <p className="text-center text-[22px] leading-[30px] tracking-tight text-[#010D3E] mt-5">
+          <p className="text-center text-[18px] sm:text-[22px] leading-[28px] sm:leading-[30px] tracking-tight text-[#010D3E] mt-5 mb-8 font-medium sm:font-normal">
             Tailor your transcript access to your specific requirements. Whether
             you need bulk historical data, real-time updates, or targeted
             searches, our flexible API allows you to retrieve exactly the
@@ -43,14 +44,20 @@ const APIPage = () => {
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              className="border-none rounded-[12px]"
-              onClick={() => router.push("/")}
+              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12"
+              onClick={() => emailModal.onOpen()}
             >
               View docs
             </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <EmailModal title="Book a call" />
+            <Button
+              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"
+              onClick={() => emailModal.onOpen()}
+              variant="outline"
+            >
+              Talk to Sales
+            </Button>
           </motion.div>
         </motion.div>
       </div>

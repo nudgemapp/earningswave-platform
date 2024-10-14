@@ -38,16 +38,36 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const getRandomLogos = () => {
-    if (Math.random() < 0.05) {
+  const getLogosForDate = (date: Date) => {
+    // Use the date to seed the random number generator
+    const seed =
+      date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+    const rng = seedRandom(seed);
+
+    // Determine the number of logos (0 to 8)
+    const numLogos = Math.floor(rng() * 9);
+
+    // If numLogos is 0, return an empty array
+    if (numLogos === 0) {
       return [];
     }
-    const numLogos = Math.floor(Math.random() * 5); // 0 to 4 logos
-    return shuffle([...companyNames]).slice(0, numLogos);
+
+    // Use the seeded random number generator to select companies
+    const selectedCompanies = [];
+    for (let i = 0; i < numLogos; i++) {
+      const index = Math.floor(rng() * companyNames.length);
+      selectedCompanies.push(companyNames[index]);
+    }
+
+    return selectedCompanies;
   };
 
-  const shuffle = (array: string[]) => {
-    return array.sort(() => Math.random() - 0.5);
+  const seedRandom = (seed: number) => {
+    let x = Math.sin(seed) * 10000;
+    return () => {
+      x = Math.sin(x) * 10000;
+      return x - Math.floor(x);
+    };
   };
 
   const NoEarnings = () => (
@@ -74,7 +94,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
         {renderedDays.map((date, index) => {
-          const dayContent = getRandomLogos();
+          const dayContent = getLogosForDate(date);
           return (
             <div
               key={index}

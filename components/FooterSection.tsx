@@ -1,16 +1,16 @@
 "use client";
 
 import React from "react";
-import { Button } from "./ui/button";
 import Image from "next/image";
-import { EmailModal } from "./modals/email-modal";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
+import { useEmailModal } from "@/store/EmailModalStore";
 
 import img from "@/public/images/ew-logo-dark-noBG.png";
 
 function FooterSection() {
-  const router = useRouter();
+  const emailModal = useEmailModal();
+
   const data = {
     company: [
       { name: "About", url: "/about-us" },
@@ -71,11 +71,10 @@ function FooterSection() {
           <div className="flex flex-col gap-[12px] justify-start">
             <Button
               className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
-              onClick={() => router.push("/sign-up")}
+              onClick={() => emailModal.onOpen()}
             >
               Sign up
             </Button>
-            <EmailModal />
           </div>
         </div>
       </div>

@@ -26,7 +26,7 @@ const EarningsFeed: React.FC<EarningsFeedProps> = ({
         >
           <div className="w-10 h-10 mr-3 relative flex-shrink-0">
             <Image
-              src={`https://logo.clearbit.com/oil.com`}
+              src={`https://logo.clearbit.com/Tesla.com`}
               alt={`${earning.company_name} logo`}
               layout="fill"
               objectFit="contain"

@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
+import { useEmailModal } from "@/store/EmailModalStore";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
@@ -23,6 +24,8 @@ function NavBar() {
   const router = useRouter();
   const [menu, setMenu] = useState(false);
   const mounted = useMount();
+
+  const emailModal = useEmailModal();
 
   const links = [
     {
@@ -145,26 +148,13 @@ function NavBar() {
                 ))}
               </div>
 
-              {/* Buttons - Right */}
+              {/* Button - Right */}
               <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button
-                    className="bg-white border text-[#31373D] border-[#EDEEF0] hover:bg-white"
-                    onClick={() => router.push("/sign-in")}
-                  >
-                    Sign in
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button onClick={() => router.push("/sign-up")}>
-                    Sign up
-                  </Button>
+                  <Button onClick={() => emailModal.onOpen()}>Sign up</Button>
                 </motion.div>
               </div>
             </div>
@@ -198,7 +188,7 @@ function NavBar() {
               {!menu && (
                 <Button
                   className="text-base px-6 py-3 rounded-full font-bold"
-                  onClick={() => router.push("/sign-up")}
+                  onClick={() => emailModal.onOpen()}
                 >
                   Sign Up
                 </Button>
@@ -247,13 +237,13 @@ function NavBar() {
                 <div className="px-6 py-6 bg-gray-50">
                   <Button
                     className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
-                    onClick={() => router.push("/sign-in")}
+                    onClick={() => emailModal.onOpen()}
                   >
                     Sign in
                   </Button>
                   <Button
                     className="w-full text-xl py-4"
-                    onClick={() => router.push("/sign-up")}
+                    onClick={() => emailModal.onOpen()}
                   >
                     Sign up
                   </Button>
