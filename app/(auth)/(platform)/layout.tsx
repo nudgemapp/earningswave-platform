@@ -1,4 +1,3 @@
-import { TranscriptData } from "./earnings/data";
 import EarningsTranscriptSheet from "./earnings/EarningsSheet";
 
 const PlatformLayout = ({ children }: { children: React.ReactNode }) => {
