@@ -10,9 +10,11 @@ interface EarningsTranscriptSheetProps {
   className?: string;
 }
 
-const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
-  className,
-}) => {
+const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = (
+  {
+    // className,
+  }
+) => {
   const { selectedCompany, setSelectedCompany } = useEarningsStore();
 
   const isSelectedCompany =

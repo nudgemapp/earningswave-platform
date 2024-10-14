@@ -14,13 +14,13 @@ export default function EarningsPage() {
     useCalendarStore();
   const authModal = useAuthModal();
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     authModal.onOpen();
-  //   }, 5000);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      authModal.onOpen();
+    }, 5000);
 
-  //   return () => clearTimeout(timer);
-  // }, [authModal]);
+    return () => clearTimeout(timer);
+  }, [authModal]);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const weekDates = Array.from({ length: 7 }, (_, i) => {
