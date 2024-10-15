@@ -16,8 +16,41 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "EarningsWave",
-  description: "Competitive edge in earnings analysis",
+  title: "EarningsWave - Competitive Edge in Earnings Analysis",
+  description:
+    "Get a competitive edge in earnings analysis with EarningsWave. Real-time insights, advanced analytics, and comprehensive reports for investors and analysts.",
+  keywords:
+    "earnings analysis, financial insights, stock market, investor tools",
+  authors: [{ name: "EarningsWave Team" }],
+  creator: "EarningsWave",
+  publisher: "EarningsWave Inc.",
+  alternates: {
+    canonical: "https://www.earningswave.com",
+  },
+  category: "Finance",
+  openGraph: {
+    title: "EarningsWave - Competitive Edge in Earnings Analysis",
+    description:
+      "Get a competitive edge in earnings analysis with EarningsWave. Real-time insights, advanced analytics, and comprehensive reports for investors and analysts.",
+    type: "website",
+    url: "https://www.earningswave.com",
+    siteName: "EarningsWave",
+    locale: "en_US",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  // verification: {
+  //   google: "your-google-site-verification-code",
+  // },
 };
 
 // const dmSans = DM_Sans({ subsets: ["latin"] });
