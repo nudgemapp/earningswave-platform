@@ -3,12 +3,13 @@ import Image from "next/image";
 
 import { Calendar } from "lucide-react";
 import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
-import { equals, filter, path,pipe } from 'ramda';
+import { equals, filter, path, pipe } from "ramda";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface MonthViewProps {
   currentDate: Date;
 }
-type EarningsCallTranscript = {
+export type EarningsCallTranscript = {
   _id: {
     $oid: string;
   };
@@ -41,12 +42,17 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const setSelectedCompany = useEarningsStore(
+    (state) => state.setSelectedCompany
+  );
   const fetchTranscripts = async () => {
     try {
       const month = currentDate.getMonth() + 1; // getMonth() returns 0-11, so we add 1
       const year = currentDate.getFullYear();
-      const response = await fetch(`/api/transcripts?month=${month}&year=${year}&page=${currentPage}`).then(res => res.json());
-      console.log(response)
+      const response = await fetch(
+        `/api/transcripts?month=${month}&year=${year}&page=${currentPage}`
+      ).then((res) => res.json());
+      console.log(response);
 
       setTranscripts(response.articles);
       setTotalPages(response.totalPages);
@@ -55,8 +61,10 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
     }
   };
 
+  console.log(transcripts);
+  console.log(totalPages);
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchTranscripts();
     setRenderedDays(getDaysInMonth(currentDate));
   }, [currentDate]);
@@ -84,32 +92,30 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const getLogosForDate = (date: Date, transcripts: EarningsCallTranscript[]) => {
+  const getLogosForDate = (
+    date: Date,
+    transcripts: EarningsCallTranscript[]
+  ) => {
     // Extract the date in the format "MMM DD YYYY"
-    const formattedDate = date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: '2-digit', 
-      year: 'numeric' 
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
     });
-
 
     // Filter transcripts for the given date
     const matchingTranscripts = filter(
-      pipe(
-        (transcript) => {
-          const transcriptDate = path(['company_info', 'date'], transcript);
-          return equals(transcriptDate, formattedDate);
-        }
-      ),
+      pipe((transcript) => {
+        const transcriptDate = path(["company_info", "date"], transcript);
+        return equals(transcriptDate, formattedDate);
+      }),
       transcripts
     );
 
     if (matchingTranscripts.length > 0) {
       return matchingTranscripts;
     }
-    return []
-    
-
+    return [];
   };
 
   const seedRandom = (seed: number) => {
@@ -144,7 +150,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
         {renderedDays.map((date, index) => {
-          const dayContent = getLogosForDate(date,transcripts);
+          const dayContent = getLogosForDate(date, transcripts);
           return (
             <div
               key={index}
@@ -169,7 +175,13 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
                     {dayContent.map((transcriptInfo, logoIndex) => (
                       <div
                         key={logoIndex}
-                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10"
+                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
+                        onClick={() =>
+                          setSelectedCompany({
+                            name: transcriptInfo.company_info.company_name,
+                            id: transcriptInfo._id,
+                          })
+                        }
                       >
                         <Image
                           src={transcriptInfo.company_info.logo_base64}

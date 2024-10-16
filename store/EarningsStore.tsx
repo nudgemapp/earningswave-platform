@@ -1,8 +1,13 @@
 import { create } from "zustand";
 
+interface SelectedCompany {
+  name: string;
+  id: any;
+}
+
 interface EarningsState {
-  selectedCompany: string | null;
-  setSelectedCompany: (company: string | null) => void;
+  selectedCompany: SelectedCompany | null;
+  setSelectedCompany: (company: SelectedCompany | null) => void;
 }
 
 export const useEarningsStore = create<EarningsState>((set) => ({
