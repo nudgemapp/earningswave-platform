@@ -22,8 +22,6 @@ export async function GET(req: Request) {
 
     const collection = db.collection("articles");
 
-    const totalCounttemp = await collection.countDocuments();
-    console.log(`Total articles in collection: ${totalCounttemp}`);
     // Convert month number to month name
     const monthNames = [
       "Jan",
@@ -45,9 +43,17 @@ export async function GET(req: Request) {
     const datePattern = `${monthName} \\d{1,2}, ${year}`;
     console.log("datePattern: " + datePattern);
     const articles = await collection
-      .find({
-        "company_info.date": { $regex: datePattern },
-      })
+      .find(
+        { "company_info.date": { $regex: datePattern } },
+        { projection: {
+          "_id": 1,
+          "title": 1,
+          "href": 1,
+          "date": 1,
+          "company_info":1,
+          
+        }}
+      )
       .toArray();
 
     // Create a GridFSBucket

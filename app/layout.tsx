@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 // import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/providers/modal-provider";
+import { UserProvider } from '@auth0/nextjs-auth0/client';
+
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,12 +64,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <UserProvider >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ModalProvider />
         {children}
       </body>
+      </UserProvider>
     </html>
   );
 }
