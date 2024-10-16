@@ -4,14 +4,16 @@ import React from "react";
 import EarningsTranscript from "./EarningsTranscript";
 // import { useEarningsStore } from "@/store/EarningsStore";
 import { TranscriptData } from "./data";
-
+import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 interface EarningsTranscriptSheetProps {
   className?: string;
+  transcriptData: EarningsCallTranscript;
 }
 
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = (
   {
     // className,
+    transcriptData
   }
 ) => {
   // const { selectedCompany, setSelectedCompany } = useEarningsStore();
