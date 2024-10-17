@@ -10,6 +10,9 @@ import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { AuthModal } from "@/components/modals/auth-modal";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 // const revalidate = 0;
 
@@ -19,6 +22,11 @@ export default function EarningsPage() {
   const emailModal = useEmailModal();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { user, isLoading: userLoading, error: userError } = useUser();
+  const { onOpen: openAuthModal } = useAuthModal();
+
+  console.log("user:", user);
 
   const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -79,16 +87,42 @@ export default function EarningsPage() {
     return date;
   });
 
+  const handleDateChange = (newDate: Date) => {
+    if (!user) {
+      openAuthModal();
+    } else {
+      setCurrentDate(newDate);
+    }
+  };
+
+  const handleViewChange = (newView: "week" | "month") => {
+    if (!user) {
+      openAuthModal();
+    } else {
+      setView(newView);
+    }
+  };
+
+  const handleNavigateMonth = (direction: "prev" | "next") => {
+    if (!user) {
+      openAuthModal();
+    } else {
+      navigateMonth(direction === "next" ? 1 : -1);
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <NavBar />
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <CalendarNavbar
           currentDate={currentDate}
-          setCurrentDate={setCurrentDate}
-          navigateMonth={navigateMonth}
+          setCurrentDate={handleDateChange}
+          navigateMonth={(direction: number) =>
+            handleNavigateMonth(direction > 0 ? "next" : "prev")
+          }
           view={view}
-          setView={setView}
+          setView={handleViewChange}
         />
         <div className="flex-1 overflow-y-auto relative">
           {isLoading && <LoadingSpinner />}
@@ -102,6 +136,7 @@ export default function EarningsPage() {
             ))}
         </div>
       </div>
+      <AuthModal />
     </div>
   );
 }
