@@ -1,19 +1,63 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import CalendarNavbar from "@/components/CalendarNavbar";
 import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
-import { useEffect } from "react";
+import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-const revalidate = 0;
+// const revalidate = 0;
 
 export default function EarningsPage() {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const emailModal = useEmailModal();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const fetchTranscripts = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const month = currentDate.getMonth() + 1;
+      const year = currentDate.getFullYear();
+      const params = new URLSearchParams(searchParams);
+      params.set("month", month.toString());
+      params.set("year", year.toString());
+      params.set("page", currentPage.toString());
+
+      router.push(`/earnings?${params.toString()}`, { scroll: false });
+
+      const response = await fetch(`/api/transcripts?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch transcripts");
+      }
+      const data = await response.json();
+
+      setTranscripts(data.articles);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Failed to fetch transcripts:", error);
+      setError("Failed to fetch transcripts. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTranscripts();
+  }, [currentDate, currentPage]);
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
@@ -35,10 +79,10 @@ export default function EarningsPage() {
     return date;
   });
 
-  return (  
+  return (
     <div className="h-screen flex flex-col">
       <NavBar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         <CalendarNavbar
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
@@ -46,12 +90,16 @@ export default function EarningsPage() {
           view={view}
           setView={setView}
         />
-        <div className="flex-1 overflow-y-auto">
-          {view === "week" ? (
-            <WeekView weekDays={weekDays} weekDates={weekDates} />
-          ) : (
-            <MonthView currentDate={currentDate} />
-          )}
+        <div className="flex-1 overflow-y-auto relative">
+          {isLoading && <LoadingSpinner />}
+          {error && <div className="p-4 text-red-500">Error: {error}</div>}
+          {!isLoading &&
+            !error &&
+            (view === "week" ? (
+              <WeekView weekDays={weekDays} weekDates={weekDates} />
+            ) : (
+              <MonthView currentDate={currentDate} transcripts={transcripts} />
+            ))}
         </div>
       </div>
     </div>

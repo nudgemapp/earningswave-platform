@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import { Calendar } from "lucide-react";
+import { Calendar, Loader2 } from "lucide-react";
 // import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 import { equals, filter, path, pipe } from "ramda";
 import { useEarningsStore } from "@/store/EarningsStore";
 
 interface MonthViewProps {
   currentDate: Date;
+  transcripts: EarningsCallTranscript[];
 }
+
 export type EarningsCallTranscript = {
   _id: {
     $oid: string;
@@ -35,37 +38,17 @@ type SectionDetail = {
   role: string | null;
   text: string;
 };
-const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
-  const [renderedDays, setRenderedDays] = useState<Date[]>([]);
-  const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+
+const MonthView: React.FC<MonthViewProps> = ({ currentDate, transcripts }) => {
   const setSelectedCompany = useEarningsStore(
     (state) => state.setSelectedCompany
   );
-  const fetchTranscripts = async () => {
-    try {
-      const month = currentDate.getMonth() + 1; // getMonth() returns 0-11, so we add 1
-      const year = currentDate.getFullYear();
-      const response = await fetch(
-        `/api/transcripts?month=${month}&year=${year}&page=${currentPage}`
-      ).then((res) => res.json());
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-      setTranscripts(response.articles);
-      setTotalPages(response.totalPages);
-    } catch (error) {
-      console.error("Failed to fetch transcripts:", error);
-    }
-  };
-
- 
-
-  useEffect(() => {
-    fetchTranscripts();
-    setRenderedDays(getDaysInMonth(currentDate));
-  }, [currentDate]);
+  // const fetchTranscripts = async () => {
+  //   router.push(`/earnings?${searchParams.toString()}`, { scroll: false });
+  // };
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -116,13 +99,13 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
     return [];
   };
 
-  const seedRandom = (seed: number) => {
-    let x = Math.sin(seed) * 10000;
-    return () => {
-      x = Math.sin(x) * 10000;
-      return x - Math.floor(x);
-    };
-  };
+  // const seedRandom = (seed: number) => {
+  //   let x = Math.sin(seed) * 10000;
+  //   return () => {
+  //     x = Math.sin(x) * 10000;
+  //     return x - Math.floor(x);
+  //   };
+  // };
 
   const NoEarnings = () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
@@ -134,7 +117,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
   );
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white relative">
       <div className="grid grid-cols-7 py-2 bg-gray-100">
         {weekDays.map((day) => (
           <div
@@ -147,7 +130,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
       </div>
 
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
-        {renderedDays.map((date, index) => {
+        {getDaysInMonth(currentDate).map((date, index) => {
           const dayContent = getLogosForDate(date, transcripts);
           return (
             <div
@@ -176,7 +159,6 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
                         className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
                         onClick={() =>
                           setSelectedCompany({
-                            name: transcriptInfo.company_info.company_name,
                             id: transcriptInfo._id,
                           })
                         }

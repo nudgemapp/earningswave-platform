@@ -15,63 +15,51 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   const { selectedCompany } = useEarningsStore();
   const [transcriptData, setTranscriptData] =
     useState<EarningsCallTranscript | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTranscript = async () => {
-      if (selectedCompany && selectedCompany.id) {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const response = await fetch(
-            `/api/transcripts/${selectedCompany.id}`
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch transcript");
-          }
-          const data = await response.json();
-          setTranscriptData(data);
-        } catch (error) {
-          console.error("Failed to fetch transcript:", error);
-          setError("Failed to load transcript. Please try again.");
-        } finally {
-          setIsLoading(false);
+    const fetchTranscript = async (id: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/transcripts/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch transcript");
         }
+        const data = await response.json();
+        setTranscriptData(data);
+      } catch (error) {
+        console.error("Failed to fetch transcript:", error);
+        setError("Failed to load transcript. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchTranscript();
+    if (selectedCompany && selectedCompany.id) {
+      fetchTranscript(selectedCompany.id);
+    }
   }, [selectedCompany]);
 
-
-  if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-100/80">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-lg font-semibold text-gray-700">
-            Loading transcript...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!selectedCompany || !transcriptData) {
-    return <div>No company selected or transcript data not available.</div>;
-  }
+  const CustomLoadingSpinner = () => (
+    <div className="flex flex-col items-center justify-center h-full">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-black"></div>
+      <p className="mt-4 text-gray-600 font-semibold">Loading transcript...</p>
+    </div>
+  );
 
   return (
     <div className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}>
-      <EarningsTranscript
-        transcriptData={transcriptData}
-        // onBack={() => setSelectedCompany(null)}
-      />
+      {isLoading ? (
+        <CustomLoadingSpinner />
+      ) : error ? (
+        <div className="p-4 text-red-500">Error: {error}</div>
+      ) : transcriptData ? (
+        <EarningsTranscript transcriptData={transcriptData} />
+      ) : (
+        <div className="p-4">No transcript available.</div>
+      )}
     </div>
   );
 };

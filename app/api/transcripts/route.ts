@@ -45,14 +45,15 @@ export async function GET(req: Request) {
     const articles = await collection
       .find(
         { "company_info.date": { $regex: datePattern } },
-        { projection: {
-          "_id": 1,
-          "title": 1,
-          "href": 1,
-          "date": 1,
-          "company_info":1,
-          
-        }}
+        {
+          projection: {
+            _id: 1,
+            title: 1,
+            href: 1,
+            date: 1,
+            company_info: 1,
+          },
+        }
       )
       .toArray();
 

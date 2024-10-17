@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useEmailModal } from "@/store/EmailModalStore";
+import { useRouter } from "next/navigation";
 
 import img from "@/public/images/ew-logo-dark-noBG.png";
 
 function FooterSection() {
   const emailModal = useEmailModal();
+  const router = useRouter();
 
   const data = {
     company: [
@@ -71,7 +73,7 @@ function FooterSection() {
           <div className="flex flex-col gap-[12px] justify-start">
             <Button
               className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
-              onClick={() => emailModal.onOpen()}
+              onClick={() => router.push("/api/auth/login")}
             >
               Sign up
             </Button>
