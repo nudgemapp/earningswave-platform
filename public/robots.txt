@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://earningswave.com
+
+# Sitemaps
+Sitemap: https://earningswave.com/sitemap.xml
