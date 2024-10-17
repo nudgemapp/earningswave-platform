@@ -8,6 +8,8 @@ import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { useEffect } from "react";
 
+const revalidate = 0;
+
 export default function EarningsPage() {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();

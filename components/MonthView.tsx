@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
 import { Calendar } from "lucide-react";
-import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
+// import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 import { equals, filter, path, pipe } from "ramda";
 import { useEarningsStore } from "@/store/EarningsStore";
 
@@ -52,7 +52,6 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
       const response = await fetch(
         `/api/transcripts?month=${month}&year=${year}&page=${currentPage}`
       ).then((res) => res.json());
-      console.log(response);
 
       setTranscripts(response.articles);
       setTotalPages(response.totalPages);
