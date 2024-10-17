@@ -44,7 +44,6 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     fetchTranscript();
   }, [selectedCompany]);
 
-  console.log(transcriptData);
 
   if (isLoading) {
     return (

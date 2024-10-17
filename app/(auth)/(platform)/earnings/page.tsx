@@ -35,7 +35,7 @@ export default function EarningsPage() {
     return date;
   });
 
-  return (
+  return (  
     <div className="h-screen flex flex-col">
       <NavBar />
       <div className="flex-1 flex flex-col overflow-hidden">

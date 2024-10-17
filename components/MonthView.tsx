@@ -60,8 +60,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
     }
   };
 
-  console.log(transcripts);
-  console.log(totalPages);
+ 
 
   useEffect(() => {
     fetchTranscripts();
