@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getMongoDb } from "../../../lib/mongodb";
-import { GridFSBucket, ObjectId } from "mongodb";
+import prisma from "../../../lib/prismadb";
 
 export async function GET(req: Request) {
   try {
@@ -14,98 +13,54 @@ export async function GET(req: Request) {
       });
     }
 
-    const db = await getMongoDb();
-    if (!db) {
-      console.error("[ARTICLES_GET] Failed to connect to database");
-      return new NextResponse("Database connection failed", { status: 500 });
-    }
+    // Construct the date range for the query
+    const startDate = new Date(`${year}-${month}-01`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
 
-    const collection = db.collection("articles");
-
-    // Convert month number to month name
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const monthName = monthNames[parseInt(month) - 1];
-
-    // Construct the regex pattern for the date
-    const datePattern = `${monthName} \\d{1,2}, ${year}`;
-    console.log("datePattern: " + datePattern);
-    const articles = await collection
-      .find(
-        { "company_info.date": { $regex: datePattern } },
-        {
-          projection: {
-            _id: 1,
-            title: 1,
-            href: 1,
-            date: 1,
-            company_info: 1,
+    const transcripts = await prisma.earningsCallTranscript.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        href: true,
+        date: true,
+        company_info: true,
+        logo: {
+          select: {
+            data: true,
           },
-        }
-      )
-      .toArray();
+        },
+      },
+    });
 
-    // Create a GridFSBucket
-    const bucket = new GridFSBucket(db);
+    const transcriptsWithLogos = transcripts.map((transcript: any) => {
+      const companyInfo = typeof transcript.company_info === 'object' ? transcript.company_info : {};
+      return {
+        ...transcript,
+        company_info: {
+          ...companyInfo,
+          logo_base64: transcript.logo
+            ? `data:image/png;base64,${Buffer.from(transcript.logo.data).toString('base64')}`
+            : null,
+        },
+        logo: undefined, // Remove the logo field from the response
+      };
+    });
 
-    // Fetch logos for all articles
-    const articlesWithLogos = await Promise.all(
-      articles.map(async (article) => {
-        if (article.company_info && article.company_info.logo_id) {
-          const logoBase64 = await getLogoAsBase64(
-            article.company_info.logo_id,
-            bucket
-          );
-          return {
-            ...article,
-            company_info: {
-              ...article.company_info,
-              logo_base64: logoBase64,
-            },
-          };
-        }
-        return article;
-      })
-    );
-
-    const totalCount = articlesWithLogos.length;
+    const totalCount = transcriptsWithLogos.length;
 
     return NextResponse.json({
-      articles: articlesWithLogos,
+      articles: transcriptsWithLogos,
       totalCount,
     });
   } catch (error) {
-    console.error("[ARTICLES_GET]", error);
-    // return new NextResponse(`Internal Server Error: ${error.message}`, { status: 500 });
-  }
-}
-// Function to fetch logo as base64
-async function getLogoAsBase64(
-  logoId: ObjectId,
-  bucket: GridFSBucket
-): Promise<string | null> {
-  try {
-    const downloadStream = bucket.openDownloadStream(logoId);
-    const chunks: Buffer[] = [];
-    for await (const chunk of downloadStream) {
-      chunks.push(chunk);
-    }
-    const fileData = Buffer.concat(chunks);
-    return `data:image/png;base64,${fileData.toString("base64")}`;
-  } catch (error) {
-    console.error(`Error fetching logo ${logoId}:`, error);
-    return null;
+    console.error("[TRANSCRIPTS_GET]", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

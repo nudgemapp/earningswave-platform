@@ -13,9 +13,7 @@ interface MonthViewProps {
 }
 
 export type EarningsCallTranscript = {
-  _id: {
-    $oid: string;
-  };
+  id: number;
   href: string;
   date: string;
   title: string;
@@ -159,12 +157,12 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, transcripts }) => {
                         className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
                         onClick={() =>
                           setSelectedCompany({
-                            id: transcriptInfo._id,
+                            id: transcriptInfo.id,
                           })
                         }
                       >
                         <Image
-                          src={transcriptInfo.company_info.logo_base64}
+                          src={transcriptInfo.company_info.logo_base64 ||''}
                           alt={`${transcriptInfo.company_info.company_name} logo`}
                           layout="fill"
                           objectFit="contain"
