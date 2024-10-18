@@ -8,14 +8,11 @@ import { Button } from "./ui/button";
 import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
-import { useEmailModal } from "@/store/EmailModalStore";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
-  const { user, error, isLoading } = useUser();
-
-  console.log(user);
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
     setMounted(true);
@@ -29,8 +26,6 @@ function NavBar() {
   const [menu, setMenu] = useState(false);
   const { mounted, user, isLoading } = useMount();
 
-  const emailModal = useEmailModal();
-
   const links = [
     {
       route: "/earnings",
@@ -40,6 +35,7 @@ function NavBar() {
     {
       name: "Company",
       dropdownItems: [
+        { name: "Pricing", route: "/pricing" },
         { name: "About Us", route: "/about-us" },
         { name: "Docs", route: "/docs" },
         { name: "Blog", route: "/blog" },
