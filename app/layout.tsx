@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 // import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/providers/modal-provider";
+import GoogleAnalytics from "./googleAnalytics";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,6 +63,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
