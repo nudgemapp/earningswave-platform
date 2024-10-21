@@ -15,7 +15,7 @@ export const AuthModal = () => {
 
   const handleSignUp = () => {
     authModal.onClose();
-    router.push("/api/auth/login");
+    router.push("/sign-up");
   };
 
   const handleCancel = () => {

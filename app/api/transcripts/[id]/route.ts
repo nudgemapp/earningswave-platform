@@ -17,6 +17,8 @@ export async function GET(
       include: { logo: true },
     });
 
+    console.log(transcript);
+
     if (!transcript) {
       return new NextResponse("Transcript not found", { status: 404 });
     }
@@ -25,9 +27,13 @@ export async function GET(
 
     // Convert logo data to base64 if it exists
     if (transcript.logo) {
-      const logoBase64 = `data:image/png;base64,${transcript.logo.data.toString('base64')}`;
+      const logoBase64 = `data:image/png;base64,${transcript.logo.data.toString(
+        "base64"
+      )}`;
       responseData.company_info = {
-        ...(typeof transcript.company_info === 'object' ? transcript.company_info : {}),
+        ...(typeof transcript.company_info === "object"
+          ? transcript.company_info
+          : {}),
         logo_base64: logoBase64,
       };
     }

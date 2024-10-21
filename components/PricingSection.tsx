@@ -14,8 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
 import { useApiClient } from "@/lib/apiClient";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface PricingSectionProps {
   showTitle?: boolean;
@@ -67,7 +68,7 @@ function PricingSection({
     },
   ];
 
-  const { user, error, isLoading } = useUser();
+  const { user, isLoaded } = useUser();
 
   console.log(user);
 
@@ -91,8 +92,8 @@ function PricingSection({
   const apiClient = useApiClient();
 
   const handleCheckout = async (priceId: string, subscription: boolean) => {
-    console.log("user", user?.sub);
-    console.log("email", user?.email);
+    console.log("user", user?.id);
+    console.log("email", user?.emailAddresses[0].emailAddress);
     console.log("priceId", priceId);
     console.log("subscription", subscription);
 
@@ -100,8 +101,8 @@ function PricingSection({
       const { data } = await apiClient.post(
         "/payments/create-checkout-session",
         {
-          userId: user?.sub,
-          email: user?.email,
+          userId: user?.id,
+          email: user?.emailAddresses[0].emailAddress,
           priceId,
           subscription,
         }
@@ -238,7 +239,7 @@ function PricingSection({
 
 interface PricingCardProps {
   handleCheckout: any;
-  user: UserProfile | undefined;
+  user: any;
   plan: any;
   isAnnual: boolean;
   index: number;
@@ -253,6 +254,8 @@ function PricingCard({
   user,
   isYearly,
 }: PricingCardProps) {
+  const router = useRouter();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -317,15 +320,13 @@ function PricingCard({
           <Button
             className="w-full"
             onClick={() => {
-              console.log("Button clicked", user);
-              if (user?.sub) {
-                console.log("User is logged in");
+              if (user?.id) {
                 handleCheckout(
                   isYearly ? plan.priceIdYearly : plan.priceIdMonthly,
                   true
                 );
               } else {
-                console.log("User is not logged in");
+                router.push("/sign-up");
               }
             }}
           >

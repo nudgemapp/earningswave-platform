@@ -3,8 +3,14 @@ import localFont from "next/font/local";
 // import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ModalProvider } from "@/providers/modal-provider";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
 import GoogleAnalytics from "./googleAnalytics";
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/nextjs";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -63,18 +69,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
-      </head>
-      <UserProvider>
+    <ClerkProvider>
+      <html lang="en">
+        <head>
+          <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <ModalProvider />
           {children}
         </body>
-      </UserProvider>
-    </html>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -58,7 +58,7 @@ function HeroSection() {
         >
           <Button
             className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12"
-            onClick={() => router.push("/api/auth/login")}
+            onClick={() => router.push("/sign-up")}
           >
             Sign up
           </Button>

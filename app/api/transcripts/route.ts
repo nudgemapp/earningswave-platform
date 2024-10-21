@@ -13,10 +13,14 @@ export async function GET(req: Request) {
       });
     }
 
+    console.log(month, year);
+
     // Construct the date range for the query
     const startDate = new Date(`${year}-${month}-01`);
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
+
+    console.log(startDate, endDate);
 
     const transcripts = await prisma.earningsCallTranscript.findMany({
       where: {
@@ -39,14 +43,21 @@ export async function GET(req: Request) {
       },
     });
 
+    console.log(transcripts);
+
     const transcriptsWithLogos = transcripts.map((transcript: any) => {
-      const companyInfo = typeof transcript.company_info === 'object' ? transcript.company_info : {};
+      const companyInfo =
+        typeof transcript.company_info === "object"
+          ? transcript.company_info
+          : {};
       return {
         ...transcript,
         company_info: {
           ...companyInfo,
           logo_base64: transcript.logo
-            ? `data:image/png;base64,${Buffer.from(transcript.logo.data).toString('base64')}`
+            ? `data:image/png;base64,${Buffer.from(
+                transcript.logo.data
+              ).toString("base64")}`
             : null,
         },
         logo: undefined, // Remove the logo field from the response

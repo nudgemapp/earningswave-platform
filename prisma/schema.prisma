@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -32,7 +32,7 @@ model EarningsCallTranscript {
   full_text         String   @db.Text
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
-  logo_id           Int?     // Foreign key without @unique
+  logo_id           Int?     
 
   logo Logo? @relation(fields: [logo_id], references: [id]) // One-to-many relationship
 }

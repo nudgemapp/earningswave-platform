@@ -8,23 +8,24 @@ import { Button } from "./ui/button";
 import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { SignUpButton, useUser, useClerk, UserButton } from "@clerk/nextjs";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
-  const { user, isLoading } = useUser();
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  return { mounted, user, isLoading };
+  return { mounted, user, isLoaded };
 }
 
 function NavBar() {
   const router = useRouter();
   const [menu, setMenu] = useState(false);
-  const { mounted, user, isLoading } = useMount();
+  const { mounted, user, isLoaded } = useMount();
+  const { signOut } = useClerk();
 
   const links = [
     {
@@ -61,9 +62,9 @@ function NavBar() {
 
   const handleAuthAction = () => {
     if (user) {
-      router.push("/api/auth/logout");
+      signOut(() => router.push("/"));
     } else {
-      router.push("/api/auth/login");
+      router.push("/sign-up");
     }
   };
 
@@ -162,9 +163,13 @@ function NavBar() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button onClick={handleAuthAction}>
-                    {isLoading ? "Loading..." : user ? "Logout" : "Sign up"}
-                  </Button>
+                  {user ? (
+                    <UserButton />
+                  ) : (
+                    <Button onClick={handleAuthAction}>
+                      {!isLoaded ? "Loading..." : "Sign up"}
+                    </Button>
+                  )}
                 </motion.div>
               </div>
             </div>
@@ -200,7 +205,7 @@ function NavBar() {
                   className="text-base px-6 py-3 rounded-full font-bold"
                   onClick={handleAuthAction}
                 >
-                  {isLoading ? "Loading..." : user ? "Logout" : "Sign up"}
+                  {!isLoaded ? "Loading..." : user ? "Logout" : "Sign up"}
                 </Button>
               )}
             </div>
@@ -256,13 +261,13 @@ function NavBar() {
                     <>
                       <Button
                         className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
-                        onClick={() => router.push("/api/auth/login")}
+                        onClick={() => router.push("/sign-up")}
                       >
                         Sign in
                       </Button>
                       <Button
                         className="w-full text-xl py-4"
-                        onClick={() => router.push("/api/auth/login")}
+                        onClick={() => router.push("/sign-up")}
                       >
                         Sign up
                       </Button>

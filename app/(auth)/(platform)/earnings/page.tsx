@@ -10,9 +10,9 @@ import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import { AuthModal } from "@/components/modals/auth-modal";
 import { useAuthModal } from "@/store/AuthModalStore";
+import { useUser } from "@clerk/nextjs";
 
 // const revalidate = 0;
 
@@ -23,7 +23,7 @@ export default function EarningsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { user, isLoading: userLoading, error: userError } = useUser();
+  const { user, isLoaded } = useUser();
   const { onOpen: openAuthModal } = useAuthModal();
 
   console.log("user:", user);
@@ -132,7 +132,10 @@ export default function EarningsPage() {
             (view === "week" ? (
               <WeekView weekDays={weekDays} weekDates={weekDates} />
             ) : (
-              <MonthView currentDate={currentDate} transcripts={transcripts} />
+              <MonthView
+                currentDate={currentDate}
+                transcripts={transcripts as any}
+              />
             ))}
         </div>
       </div>

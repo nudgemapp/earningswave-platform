@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@clerk/nextjs";
 import { useMemo } from "react";
 
 class ApiClient {
@@ -92,20 +92,20 @@ class ApiClient {
 }
 
 export const useApiClient = (): ApiClient => {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getToken } = useAuth();
 
   const apiClient = useMemo(() => {
     const client = ApiClient.getInstance();
     client.setTokenGetter(async () => {
       try {
-        return await getAccessTokenSilently();
+        return await getToken();
       } catch (error) {
-        console.error("Error getting Auth0 access token:", error);
+        console.error("Error getting auth token:", error);
         return null;
       }
     });
     return client;
-  }, [getAccessTokenSilently]);
+  }, [getToken]);
 
   return apiClient;
 };

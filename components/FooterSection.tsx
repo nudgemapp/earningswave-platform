@@ -73,7 +73,7 @@ function FooterSection() {
           <div className="flex flex-col gap-[12px] justify-start">
             <Button
               className="border-none bg-[#31373D] hover:bg-[#31373D] text-white rounded-[12px]"
-              onClick={() => router.push("/api/auth/login")}
+              onClick={() => router.push("/sign-up")}
             >
               Sign up
             </Button>

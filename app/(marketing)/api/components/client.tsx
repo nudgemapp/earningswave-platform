@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useEmailModal } from "@/store/EmailModalStore";
 import PricingSection from "@/components/PricingSection";
 import { useRouter } from "next/navigation";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import { loadStripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 
 const ApiClientPage = () => {
   const emailModal = useEmailModal();
-  const { user, isLoading } = useUser();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const apiClient = useApiClient();
   const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
@@ -22,8 +22,8 @@ const ApiClientPage = () => {
   }, []);
 
   const handleCheckout = async () => {
-    console.log("user", user?.sub);
-    console.log("email", user?.email);
+    console.log("user", user?.id);
+    console.log("email", user?.emailAddresses[0].emailAddress);
 
     const priceId = process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID;
     const subscription = true;
@@ -32,8 +32,8 @@ const ApiClientPage = () => {
       const { data } = await apiClient.post(
         "/payments/create-checkout-session",
         {
-          userId: user?.sub,
-          email: user?.email,
+          userId: user?.id,
+          email: user?.emailAddresses[0].emailAddress,
           priceId,
           subscription,
         }

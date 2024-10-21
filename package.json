@@ -12,8 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth0/auth0-react": "^2.2.4",
-    "@auth0/nextjs-auth0": "^3.5.0",
+    "@clerk/nextjs": "^5.7.5",
     "@prisma/client": "^5.20.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
