@@ -8,28 +8,32 @@ import prisma from "../../../../lib/prismadb";
 
 // const revalidate = 0;
 
-const EarningsPage = async ({
-  searchParams,
-}: {
-  searchParams: {
-    month: string;
-    year: string;
-    page: string;
-  };
-}) => {
+const EarningsPage = async (
+  {
+    //   searchParams,
+    // }: {
+    //   searchParams: {
+    //     month: string;
+    //     year: string;
+    //     page: string;
+    //   };
+  }
+) => {
   // const transcripts = await getTranscripts({
   //   filterParams: searchParams,
   //   paginationParams: { page: 1, pageSize: 10 },
   // });
 
   // console.log(transcripts);
-  const user = await currentUser();
   let userInfo = null;
+  const user = await currentUser();
+
+  console.log(user);
 
   if (user) {
     userInfo = await prisma.user.findUnique({
       where: {
-        id: user?.id,
+        id: user.id,
       },
       include: {
         subscription: true,

@@ -39,15 +39,20 @@ export function SubscriptionModal() {
     console.log("subscription", subscription);
 
     try {
-      const { data }: { data: any } = await apiClient.post(
-        "/payments/create-checkout-session",
-        {
-          userId: user?.id,
-          email: user?.emailAddresses[0].emailAddress,
-          priceId,
-          subscription,
-        }
-      );
+      interface CheckoutSessionResponse {
+        sessionId: string;
+      }
+
+      const { data }: { data: CheckoutSessionResponse } =
+        await apiClient.post<CheckoutSessionResponse>(
+          "/payments/create-checkout-session",
+          {
+            userId: user?.id,
+            email: user?.emailAddresses[0].emailAddress,
+            priceId,
+            subscription,
+          }
+        );
       console.log(data);
 
       if (data.sessionId) {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../lib/prismadb";
+import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 
 export async function GET(req: Request) {
   try {
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
       },
     });
 
-    const transcriptsWithLogos = transcripts.map((transcript: any) => {
+    const transcriptsWithLogos = transcripts.map((transcript) => {
       const companyInfo =
         typeof transcript.company_info === "object"
           ? transcript.company_info

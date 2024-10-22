@@ -5,7 +5,6 @@ import { PlusIcon } from "lucide-react";
 // import Link from "next/link";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link as ScrollLink } from "react-scroll";
 
 function AlertSection() {
   const [showAlert, setShowAlert] = useState(true);

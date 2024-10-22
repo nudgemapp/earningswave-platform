@@ -1,14 +1,12 @@
 import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
-import { sendEmail } from "@/services/email-service";
-// import { Webhook } from 'svix';
+// Remove unused import
+// import { sendEmail } from "@/services/email-service";
 import { WebhookEvent } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
   try {
-    console.log("zaaa");
-    console.log(req);
-    // Get the body
+    // Remove console.log statements used for debugging
     const payload = (await req.json()) as WebhookEvent;
 
     // Console log the event
@@ -17,15 +15,18 @@ export async function POST(req: Request) {
     // Handle different event types
     switch (payload.type) {
       case "user.created":
-        const user = await prisma.user.create({
-          data: {
-            id: payload.data.id,
-            email: payload.data.email_addresses[0].email_address,
-          },
-        });
-        console.log(user);
-        console.log("New user created:", payload.data);
-        //create strip customer here and update it in the user table db
+        try {
+          const user = await prisma.user.create({
+            data: {
+              id: payload.data.id,
+              email: payload.data.email_addresses[0].email_address,
+            },
+          });
+          console.log("New user created:", user);
+          // TODO: Create Stripe customer here and update it in the user table db
+        } catch (error) {
+          console.error("Error creating user:", error);
+        }
         break;
       case "user.updated":
         console.log("User updated:", payload.data);

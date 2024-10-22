@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
 function HeroSection() {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const emailModal = useEmailModal();
   const router = useRouter();
 

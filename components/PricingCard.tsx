@@ -14,11 +14,23 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 import { useRouter } from "next/navigation";
+import { User as ClerkUser } from "@clerk/nextjs/server";
+
+interface Plan {
+  name: string;
+  annualPrice: string;
+  monthlyPrice: string;
+  features: string[];
+  priceIdYearly: string | undefined;
+  priceIdMonthly: string | undefined;
+  actionLabel: string;
+  popular?: boolean;
+}
 
 interface PricingCardProps {
-  handleCheckout: any;
-  user: any;
-  plan: any;
+  handleCheckout: (priceId: string, isSubscription: boolean) => void;
+  user: ClerkUser | null | undefined;
+  plan: Plan;
   isAnnual: boolean;
   index: number;
   isYearly: boolean;
@@ -99,10 +111,15 @@ function PricingCard({
             className="w-full"
             onClick={() => {
               if (user?.id) {
-                handleCheckout(
-                  isYearly ? plan.priceIdYearly : plan.priceIdMonthly,
-                  true
-                );
+                const priceId = isYearly
+                  ? plan.priceIdYearly
+                  : plan.priceIdMonthly;
+                if (priceId) {
+                  handleCheckout(priceId, true);
+                } else {
+                  console.error("Price ID is undefined");
+                  // You might want to show an error message to the user here
+                }
               } else {
                 router.push("/sign-up");
               }

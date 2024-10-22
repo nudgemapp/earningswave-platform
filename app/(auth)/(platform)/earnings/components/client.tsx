@@ -7,15 +7,21 @@ import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
-import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
+import { User, Subscription, EarningsCallTranscript } from "@prisma/client";
 
-const EarningsClient = ({ userInfo }: { userInfo: any }) => {
+export type UserWithSubscription =
+  | (User & {
+      subscription: Subscription | null;
+    })
+  | null;
+
+const EarningsClient = ({ userInfo }: { userInfo: UserWithSubscription }) => {
   const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
+  // const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,7 +61,8 @@ const EarningsClient = ({ userInfo }: { userInfo: any }) => {
       const data = await response.json();
 
       setTranscripts(data.articles);
-      setTotalPages(data.totalPages);
+      // setTotalPages(data.totalPages);
+      setCurrentPage(data.currentPage);
     } catch (error) {
       console.error("Failed to fetch transcripts:", error);
       setError("Failed to fetch transcripts. Please try again.");
@@ -108,18 +115,16 @@ const EarningsClient = ({ userInfo }: { userInfo: any }) => {
     }
   };
 
-  const handleCompanyClick = (transcriptInfo: any) => {
+  const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
     console.log(transcriptInfo);
 
     if (!userInfo) {
       console.log("open auth modal");
       openAuthModal();
-    }
-    if (userInfo.subscription === null) {
+    } else if (!userInfo.subscription) {
       console.log("open subscription modal");
       openSubscriptionModal();
-    }
-    if (userInfo.subscription !== null) {
+    } else {
       setSelectedCompany({
         id: transcriptInfo.id,
       });
@@ -146,13 +151,13 @@ const EarningsClient = ({ userInfo }: { userInfo: any }) => {
             <WeekView
               weekDays={weekDays}
               weekDates={weekDates}
-              transcripts={transcripts as any}
+              transcripts={transcripts}
               handleCompanyClick={handleCompanyClick}
             />
           ) : (
             <MonthView
               currentDate={currentDate}
-              transcripts={transcripts as any}
+              transcripts={transcripts}
               handleCompanyClick={handleCompanyClick}
             />
           ))}

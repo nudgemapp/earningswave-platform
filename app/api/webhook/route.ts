@@ -166,6 +166,7 @@ async function handleInvoiceEvent(
 async function handleCheckoutSessionCompleted(event: Stripe.Event) {
   console.log("Handling checkout session completed event");
   const session = event.data.object as Stripe.Checkout.Session;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const metadata: any = session?.metadata;
 
   if (metadata?.subscription === "true") {
@@ -238,17 +239,17 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
 
       await prisma.payment.create({ data: paymentData });
 
-      const updatedCredits =
-        (user.credits || 0) + (session.amount_total || 0) / 100;
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: { credits: updatedCredits },
-      });
+      // const updatedCredits =
+      //   (user.credits || 0) + (session.amount_total || 0) / 100;
+      // const updatedUser = await prisma.user.update({
+      //   where: { id: user.id },
+      //   data: { credits: updatedCredits },
+      // });
 
       return NextResponse.json({
         status: 200,
         message: "Payment and credits updated successfully",
-        updatedUser,
+        // updatedUser,
       });
     } catch (error) {
       console.error("Error handling checkout session:", error);

@@ -23,7 +23,7 @@ export async function GET(
       return new NextResponse("Transcript not found", { status: 404 });
     }
 
-    let responseData = { ...transcript };
+    const responseData = { ...transcript };
 
     // Convert logo data to base64 if it exists
     if (transcript.logo) {

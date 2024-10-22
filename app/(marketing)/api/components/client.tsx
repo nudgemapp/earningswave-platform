@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEmailModal } from "@/store/EmailModalStore";
 import PricingSection from "@/components/PricingSection";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -13,7 +13,8 @@ const ApiClientPage = () => {
   const emailModal = useEmailModal();
   const { user } = useUser();
   const apiClient = useApiClient();
-  const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
+  const [stripePromise, setStripePromise] =
+    useState<Promise<Stripe | null> | null>(null);
 
   useEffect(() => {
     setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
@@ -27,7 +28,11 @@ const ApiClientPage = () => {
     const subscription = true;
 
     try {
-      const { data }: { data: any } = await apiClient.post<any>(
+      interface CheckoutSessionResponse {
+        sessionId: string;
+      }
+
+      const { data } = await apiClient.post<CheckoutSessionResponse>(
         "/payments/create-checkout-session",
         {
           userId: user?.id,
@@ -36,6 +41,7 @@ const ApiClientPage = () => {
           subscription,
         }
       );
+
       console.log(data);
 
       if (data.sessionId) {
@@ -53,7 +59,7 @@ const ApiClientPage = () => {
         return;
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return;
     }
   };

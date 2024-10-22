@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import { Calendar } from "lucide-react";
 import { equals, filter, path, pipe } from "ramda";
+import { EarningsCallTranscript } from "@prisma/client";
 // import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
@@ -10,31 +11,6 @@ interface MonthViewProps {
   transcripts: EarningsCallTranscript[];
   handleCompanyClick: (transcriptInfo: any) => void;
 }
-
-export type EarningsCallTranscript = {
-  id: number;
-  href: string;
-  date: string;
-  title: string;
-  company_info: {
-    company_name: string;
-    ticker_symbol: string;
-    ticker_change: string;
-    date: string;
-    time: string;
-    logo_base64: string;
-  };
-  contents: string[];
-  sections: Record<string, SectionDetail[]>;
-  call_participants: string[];
-  full_text: string;
-};
-
-type SectionDetail = {
-  name: string;
-  role: string | null;
-  text: string;
-};
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
@@ -143,8 +119,20 @@ const MonthView: React.FC<MonthViewProps> = ({
                         onClick={() => handleCompanyClick(transcriptInfo)}
                       >
                         <Image
-                          src={transcriptInfo.company_info.logo_base64 || ""}
-                          alt={`${transcriptInfo.company_info.company_name} logo`}
+                          src={
+                            (
+                              transcriptInfo.company_info as {
+                                logo_base64?: string;
+                              }
+                            )?.logo_base64 || ""
+                          }
+                          alt={`${
+                            (
+                              transcriptInfo.company_info as {
+                                company_name?: string;
+                              }
+                            )?.company_name || "Company"
+                          } logo`}
                           layout="fill"
                           objectFit="contain"
                         />

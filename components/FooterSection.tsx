@@ -4,13 +4,11 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { useEmailModal } from "@/store/EmailModalStore";
 import { useRouter } from "next/navigation";
 
 import img from "@/public/images/ew-logo-dark-noBG.png";
 
 function FooterSection() {
-  const emailModal = useEmailModal();
   const router = useRouter();
 
   const data = {
