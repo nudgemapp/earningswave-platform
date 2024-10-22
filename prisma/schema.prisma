@@ -9,19 +9,148 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id    String @id @default(uuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(uuid())
+  firstName    String?
+  lastName     String?
+  email        String?      @unique
+  subscription Subscription? @relation("UserSubscription")
+  invoices     Invoice[]    @relation("UserInvoices")
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
 
+model Subscription {
+  id                        String   @id @default(uuid())
+  subscription_id           String   @unique
+  stripe_user_id            String   @unique
+  status                    String
+  start_date                DateTime
+  end_date                  DateTime
+  plan_id                   String
+  default_payment_method_id String?
+  email                     String?
+  user_id                   String   @unique
+  user                      User     @relation("UserSubscription", fields: [user_id], references: [id])
+  invoices                  Invoice[] @relation("SubscriptionInvoices")
+
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+model Invoice {
+  id               String   @id @default(uuid())
+  invoice_id       String   @unique
+  subscription_id  String
+  subscription     Subscription @relation("SubscriptionInvoices", fields: [subscription_id], references: [subscription_id])
+  amount_paid      Int
+  currency         String?
+  status           String
+  email            String
+  user_id          String
+  user             User     @relation("UserInvoices", fields: [user_id], references: [id])
+  period_start     DateTime
+  period_end       DateTime
+
+  createdAt        DateTime @default(now())
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  user_id          String
+  stripe_id        String   @unique
+  email            String
+  amount           Float
+  customer_details String
+  payment_intent   String
+  payment_time     DateTime
+  currency         String
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model EarningsCallTranscript {
+  id                Int      @id @default(autoincrement())
+  href              String   @db.VarChar(255)
+  date              DateTime
+  title             String   @db.VarChar(255)
+  company_info      Json
+  contents          String[]
+  sections          Json
+  call_participants String[]
+  full_text         String   @db.Text
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  logo_id           Int?     
+
+  logo Logo? @relation(fields: [logo_id], references: [id]) // One-to-many relationship
+}
+
+model Logo {
+  id         Int      @id @default(autoincrement())
+  filename   String
+  data       Bytes
+
+  created_at DateTime @default(now())
+
+  // One logo can be associated with many transcripts
+  earningsCallTranscripts EarningsCallTranscript[] 
+}
+
+
+// model EarningsCallTranscript {
+//   id                Int      @id @default(autoincrement())
+//   href              String   @db.VarChar(255)
+//   date              DateTime
+//   title             String   @db.VarChar(255)
+//   company_id        Int
+//   company_info      Company @relation(fields: [company_id], references: [id])
+//   contents          String[]
+//   sections          Json
+//   call_participants String[]
+//   full_text         String   @db.Text
+
+//   logo_id           Int?     
+//   logo              Logo?    @relation(fields: [logo_id], references: [id]) // One-to-many relationship
+
+//   created_at        DateTime @default(now())
+//   updated_at        DateTime @updatedAt
+// }
+
+// model Company {
+//   id                Int      @id @default(autoincrement())
+//   date              String
+//   time              String
+//   company_name      String
+//   ticker_change     String
+//   ticker_symbol     String
+//   logo_base64       String
+//   earningsCallTranscripts EarningsCallTranscript[]
+
+//   created_at        DateTime @default(now())
+//   updated_at        DateTime @updatedAt
+// }
+
+// model Logo {
+//   id         Int      @id @default(autoincrement())
+//   filename   String
+//   data       Bytes
+
+//   created_at DateTime @default(now())
+
+//   // One logo can be associated with many transcripts
+//   earningsCallTranscripts EarningsCallTranscript[] 
+// }
+
 model Email {
-  id    String @id @default(uuid())
+  id        String   @id @default(uuid())
   address   String   @unique
+  
   createdAt DateTime @default(now())
 }

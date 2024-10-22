@@ -2,12 +2,17 @@
 
 import { cn } from "@/lib/utils";
 import { PlusIcon } from "lucide-react";
-import Link from "next/link";
+// import Link from "next/link";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function AlertSection() {
   const [showAlert, setShowAlert] = useState(true);
+
+  const scrollToPricing = () => {
+    const pricingSection = document.getElementById("pricing-section");
+    pricingSection?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <AnimatePresence>
@@ -25,10 +30,13 @@ function AlertSection() {
           <div />
           <div className="inline-flex gap-3 text-white font-semibold text-[12px] md:text-[16px]">
             <div>
-              Try out our new financial API!
-              <Link href="/api" className="underline underline-offset-4 pl-3">
+              Save 20% with annual pricing
+              <span
+                onClick={scrollToPricing}
+                className="underline underline-offset-4 pl-3 cursor-pointer"
+              >
                 Learn more
-              </Link>
+              </span>
             </div>
           </div>
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>

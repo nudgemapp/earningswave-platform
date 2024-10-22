@@ -10,7 +10,7 @@ interface CalendarState {
 
 export const useCalendarStore = create<CalendarState>((set) => ({
   currentDate: new Date(),
-  view: "month",
+  view: "week",
   setCurrentDate: (date) => set({ currentDate: date }),
   setView: (view) => set({ view }),
   navigateMonth: (direction) =>

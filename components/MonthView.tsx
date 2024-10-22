@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 
 import { Calendar } from "lucide-react";
-import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
+import { equals, filter, path, pipe } from "ramda";
+import { EarningsCallTranscript } from "@prisma/client";
+// import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
   currentDate: Date;
+  transcripts: EarningsCallTranscript[];
+  handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
-  const [renderedDays, setRenderedDays] = useState<Date[]>([]);
-
-  useEffect(() => {
-    setRenderedDays(getDaysInMonth(currentDate));
-  }, [currentDate]);
-
+const MonthView: React.FC<MonthViewProps> = ({
+  currentDate,
+  transcripts,
+  handleCompanyClick,
+}) => {
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -38,36 +40,30 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const getLogosForDate = (date: Date) => {
-    // Use the date to seed the random number generator
-    const seed =
-      date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
-    const rng = seedRandom(seed);
+  const getLogosForDate = (
+    date: Date,
+    transcripts: EarningsCallTranscript[]
+  ) => {
+    // Extract the date in the format "MMM DD YYYY"
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
 
-    // Determine the number of logos (0 to 8)
-    const numLogos = Math.floor(rng() * 9);
+    // Filter transcripts for the given date
+    const matchingTranscripts = filter(
+      pipe((transcript) => {
+        const transcriptDate = path(["company_info", "date"], transcript);
+        return equals(transcriptDate, formattedDate);
+      }),
+      transcripts
+    );
 
-    // If numLogos is 0, return an empty array
-    if (numLogos === 0) {
-      return [];
+    if (matchingTranscripts.length > 0) {
+      return matchingTranscripts;
     }
-
-    // Use the seeded random number generator to select companies
-    const selectedCompanies = [];
-    for (let i = 0; i < numLogos; i++) {
-      const index = Math.floor(rng() * companyNames.length);
-      selectedCompanies.push(companyNames[index]);
-    }
-
-    return selectedCompanies;
-  };
-
-  const seedRandom = (seed: number) => {
-    let x = Math.sin(seed) * 10000;
-    return () => {
-      x = Math.sin(x) * 10000;
-      return x - Math.floor(x);
-    };
+    return [];
   };
 
   const NoEarnings = () => (
@@ -80,7 +76,7 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
   );
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white relative">
       <div className="grid grid-cols-7 py-2 bg-gray-100">
         {weekDays.map((day) => (
           <div
@@ -93,8 +89,8 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
       </div>
 
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
-        {renderedDays.map((date, index) => {
-          const dayContent = getLogosForDate(date);
+        {getDaysInMonth(currentDate).map((date, index) => {
+          const dayContent = getLogosForDate(date, transcripts);
           return (
             <div
               key={index}
@@ -116,14 +112,27 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate }) => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1 w-full h-full">
-                    {dayContent.map((company, logoIndex) => (
+                    {dayContent.map((transcriptInfo, logoIndex) => (
                       <div
                         key={logoIndex}
-                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10"
+                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
+                        onClick={() => handleCompanyClick(transcriptInfo)}
                       >
                         <Image
-                          src={`https://logo.clearbit.com/${company.toLowerCase()}.com`}
-                          alt={`${company} logo`}
+                          src={
+                            (
+                              transcriptInfo.company_info as {
+                                logo_base64?: string;
+                              }
+                            )?.logo_base64 || ""
+                          }
+                          alt={`${
+                            (
+                              transcriptInfo.company_info as {
+                                company_name?: string;
+                              }
+                            )?.company_name || "Company"
+                          } logo`}
                           layout="fill"
                           objectFit="contain"
                         />

@@ -5,9 +5,13 @@ import { motion, useInView } from "framer-motion";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { useEmailModal } from "@/store/EmailModalStore";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 function HeroSection() {
+  const { user } = useUser();
   const emailModal = useEmailModal();
+  const router = useRouter();
 
   const ref1 = useRef(null);
   const ref2 = useRef(null);
@@ -56,9 +60,9 @@ function HeroSection() {
         >
           <Button
             className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12"
-            onClick={() => emailModal.onOpen()}
+            onClick={() => router.push(user ? "/earnings" : "/sign-up")}
           >
-            Sign up
+            {user ? "Earnings Cal" : "Sign up"}
           </Button>
           <Button
             className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"

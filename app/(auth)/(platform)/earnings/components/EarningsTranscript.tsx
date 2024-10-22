@@ -1,33 +1,14 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
+import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import Image from "next/image";
 import React from "react";
 
 // import { X } from "lucide-react";
 
-interface TranscriptData {
-  _id: { $oid: string };
-  href: string;
-  date: string;
-  title: string;
-  company_info: {
-    company_name: string;
-    ticker_symbol: string;
-    ticker_change: string;
-    date: string;
-    time: string;
-  };
-  contents: string[];
-  sections: {
-    [key: string]: Array<{ name: string; text: string }>;
-  };
-  call_participants: string[];
-  full_text: string;
-}
-
 interface EarningsTranscriptProps {
-  transcriptData: TranscriptData;
+  transcriptData: EarningsCallTranscript;
   // onBack: () => void;
 }
 
@@ -43,7 +24,7 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
         <div className="flex items-center mt-4">
           <div className="w-12 h-12 mr-4 relative flex-shrink-0">
             <Image
-              src={`https://logo.clearbit.com/Tesla.com`}
+              src={transcriptData.company_info.logo_base64}
               alt={`${transcriptData.company_info.company_name} logo`}
               layout="fill"
               objectFit="contain"

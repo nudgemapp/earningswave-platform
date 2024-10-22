@@ -8,24 +8,24 @@ import { Button } from "./ui/button";
 import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
-import { useEmailModal } from "@/store/EmailModalStore";
+import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  return mounted;
+  return { mounted, user, isLoaded };
 }
 
 function NavBar() {
   const router = useRouter();
   const [menu, setMenu] = useState(false);
-  const mounted = useMount();
-
-  const emailModal = useEmailModal();
+  const { mounted, user, isLoaded } = useMount();
+  const { signOut } = useClerk();
 
   const links = [
     {
@@ -36,6 +36,7 @@ function NavBar() {
     {
       name: "Company",
       dropdownItems: [
+        { name: "Pricing", route: "/pricing" },
         { name: "About Us", route: "/about-us" },
         { name: "Docs", route: "/docs" },
         { name: "Blog", route: "/blog" },
@@ -56,6 +57,14 @@ function NavBar() {
     router.push(route);
     if (menu) {
       setMenu(false);
+    }
+  };
+
+  const handleAuthAction = () => {
+    if (user) {
+      signOut(() => router.push("/"));
+    } else {
+      router.push("/sign-up");
     }
   };
 
@@ -154,7 +163,13 @@ function NavBar() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button onClick={() => emailModal.onOpen()}>Sign up</Button>
+                  {user ? (
+                    <UserButton />
+                  ) : (
+                    <Button onClick={handleAuthAction}>
+                      {!isLoaded ? "Loading..." : "Sign up"}
+                    </Button>
+                  )}
                 </motion.div>
               </div>
             </div>
@@ -188,9 +203,9 @@ function NavBar() {
               {!menu && (
                 <Button
                   className="text-base px-6 py-3 rounded-full font-bold"
-                  onClick={() => emailModal.onOpen()}
+                  onClick={handleAuthAction}
                 >
-                  Sign Up
+                  {!isLoaded ? "Loading..." : user ? "Logout" : "Sign up"}
                 </Button>
               )}
             </div>
@@ -235,18 +250,29 @@ function NavBar() {
                   ))}
                 </nav>
                 <div className="px-6 py-6 bg-gray-50">
-                  <Button
-                    className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
-                    onClick={() => emailModal.onOpen()}
-                  >
-                    Sign in
-                  </Button>
-                  <Button
-                    className="w-full text-xl py-4"
-                    onClick={() => emailModal.onOpen()}
-                  >
-                    Sign up
-                  </Button>
+                  {user ? (
+                    <Button
+                      className="w-full text-xl py-4"
+                      onClick={handleAuthAction}
+                    >
+                      Logout
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
+                        onClick={() => router.push("/sign-up")}
+                      >
+                        Sign in
+                      </Button>
+                      <Button
+                        className="w-full text-xl py-4"
+                        onClick={() => router.push("/sign-up")}
+                      >
+                        Sign up
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

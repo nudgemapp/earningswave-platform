@@ -3,16 +3,17 @@ import FAQsection from "@/components/FAQsection";
 import FooterSection from "@/components/FooterSection";
 import HeroSection from "@/components/HeroSection";
 import NavBar from "@/components/NavBar";
+import PricingSection from "@/components/PricingSection";
+import AlertSection from "@/components/AlertSection";
 // import MarqueeSection from "@/components/MarqueeSection";
 // import ProductSection from "@/components/ProductSection";
-// import AlertSection from "@/components/AlertSection";
 
 export default function Home() {
   return (
     <main>
-      {/* <div className="flex flex-col-reverse md:flex-col">
+      <div className="flex flex-col-reverse md:flex-col">
         <AlertSection />
-      </div> */}
+      </div>
       <div className="sticky top-0 z-50">
         <NavBar />
       </div>
@@ -24,6 +25,7 @@ export default function Home() {
         {/* <CRMSection /> */}
         {/* <DataModellingSection /> */}
         {/* <ProductSection /> */}
+        <PricingSection />
         <FAQsection />
         {/* <SecurityScaleSection /> */}
       </div>
