@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEmailModal } from "@/store/EmailModalStore";
 import PricingSection from "@/components/PricingSection";
-import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
@@ -12,8 +11,7 @@ import { useUser } from "@clerk/nextjs";
 
 const ApiClientPage = () => {
   const emailModal = useEmailModal();
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
+  const { user } = useUser();
   const apiClient = useApiClient();
   const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
 
@@ -29,7 +27,7 @@ const ApiClientPage = () => {
     const subscription = true;
 
     try {
-      const { data } = await apiClient.post(
+      const { data }: { data: any } = await apiClient.post<any>(
         "/payments/create-checkout-session",
         {
           userId: user?.id,

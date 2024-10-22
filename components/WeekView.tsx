@@ -14,7 +14,7 @@ const WeekView = ({
   weekDays: string[];
   weekDates: Date[];
   transcripts: EarningsCallTranscript[];
-  handleCompanyClick: (transcriptInfo: any) => void;
+  handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
 }) => {
   const user = useUser();
 

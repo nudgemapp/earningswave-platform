@@ -36,7 +36,7 @@ class ApiClient {
     this.tokenGetter = getter;
   }
 
-  async request<T = any>(
+  async request<T = unknown>(
     method: "get" | "post" | "put" | "patch" | "delete",
     url: string,
     config?: AxiosRequestConfig
@@ -52,42 +52,42 @@ class ApiClient {
     }
   }
 
-  get<T = any>(
+  get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
-    return this.request("get", url, config);
+    return this.request<T>("get", url, config);
   }
 
-  post<T = any>(
+  post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
-    return this.request("post", url, { ...config, data });
+    return this.request<T>("post", url, { ...config, data });
   }
 
-  put<T = any>(
+  put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
-    return this.request("put", url, { ...config, data });
+    return this.request<T>("put", url, { ...config, data });
   }
 
-  patch<T = any>(
+  patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
-    return this.request("patch", url, { ...config, data });
+    return this.request<T>("patch", url, { ...config, data });
   }
 
-  delete<T = any>(
+  delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
-    return this.request("delete", url, config);
+    return this.request<T>("delete", url, config);
   }
 }
 

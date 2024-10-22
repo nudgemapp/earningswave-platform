@@ -4,13 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ModalProvider } from "@/providers/modal-provider";
 import GoogleAnalytics from "./googleAnalytics";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

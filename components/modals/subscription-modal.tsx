@@ -8,9 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/authDialog";
-import { useEmailModal } from "@/store/EmailModalStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useUser } from "@clerk/nextjs";
 import { pricingPlans } from "@/app/data";
 import PricingCard from "../PricingCard";
@@ -20,8 +19,10 @@ import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 export function SubscriptionModal() {
   const subscriptionModal = useSubscriptionModal();
   const [isYearly, setIsYearly] = useState<boolean>(false);
-  const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
+  const [stripePromise, setStripePromise] =
+    useState<Promise<Stripe | null> | null>(null);
   const { user } = useUser();
+  const apiClient = useApiClient();
 
   useEffect(() => {
     setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
@@ -37,10 +38,8 @@ export function SubscriptionModal() {
     console.log("priceId", priceId);
     console.log("subscription", subscription);
 
-    const apiClient = useApiClient();
-
     try {
-      const { data } = await apiClient.post(
+      const { data }: { data: any } = await apiClient.post(
         "/payments/create-checkout-session",
         {
           userId: user?.id,
@@ -55,12 +54,14 @@ export function SubscriptionModal() {
         const stripe = await stripePromise;
         console.log(stripe);
 
-        const response = await stripe?.redirectToCheckout({
-          sessionId: data.sessionId,
-        });
-        console.log(response);
+        if (stripe) {
+          const response = await stripe.redirectToCheckout({
+            sessionId: data.sessionId,
+          });
+          console.log(response);
 
-        return response;
+          return response;
+        }
       } else {
         console.error("No sessionId found");
         return;
