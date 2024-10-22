@@ -1,6 +1,7 @@
 import NavBar from "@/components/NavBar";
-import { AuthModal } from "@/components/modals/auth-modal";
 import EarningsClient from "./components/client";
+import { currentUser } from "@clerk/nextjs/server";
+import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
@@ -22,11 +23,25 @@ const EarningsPage = async ({
   // });
 
   // console.log(transcripts);
+  const user = await currentUser();
+  let userInfo = null;
+
+  if (user) {
+    userInfo = await prisma.user.findUnique({
+      where: {
+        id: user?.id,
+      },
+      include: {
+        subscription: true,
+      },
+    });
+    console.log(userInfo);
+  }
 
   return (
     <div className="h-screen flex flex-col">
       <NavBar />
-      <EarningsClient />
+      <EarningsClient userInfo={userInfo} />
     </div>
   );
 };

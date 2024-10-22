@@ -1,5 +1,10 @@
 import React from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  Calendar,
+  CalendarCheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CalendarNavbarProps {
@@ -96,6 +101,11 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             variant={view === "month" ? "default" : "outline"}
             className="px-4 py-2"
           >
+            {view === "month" ? (
+              <CalendarCheckIcon className="w-4 h-4 mr-2" />
+            ) : (
+              <Calendar className="w-4 h-4 mr-2" />
+            )}
             Month
           </Button>
           <Button
@@ -103,14 +113,12 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             variant={view === "week" ? "default" : "outline"}
             className="px-4 py-2"
           >
+            {view === "week" ? (
+              <CalendarCheckIcon className="w-4 h-4 mr-2" />
+            ) : (
+              <Calendar className="w-4 h-4 mr-2" />
+            )}
             Week
-          </Button>
-          <Button
-            onClick={() => setCurrentDate(new Date())}
-            variant="outline"
-            className="px-4 py-2"
-          >
-            Today
           </Button>
         </div>
       </div>

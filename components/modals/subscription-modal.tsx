@@ -15,9 +15,10 @@ import { useUser } from "@clerk/nextjs";
 import { pricingPlans } from "@/app/data";
 import PricingCard from "../PricingCard";
 import { useApiClient } from "@/lib/apiClient";
+import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 
 export function SubscriptionModal() {
-  const emailModal = useEmailModal();
+  const subscriptionModal = useSubscriptionModal();
   const [isYearly, setIsYearly] = useState<boolean>(false);
   const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
   const { user } = useUser();
@@ -71,7 +72,10 @@ export function SubscriptionModal() {
   };
 
   return (
-    <Dialog open={emailModal.isOpen} onOpenChange={emailModal.onClose}>
+    <Dialog
+      open={subscriptionModal.isOpen}
+      onOpenChange={subscriptionModal.onClose}
+    >
       <DialogContent className="sm:max-w-[800px] bg-white rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-primary">

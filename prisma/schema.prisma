@@ -18,7 +18,6 @@ model User {
   firstName    String?
   lastName     String?
   email        String?      @unique
-  credits      Float        @default(0)
   subscription Subscription? @relation("UserSubscription")
   invoices     Invoice[]    @relation("UserInvoices")
 

@@ -10,10 +10,10 @@ import { useEmailModal } from "@/store/EmailModalStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuthModal } from "@/store/AuthModalStore";
-import { useUser } from "@clerk/nextjs";
 import { useEarningsStore } from "@/store/EarningsStore";
+import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 
-const EarningsClient = () => {
+const EarningsClient = ({ userInfo }: { userInfo: any }) => {
   const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,9 +30,10 @@ const EarningsClient = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const authModal = useAuthModal();
+  const subscriptionModal = useSubscriptionModal();
 
-  const { user } = useUser();
   const { onOpen: openAuthModal } = useAuthModal();
+  const { onOpen: openSubscriptionModal } = useSubscriptionModal();
 
   const fetchTranscripts = async () => {
     setIsLoading(true);
@@ -92,7 +93,7 @@ const EarningsClient = () => {
   };
 
   const handleDateChange = (newDate: Date) => {
-    if (!user) {
+    if (!userInfo) {
       openAuthModal();
     } else {
       setCurrentDate(newDate);
@@ -100,7 +101,7 @@ const EarningsClient = () => {
   };
 
   const handleNavigateMonth = (direction: "prev" | "next") => {
-    if (!user) {
+    if (!userInfo) {
       openAuthModal();
     } else {
       navigateMonth(direction === "next" ? 1 : -1);
@@ -110,11 +111,15 @@ const EarningsClient = () => {
   const handleCompanyClick = (transcriptInfo: any) => {
     console.log(transcriptInfo);
 
-    if (!user) {
+    if (!userInfo) {
       console.log("open auth modal");
-      authModal.onOpen();
+      openAuthModal();
     }
-    if (user) {
+    if (userInfo.subscription === null) {
+      console.log("open subscription modal");
+      openSubscriptionModal();
+    }
+    if (userInfo.subscription !== null) {
       setSelectedCompany({
         id: transcriptInfo.id,
       });
