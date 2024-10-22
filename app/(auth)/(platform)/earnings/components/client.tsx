@@ -6,7 +6,6 @@ import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";

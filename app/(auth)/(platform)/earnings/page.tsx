@@ -8,17 +8,6 @@ import prisma from "../../../../lib/prismadb";
 
 // const revalidate = 0;
 
-type TranscriptWithLogo = {
-  id: number;
-  title: string;
-  href: string;
-  date: Date;
-  company_info: {
-    logo_base64: string | null;
-    [key: string]: any;
-  };
-};
-
 const EarningsPage = async ({
   searchParams,
 }: {
@@ -102,7 +91,7 @@ const EarningsPage = async ({
       <NavBar />
       <EarningsClient
         userInfo={userInfo}
-        // @ts-ignore
+        // @ts-expect-error
         transcripts={transcriptsWithLogos}
       />
     </div>
