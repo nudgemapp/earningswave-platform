@@ -43,6 +43,8 @@ export async function GET(req: Request) {
       },
     });
 
+    console.log(transcripts);
+
     const transcriptsWithLogos = transcripts.map((transcript) => {
       const companyInfo =
         typeof transcript.company_info === "object"
@@ -61,6 +63,8 @@ export async function GET(req: Request) {
         logo: undefined, // Remove the logo field from the response
       };
     });
+
+    console.log(transcriptsWithLogos);
 
     const totalCount = transcriptsWithLogos.length;
 

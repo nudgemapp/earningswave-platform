@@ -8,27 +8,82 @@ import prisma from "../../../../lib/prismadb";
 
 // const revalidate = 0;
 
-const EarningsPage = async (
-  {
-    //   searchParams,
-    // }: {
-    //   searchParams: {
-    //     month: string;
-    //     year: string;
-    //     page: string;
-    //   };
-  }
-) => {
-  // const transcripts = await getTranscripts({
-  //   filterParams: searchParams,
-  //   paginationParams: { page: 1, pageSize: 10 },
-  // });
+type TranscriptWithLogo = {
+  id: number;
+  title: string;
+  href: string;
+  date: Date;
+  company_info: {
+    logo_base64: string | null;
+    [key: string]: any;
+  };
+};
 
-  // console.log(transcripts);
+const EarningsPage = async ({
+  searchParams,
+}: {
+  searchParams: {
+    month: string;
+    year: string;
+    page: string;
+  };
+}) => {
   let userInfo = null;
   const user = await currentUser();
 
-  console.log(user);
+  // Create start and end dates for the current month
+  const startDate = new Date(`${searchParams.year}-${searchParams.month}-01`);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+  endDate.setDate(endDate.getDate() - 1); // Set to last day of the month
+
+  console.log("startDate:", startDate);
+  console.log("endDate:", endDate);
+
+  const transcripts = await prisma.earningsCallTranscript.findMany({
+    where: {
+      date: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      href: true,
+      date: true,
+      company_info: true,
+      logo: {
+        select: {
+          data: true,
+        },
+      },
+    },
+    orderBy: {
+      date: "asc",
+    },
+  });
+
+  console.log(transcripts);
+
+  const transcriptsWithLogos = transcripts.map((transcript) => {
+    const companyInfo =
+      typeof transcript.company_info === "object"
+        ? transcript.company_info
+        : {};
+    return {
+      ...transcript,
+      company_info: {
+        ...companyInfo,
+        logo_base64: transcript.logo
+          ? `data:image/png;base64,${Buffer.from(transcript.logo.data).toString(
+              "base64"
+            )}`
+          : null,
+      },
+      logo: undefined, // Remove the logo field from the response
+    };
+  });
 
   if (user) {
     userInfo = await prisma.user.findUnique({
@@ -45,7 +100,11 @@ const EarningsPage = async (
   return (
     <div className="h-screen flex flex-col">
       <NavBar />
-      <EarningsClient userInfo={userInfo} />
+      <EarningsClient
+        userInfo={userInfo}
+        // @ts-ignore
+        transcripts={transcriptsWithLogos}
+      />
     </div>
   );
 };

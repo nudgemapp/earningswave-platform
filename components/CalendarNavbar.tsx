@@ -6,6 +6,7 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -22,6 +23,9 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   view,
   setView,
 }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const months = [
     "January",
     "February",
@@ -42,12 +46,27 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     (_, i) => currentDate.getFullYear() - 5 + i
   );
 
+  const handleMonthNavigation = (direction: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + direction);
+    updateURL(newDate);
+    navigateMonth(direction);
+    setView("month");
+  };
+
+  const updateURL = (date: Date) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("month", (date.getMonth() + 1).toString().padStart(2, "0"));
+    params.set("year", date.getFullYear().toString());
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button
-            onClick={() => navigateMonth(-1)}
+            onClick={() => handleMonthNavigation(-1)}
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"
@@ -60,6 +79,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               onChange={(e) => {
                 const newDate = new Date(currentDate);
                 newDate.setMonth(parseInt(e.target.value));
+                updateURL(newDate);
                 setCurrentDate(newDate);
               }}
               className="bg-transparent text-gray-700 font-medium focus:outline-none"
@@ -75,6 +95,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               onChange={(e) => {
                 const newDate = new Date(currentDate);
                 newDate.setFullYear(parseInt(e.target.value));
+                updateURL(newDate);
                 setCurrentDate(newDate);
               }}
               className="bg-transparent text-gray-700 font-medium focus:outline-none"
@@ -87,7 +108,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             </select>
           </div>
           <Button
-            onClick={() => navigateMonth(1)}
+            onClick={() => handleMonthNavigation(1)}
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"

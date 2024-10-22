@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import CalendarNavbar from "@/components/CalendarNavbar";
 import WeekView from "@/components/WeekView";
 import MonthView from "@/components/MonthView";
@@ -19,13 +18,13 @@ export type UserWithSubscription =
     })
   | null;
 
-const EarningsClient = ({ userInfo }: { userInfo: UserWithSubscription }) => {
-  const [transcripts, setTranscripts] = useState<EarningsCallTranscript[]>([]);
-  // const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
+const EarningsClient = ({
+  userInfo,
+  transcripts,
+}: {
+  userInfo: UserWithSubscription;
+  transcripts: EarningsCallTranscript[];
+}) => {
   const setSelectedCompany = useEarningsStore(
     (state) => state.setSelectedCompany
   );
@@ -33,45 +32,9 @@ const EarningsClient = ({ userInfo }: { userInfo: UserWithSubscription }) => {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const emailModal = useEmailModal();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
-
-  const fetchTranscripts = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-      const params = new URLSearchParams(searchParams);
-      params.set("month", month.toString());
-      params.set("year", year.toString());
-      params.set("page", currentPage.toString());
-
-      router.push(`/earnings?${params.toString()}`, { scroll: false });
-
-      const response = await fetch(`/api/transcripts?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch transcripts");
-      }
-      const data = await response.json();
-
-      setTranscripts(data.articles);
-      // setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage);
-    } catch (error) {
-      console.error("Failed to fetch transcripts:", error);
-      setError("Failed to fetch transcripts. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTranscripts();
-  }, [currentDate, currentPage]);
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
@@ -141,24 +104,20 @@ const EarningsClient = ({ userInfo }: { userInfo: UserWithSubscription }) => {
         setView={handleViewChange}
       />
       <div className="flex-1 overflow-y-auto relative">
-        {isLoading && <LoadingSpinner />}
-        {error && <div className="p-4 text-red-500">Error: {error}</div>}
-        {!isLoading &&
-          !error &&
-          (view === "week" ? (
-            <WeekView
-              weekDays={weekDays}
-              weekDates={weekDates}
-              transcripts={transcripts}
-              handleCompanyClick={handleCompanyClick}
-            />
-          ) : (
-            <MonthView
-              currentDate={currentDate}
-              transcripts={transcripts}
-              handleCompanyClick={handleCompanyClick}
-            />
-          ))}
+        {view === "week" ? (
+          <WeekView
+            weekDays={weekDays}
+            weekDates={weekDates}
+            transcripts={transcripts}
+            handleCompanyClick={handleCompanyClick}
+          />
+        ) : (
+          <MonthView
+            currentDate={currentDate}
+            transcripts={transcripts}
+            handleCompanyClick={handleCompanyClick}
+          />
+        )}
       </div>
     </div>
   );
