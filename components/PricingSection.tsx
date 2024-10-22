@@ -42,7 +42,7 @@ function PricingSection({
         "Weekly News Digest",
       ],
       priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_TRADER_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_TRADER_PRICE_ID,
+      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_YEARLY_TRADER_PRICE_ID,
       actionLabel: "Get Started",
     },
     {
@@ -63,7 +63,7 @@ function PricingSection({
       ],
       actionLabel: "Get Started",
       priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID,
+      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_YEARLY_API_PRICE_ID,
       popular: true,
     },
   ];

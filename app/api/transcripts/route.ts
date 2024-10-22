@@ -43,8 +43,6 @@ export async function GET(req: Request) {
       },
     });
 
-    console.log(transcripts);
-
     const transcriptsWithLogos = transcripts.map((transcript: any) => {
       const companyInfo =
         typeof transcript.company_info === "object"

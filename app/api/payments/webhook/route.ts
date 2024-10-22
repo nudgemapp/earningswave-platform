@@ -1,273 +1,304 @@
-// // import { createServerClient } from "@supabase/ssr";
+// import { createServerClient } from "@supabase/ssr";
 // import { cookies } from "next/headers";
-// import { NextRequest, NextResponse } from "next/server";
-// import Stripe from "stripe";
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+import { PrismaClient } from "@prisma/client";
 
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const prisma = new PrismaClient();
 
-// export async function POST(req: NextRequest) {
-//   const cookieStore = cookies();
+export async function POST(req: NextRequest) {
+  console.log("Webhook received");
+  const reqText = await req.text();
+  return webhooksHandler(reqText, req);
+}
 
-//   const supabase: any = createServerClient(
-//     process.env.SUPABASE_URL!,
-//     process.env.SUPABASE_SERVICE_KEY!,
-//     {
-//       cookies: {
-//         get(name: string) {
-//           return cookieStore.get(name)?.value;
-//         },
-//       },
-//     }
-//   );
-//   const reqText = await req.text();
-//   return webhooksHandler(reqText, req, supabase);
-// }
+async function getCustomerEmail(customerId: string): Promise<string | null> {
+  console.log(`Fetching customer email for ID: ${customerId}`);
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    console.log(
+      `Customer email fetched: ${(customer as Stripe.Customer).email}`
+    );
+    return (customer as Stripe.Customer).email;
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    return null;
+  }
+}
 
-// async function getCustomerEmail(customerId: string): Promise<string | null> {
-//   try {
-//     const customer = await stripe.customers.retrieve(customerId);
-//     return (customer as Stripe.Customer).email;
-//   } catch (error) {
-//     console.error("Error fetching customer:", error);
-//     return null;
-//   }
-// }
+async function handleSubscriptionEvent(
+  event: Stripe.Event,
+  type: "created" | "updated" | "deleted"
+) {
+  console.log(`Handling ${type} subscription event`);
+  const subscription = event.data.object as Stripe.Subscription;
+  const customerEmail = await getCustomerEmail(subscription.customer as string);
 
-// async function handleSubscriptionEvent(
-//   event: Stripe.Event,
-//   type: "created" | "updated" | "deleted",
-//   supabase: ReturnType<typeof createServerClient>
-// ) {
-//   const subscription = event.data.object as Stripe.Subscription;
-//   const customerEmail = await getCustomerEmail(subscription.customer as string);
+  if (!customerEmail) {
+    console.error("Customer email could not be fetched");
+    return NextResponse.json({
+      status: 500,
+      error: "Customer email could not be fetched",
+    });
+  }
 
-//   if (!customerEmail) {
-//     return NextResponse.json({
-//       status: 500,
-//       error: "Customer email could not be fetched",
-//     });
-//   }
+  const subscriptionData = {
+    subscription_id: subscription.id,
+    stripe_user_id: subscription.customer as string,
+    status: subscription.status,
+    start_date: new Date(subscription.created * 1000),
+    end_date: new Date(subscription.current_period_end * 1000),
+    plan_id: subscription.items.data[0]?.price.id,
+    email: customerEmail,
+  };
 
-//   const subscriptionData: any = {
-//     subscription_id: subscription.id,
-//     stripe_user_id: subscription.customer,
-//     status: subscription.status,
-//     start_date: new Date(subscription.created * 1000).toISOString(),
-//     plan_id: subscription.items.data[0]?.price.id,
-//     user_id: subscription.metadata?.userId || "",
-//     email: customerEmail,
-//   };
+  console.log("Subscription data:", subscriptionData);
 
-//   let data, error;
-//   if (type === "deleted") {
-//     ({ data, error } = await supabase
-//       .from("subscriptions")
-//       .update({ status: "cancelled", email: customerEmail })
-//       .match({ subscription_id: subscription.id })
-//       .select());
-//     if (!error) {
-//       const { error: userError } = await supabase
-//         .from("user")
-//         .update({ subscription: null })
-//         .eq("email", customerEmail);
-//       if (userError) {
-//         console.error("Error updating user subscription status:", userError);
-//         return NextResponse.json({
-//           status: 500,
-//           error: "Error updating user subscription status",
-//         });
-//       }
-//     }
-//   } else {
-//     ({ data, error } = await supabase
-//       .from("subscriptions")
-//       [type === "created" ? "insert" : "update"](
-//         type === "created" ? [subscriptionData] : subscriptionData
-//       )
-//       .match({ subscription_id: subscription.id })
-//       .select());
-//   }
+  try {
+    let result;
+    if (type === "deleted") {
+      console.log("Updating subscription status to cancelled");
+      result = await prisma.subscription.update({
+        where: { subscription_id: subscription.id },
+        data: { status: "cancelled" },
+      });
+      console.log("Disconnecting subscription from user");
+      await prisma.user.update({
+        where: { email: customerEmail },
+        data: { subscription: { disconnect: true } },
+      });
+    } else {
+      console.log("Finding user");
+      const user = await prisma.user.findUnique({
+        where: { email: customerEmail },
+      });
+      if (!user) throw new Error("User not found");
 
-//   if (error) {
-//     console.error(`Error during subscription ${type}:`, error);
-//     return NextResponse.json({
-//       status: 500,
-//       error: `Error during subscription ${type}`,
-//     });
-//   }
+      console.log("Upserting subscription");
+      result = await prisma.subscription.upsert({
+        where: { subscription_id: subscription.id },
+        update: { ...subscriptionData, user_id: user.id },
+        create: { ...subscriptionData, user_id: user.id },
+      });
+    }
 
-//   return NextResponse.json({
-//     status: 200,
-//     message: `Subscription ${type} success`,
-//     data,
-//   });
-// }
+    console.log(`Subscription ${type} successful:`, result);
+    return NextResponse.json({
+      status: 200,
+      message: `Subscription ${type} success`,
+      data: result,
+    });
+  } catch (error) {
+    console.error(`Error during subscription ${type}:`, error);
+    return NextResponse.json({
+      status: 500,
+      error: `Error during subscription ${type}`,
+    });
+  }
+}
 
-// async function handleInvoiceEvent(
-//   event: Stripe.Event,
-//   status: "succeeded" | "failed",
-//   supabase: ReturnType<typeof createServerClient>
-// ) {
-//   const invoice = event.data.object as Stripe.Invoice;
-//   const customerEmail = await getCustomerEmail(invoice.customer as string);
+async function handleInvoiceEvent(
+  event: Stripe.Event,
+  status: "succeeded" | "failed"
+) {
+  console.log(`Handling invoice ${status} event`);
+  const invoice = event.data.object as Stripe.Invoice;
+  const customerEmail = await getCustomerEmail(invoice.customer as string);
 
-//   if (!customerEmail) {
-//     return NextResponse.json({
-//       status: 500,
-//       error: "Customer email could not be fetched",
-//     });
-//   }
+  if (!customerEmail) {
+    console.error("Customer email could not be fetched");
+    return NextResponse.json({
+      status: 500,
+      error: "Customer email could not be fetched",
+    });
+  }
 
-//   const invoiceData = {
-//     invoice_id: invoice.id,
-//     subscription_id: invoice.subscription as string,
-//     amount_paid: status === "succeeded" ? invoice.amount_paid / 100 : undefined,
-//     amount_due: status === "failed" ? invoice.amount_due / 100 : undefined,
-//     currency: invoice.currency,
-//     status,
-//     user_id: invoice.metadata?.userId,
-//     email: customerEmail,
-//   };
+  try {
+    console.log("Finding user");
+    const user = await prisma.user.findUnique({
+      where: { email: customerEmail },
+    });
+    if (!user) throw new Error("User not found");
 
-//   const { data, error } = await supabase.from("invoices").insert([invoiceData]);
+    console.log("Finding subscription");
+    const subscription = await prisma.subscription.findUnique({
+      where: { subscription_id: invoice.subscription as string },
+    });
+    if (!subscription) throw new Error("Subscription not found");
 
-//   if (error) {
-//     console.error(`Error inserting invoice (payment ${status}):`, error);
-//     return NextResponse.json({
-//       status: 500,
-//       error: `Error inserting invoice (payment ${status})`,
-//     });
-//   }
+    const invoiceData = {
+      invoice_id: invoice.id,
+      subscription_id: invoice.subscription as string,
+      amount_paid: invoice.amount_paid,
+      currency: invoice.currency,
+      status,
+      email: customerEmail,
+      user_id: user.id,
+      period_start: new Date(invoice.period_start * 1000),
+      period_end: new Date(invoice.period_end * 1000),
+    };
 
-//   return NextResponse.json({
-//     status: 200,
-//     message: `Invoice payment ${status}`,
-//     data,
-//   });
-// }
+    console.log("Invoice data:", invoiceData);
 
-// async function handleCheckoutSessionCompleted(
-//   event: Stripe.Event,
-//   supabase: ReturnType<typeof createServerClient>
-// ) {
-//   const session = event.data.object as Stripe.Checkout.Session;
-//   const metadata: any = session?.metadata;
+    console.log("Creating invoice record");
+    const result = await prisma.invoice.create({
+      data: invoiceData,
+    });
 
-//   if (metadata?.subscription === "true") {
-//     // This is for subscription payments
-//     const subscriptionId = session.subscription;
-//     try {
-//       await stripe.subscriptions.update(subscriptionId as string, { metadata });
+    console.log("Invoice created successfully:", result);
+    return NextResponse.json({
+      status: 200,
+      message: `Invoice payment ${status}`,
+      data: result,
+    });
+  } catch (error) {
+    console.error(`Error inserting invoice (payment ${status}):`, error);
+    return NextResponse.json({
+      status: 500,
+      error: `Error inserting invoice (payment ${status})`,
+    });
+  }
+}
 
-//       const { error: invoiceError } = await supabase
-//         .from("invoices")
-//         .update({ user_id: metadata?.userId })
-//         .eq("email", metadata?.email);
-//       if (invoiceError) throw new Error("Error updating invoice");
+async function handleCheckoutSessionCompleted(event: Stripe.Event) {
+  console.log("Handling checkout session completed event");
+  const session = event.data.object as Stripe.Checkout.Session;
+  const metadata: any = session?.metadata;
 
-//       const { error: userError } = await supabase
-//         .from("user")
-//         .update({ subscription: session.id })
-//         .eq("user_id", metadata?.userId);
-//       if (userError) throw new Error("Error updating user subscription");
+  if (metadata?.subscription === "true") {
+    console.log("Processing subscription payment");
+    // This is for subscription payments
+    const subscriptionId = session.subscription;
+    try {
+      console.log("Updating subscription metadata");
+      await stripe.subscriptions.update(subscriptionId as string, { metadata });
 
-//       return NextResponse.json({
-//         status: 200,
-//         message: "Subscription metadata updated successfully",
-//       });
-//     } catch (error) {
-//       console.error("Error updating subscription metadata:", error);
-//       return NextResponse.json({
-//         status: 500,
-//         error: "Error updating subscription metadata",
-//       });
-//     }
-//   } else {
-//     // This is for one-time payments
-//     const dateTime = new Date(session.created * 1000).toISOString();
-//     try {
-//       const { data: user, error: userError } = await supabase
-//         .from("user")
-//         .select("*")
-//         .eq("user_id", metadata?.userId);
-//       if (userError) throw new Error("Error fetching user");
+      console.log("Finding user");
+      const user = await prisma.user.findUnique({
+        where: { id: metadata?.userId },
+      });
+      if (!user) throw new Error("User not found");
 
-//       const paymentData = {
-//         user_id: metadata?.userId,
-//         stripe_id: session.id,
-//         email: metadata?.email,
-//         amount: session.amount_total! / 100,
-//         customer_details: JSON.stringify(session.customer_details),
-//         payment_intent: session.payment_intent,
-//         payment_time: dateTime,
-//         currency: session.currency,
-//       };
+      console.log("Updating invoices with user ID");
+      await prisma.invoice.updateMany({
+        where: { email: user.email! },
+        data: { user_id: user.id },
+      });
 
-//       const { data: paymentsData, error: paymentsError } = await supabase
-//         .from("payments")
-//         .insert([paymentData]);
-//       if (paymentsError) throw new Error("Error inserting payment");
-//       const updatedCredits =
-//         Number(user?.[0]?.credits || 0) + (session.amount_total || 0) / 100;
-//       const { data: updatedUser, error: userUpdateError } = await supabase
-//         .from("user")
-//         .update({ credits: updatedCredits })
-//         .eq("user_id", metadata?.userId);
-//       if (userUpdateError) throw new Error("Error updating user credits");
+      console.log("Connecting subscription to user");
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          subscription: {
+            connect: { subscription_id: subscriptionId as string },
+          },
+        },
+      });
 
-//       return NextResponse.json({
-//         status: 200,
-//         message: "Payment and credits updated successfully",
-//         updatedUser,
-//       });
-//     } catch (error) {
-//       console.error("Error handling checkout session:", error);
-//       return NextResponse.json({
-//         status: 500,
-//         error,
-//       });
-//     }
-//   }
-// }
+      console.log("Subscription metadata updated successfully");
+      return NextResponse.json({
+        status: 200,
+        message: "Subscription metadata updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating subscription metadata:", error);
+      return NextResponse.json({
+        status: 500,
+        error: "Error updating subscription metadata",
+      });
+    }
+  } else {
+    console.log("Processing one-time payment");
+    // This is for one-time payments
+    const dateTime = new Date(session.created * 1000);
+    try {
+      console.log("Finding user");
+      const user = await prisma.user.findUnique({
+        where: { id: metadata?.userId },
+      });
 
-// async function webhooksHandler(
-//   reqText: string,
-//   request: NextRequest,
-//   supabase: ReturnType<typeof createServerClient>
-// ): Promise<NextResponse> {
-//   const sig = request.headers.get("Stripe-Signature");
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-//   try {
-//     const event = await stripe.webhooks.constructEventAsync(
-//       reqText,
-//       sig!,
-//       process.env.STRIPE_WEBHOOK_SECRET!
-//     );
+      const paymentData = {
+        user_id: user.id,
+        stripe_id: session.id,
+        email: user.email!,
+        amount: session.amount_total! / 100,
+        customer_details: JSON.stringify(session.customer_details),
+        payment_intent: session.payment_intent as string,
+        payment_time: dateTime,
+        currency: session.currency || "USD",
+        status: session.payment_status,
+      };
 
-//     switch (event.type) {
-//       case "customer.subscription.created":
-//         return handleSubscriptionEvent(event, "created", supabase);
-//       case "customer.subscription.updated":
-//         return handleSubscriptionEvent(event, "updated", supabase);
-//       case "customer.subscription.deleted":
-//         return handleSubscriptionEvent(event, "deleted", supabase);
-//       case "invoice.payment_succeeded":
-//         return handleInvoiceEvent(event, "succeeded", supabase);
-//       case "invoice.payment_failed":
-//         return handleInvoiceEvent(event, "failed", supabase);
-//       case "checkout.session.completed":
-//         return handleCheckoutSessionCompleted(event, supabase);
-//       default:
-//         return NextResponse.json({
-//           status: 400,
-//           error: "Unhandled event type",
-//         });
-//     }
-//   } catch (err) {
-//     console.error("Error constructing Stripe event:", err);
-//     return NextResponse.json({
-//       status: 500,
-//       error: "Webhook Error: Invalid Signature",
-//     });
-//   }
-// }
+      await prisma.payment.create({ data: paymentData });
+
+      const updatedCredits =
+        (user.credits || 0) + (session.amount_total || 0) / 100;
+      const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { credits: updatedCredits },
+      });
+
+      return NextResponse.json({
+        status: 200,
+        message: "Payment and credits updated successfully",
+        updatedUser,
+      });
+    } catch (error) {
+      console.error("Error handling checkout session:", error);
+      return NextResponse.json({
+        status: 500,
+        error: "Error handling checkout session",
+      });
+    }
+  }
+}
+
+async function webhooksHandler(
+  reqText: string,
+  request: NextRequest
+): Promise<NextResponse> {
+  console.log("Processing webhook");
+  const sig = request.headers.get("Stripe-Signature");
+
+  try {
+    console.log("Constructing Stripe event");
+    const event = await stripe.webhooks.constructEventAsync(
+      reqText,
+      sig!,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+
+    console.log(`Event type: ${event.type}`);
+    switch (event.type) {
+      case "customer.subscription.created":
+        return handleSubscriptionEvent(event, "created");
+      case "customer.subscription.updated":
+        return handleSubscriptionEvent(event, "updated");
+      case "customer.subscription.deleted":
+        return handleSubscriptionEvent(event, "deleted");
+      case "invoice.payment_succeeded":
+        return handleInvoiceEvent(event, "succeeded");
+      case "invoice.payment_failed":
+        return handleInvoiceEvent(event, "failed");
+      case "checkout.session.completed":
+        return handleCheckoutSessionCompleted(event);
+      default:
+        console.log("Unhandled event type:", event.type);
+        return NextResponse.json({
+          status: 400,
+          error: "Unhandled event type",
+        });
+    }
+  } catch (err) {
+    console.error("Error constructing Stripe event:", err);
+    return NextResponse.json({
+      status: 500,
+      error: "Webhook Error: Invalid Signature",
+    });
+  }
+}
