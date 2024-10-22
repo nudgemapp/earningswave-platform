@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import EarningsTranscript from "./EarningsTranscript";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import { useUser } from "@clerk/nextjs";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -12,6 +13,7 @@ interface EarningsTranscriptSheetProps {
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
+  const user = useUser();
   const { selectedCompany } = useEarningsStore();
   const [transcriptData, setTranscriptData] =
     useState<EarningsCallTranscript | null>(null);

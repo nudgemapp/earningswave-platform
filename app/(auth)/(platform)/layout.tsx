@@ -1,4 +1,4 @@
-import EarningsTranscriptSheet from "./earnings/EarningsSheet";
+import EarningsTranscriptSheet from "./earnings/components/EarningsSheet";
 
 const PlatformLayout = ({ children }: { children: React.ReactNode }) => {
   return (

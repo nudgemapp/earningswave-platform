@@ -3,20 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { pricingPlans } from "@/app/data";
+import PricingCard from "./PricingCard";
 
 interface PricingSectionProps {
   showTitle?: boolean;
@@ -27,47 +18,6 @@ function PricingSection({
   showTitle = true,
   showTraderCard = true,
 }: PricingSectionProps) {
-  const pricingPlans = [
-    {
-      name: "Trader 🚀 ",
-      monthlyPrice: "$49.99",
-      annualPrice: "$479.90",
-      features: [
-        "Live Earnings Calendar",
-        "Earnings Expectations vs. Reported Numbers",
-        "Earnings Reports from 5+ years",
-        "News on Thousands of Tickers",
-        "Company Earnings Reports",
-        "Daily News Digest",
-        "Weekly News Digest",
-      ],
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_TRADER_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_YEARLY_TRADER_PRICE_ID,
-      actionLabel: "Get Started",
-    },
-    {
-      name: "API ⚡",
-      monthlyPrice: "$199.99",
-      annualPrice: "$1,919.90",
-      features: [
-        "All US Stocks Tickers",
-        "Unlimited API Calls",
-        "5 Years Historical Earnings Data",
-        "100% Market Coverage",
-        "Searchable data",
-        "Unlimited File Downloads",
-        "Claude integration",
-        "Fundamentals Data",
-        "WebSockets",
-        "Snapshot",
-      ],
-      actionLabel: "Get Started",
-      priceIdMonthly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID,
-      priceIdYearly: process.env.NEXT_PUBLIC_STRIPE_YEARLY_API_PRICE_ID,
-      popular: true,
-    },
-  ];
-
   const { user, isLoaded } = useUser();
 
   console.log(user);
@@ -233,107 +183,6 @@ function PricingSection({
           </motion.div>
         </TabsContent>
       </Tabs>
-    </motion.div>
-  );
-}
-
-interface PricingCardProps {
-  handleCheckout: any;
-  user: any;
-  plan: any;
-  isAnnual: boolean;
-  index: number;
-  isYearly: boolean;
-}
-
-function PricingCard({
-  handleCheckout,
-  plan,
-  isAnnual,
-  index,
-  user,
-  isYearly,
-}: PricingCardProps) {
-  const router = useRouter();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 * index, duration: 0.5 }}
-      className="h-full"
-    >
-      <Card className="flex flex-col h-full border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader className="text-center pb-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + 0.1 * index, duration: 0.5 }}
-          >
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              {plan.name}
-            </CardTitle>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 + 0.1 * index, duration: 0.5 }}
-          >
-            <CardDescription className="text-4xl font-semibold mt-4 text-gray-900">
-              {isAnnual ? plan.annualPrice : plan.monthlyPrice}
-              <span className="text-base font-normal text-gray-600">
-                / {isAnnual ? "year" : "month"}
-              </span>
-            </CardDescription>
-          </motion.div>
-          {isAnnual && (
-            <motion.p
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + 0.1 * index, duration: 0.5 }}
-              className="text-sm font-medium text-green-600 mt-2"
-            >
-              Save 20% with annual billing
-            </motion.p>
-          )}
-        </CardHeader>
-        <CardContent className="flex-grow">
-          <ul className="space-y-3">
-            {plan.features.map((feature: any, featureIndex: number) => (
-              <motion.li
-                key={featureIndex}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.5 + 0.05 * featureIndex + 0.1 * index,
-                  duration: 0.5,
-                }}
-                className="flex items-center"
-              >
-                <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                <span>{feature}</span>
-              </motion.li>
-            ))}
-          </ul>
-        </CardContent>
-        <CardFooter className="mt-auto">
-          <Button
-            className="w-full"
-            onClick={() => {
-              if (user?.id) {
-                handleCheckout(
-                  isYearly ? plan.priceIdYearly : plan.priceIdMonthly,
-                  true
-                );
-              } else {
-                router.push("/sign-up");
-              }
-            }}
-          >
-            {plan.actionLabel}
-          </Button>
-        </CardFooter>
-      </Card>
     </motion.div>
   );
 }

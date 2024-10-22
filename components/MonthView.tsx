@@ -1,15 +1,14 @@
 import React from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
 
-import { Calendar, Loader2 } from "lucide-react";
-// import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
+import { Calendar } from "lucide-react";
 import { equals, filter, path, pipe } from "ramda";
-import { useEarningsStore } from "@/store/EarningsStore";
+// import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
   currentDate: Date;
   transcripts: EarningsCallTranscript[];
+  handleCompanyClick: (transcriptInfo: any) => void;
 }
 
 export type EarningsCallTranscript = {
@@ -37,17 +36,11 @@ type SectionDetail = {
   text: string;
 };
 
-const MonthView: React.FC<MonthViewProps> = ({ currentDate, transcripts }) => {
-  const setSelectedCompany = useEarningsStore(
-    (state) => state.setSelectedCompany
-  );
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // const fetchTranscripts = async () => {
-  //   router.push(`/earnings?${searchParams.toString()}`, { scroll: false });
-  // };
-
+const MonthView: React.FC<MonthViewProps> = ({
+  currentDate,
+  transcripts,
+  handleCompanyClick,
+}) => {
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -96,14 +89,6 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, transcripts }) => {
     }
     return [];
   };
-
-  // const seedRandom = (seed: number) => {
-  //   let x = Math.sin(seed) * 10000;
-  //   return () => {
-  //     x = Math.sin(x) * 10000;
-  //     return x - Math.floor(x);
-  //   };
-  // };
 
   const NoEarnings = () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
@@ -155,14 +140,10 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, transcripts }) => {
                       <div
                         key={logoIndex}
                         className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
-                        onClick={() =>
-                          setSelectedCompany({
-                            id: transcriptInfo.id,
-                          })
-                        }
+                        onClick={() => handleCompanyClick(transcriptInfo)}
                       >
                         <Image
-                          src={transcriptInfo.company_info.logo_base64 ||''}
+                          src={transcriptInfo.company_info.logo_base64 || ""}
                           alt={`${transcriptInfo.company_info.company_name} logo`}
                           layout="fill"
                           objectFit="contain"
