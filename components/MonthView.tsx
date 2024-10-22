@@ -9,7 +9,7 @@ import { EarningsCallTranscript } from "@prisma/client";
 interface MonthViewProps {
   currentDate: Date;
   transcripts: EarningsCallTranscript[];
-  handleCompanyClick: (transcriptInfo: any) => void;
+  handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({

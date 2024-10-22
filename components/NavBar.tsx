@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
-import { SignUpButton, useUser, useClerk, UserButton } from "@clerk/nextjs";
+import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);

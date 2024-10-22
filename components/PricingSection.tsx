@@ -18,7 +18,7 @@ function PricingSection({
   showTitle = true,
   showTraderCard = true,
 }: PricingSectionProps) {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
 
   console.log(user);
 
@@ -48,7 +48,11 @@ function PricingSection({
     console.log("subscription", subscription);
 
     try {
-      const { data } = await apiClient.post(
+      interface CheckoutSessionResponse {
+        sessionId: string;
+      }
+
+      const { data } = await apiClient.post<CheckoutSessionResponse>(
         "/payments/create-checkout-session",
         {
           userId: user?.id,
@@ -57,6 +61,7 @@ function PricingSection({
           subscription,
         }
       );
+
       console.log(data);
 
       if (data.sessionId) {

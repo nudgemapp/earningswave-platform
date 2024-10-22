@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 import { useRouter } from "next/navigation";
-import { User as ClerkUser } from "@clerk/nextjs/server";
+import { UserResource } from "@clerk/types";
 
 interface Plan {
   name: string;
@@ -29,7 +29,7 @@ interface Plan {
 
 interface PricingCardProps {
   handleCheckout: (priceId: string, isSubscription: boolean) => void;
-  user: ClerkUser | null | undefined;
+  user: UserResource | null | undefined;
   plan: Plan;
   isAnnual: boolean;
   index: number;
@@ -89,7 +89,7 @@ function PricingCard({
         </CardHeader>
         <CardContent className="flex-grow">
           <ul className="space-y-3">
-            {plan.features.map((feature: any, featureIndex: number) => (
+            {plan.features.map((feature: string, featureIndex: number) => (
               <motion.li
                 key={featureIndex}
                 initial={{ opacity: 0, x: -20 }}
