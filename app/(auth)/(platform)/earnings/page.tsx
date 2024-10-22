@@ -91,7 +91,7 @@ const EarningsPage = async ({
       <NavBar />
       <EarningsClient
         userInfo={userInfo}
-        // @ts-expect-error
+        // @ts-expect-error - Type mismatch between transcriptsWithLogos and expected prop type
         transcripts={transcriptsWithLogos}
       />
     </div>
