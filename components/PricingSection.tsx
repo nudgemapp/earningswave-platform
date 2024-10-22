@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useUser } from "@clerk/nextjs";
 import { pricingPlans } from "@/app/data";
@@ -29,11 +29,8 @@ function PricingSection({
     setIsYearly(value === "annual");
   };
 
-  // const stripePromise = loadStripe(
-  //   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-  // );
-
-  const [stripePromise, setStripePromise] = useState<Promise<any> | null>(null);
+  const [stripePromise, setStripePromise] =
+    useState<Promise<Stripe | null> | null>(null);
 
   useEffect(() => {
     setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));

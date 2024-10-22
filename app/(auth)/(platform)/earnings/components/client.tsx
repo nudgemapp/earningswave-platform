@@ -35,8 +35,6 @@ const EarningsClient = ({ userInfo }: { userInfo: UserWithSubscription }) => {
   const emailModal = useEmailModal();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const authModal = useAuthModal();
-  const subscriptionModal = useSubscriptionModal();
 
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
