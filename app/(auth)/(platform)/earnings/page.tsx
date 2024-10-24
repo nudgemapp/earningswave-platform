@@ -5,6 +5,7 @@ import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
+import FirecrawlApp from "@mendable/firecrawl-js";
 
 // const revalidate = 0;
 
@@ -85,6 +86,33 @@ const EarningsPage = async ({
     });
     console.log(userInfo);
   }
+
+  const app = new FirecrawlApp({
+    apiKey: "fc-3fb876bc4fd34cae90f0fe09e7ad042a",
+  });
+
+  console.log(app);
+
+  // const crawlResponse = await app.crawlUrl(
+  //   "https://www.nasdaq.com/market-activity/earnings",
+  //   {
+  //     limit: 100,
+  //     scrapeOptions: {
+  //       formats: ["markdown", "html"],
+  //     },
+  //   }
+  // );
+
+  const crawlResponse2 = await app.scrapeUrl(
+    "https://finance.yahoo.com/calendar/earnings/",
+    { formats: ["markdown", "html"] }
+  );
+
+  if (!crawlResponse2.success) {
+    throw new Error(`Failed to crawl: ${crawlResponse2.error}`);
+  }
+
+  console.log(crawlResponse2);
 
   return (
     <div className="h-screen flex flex-col">
