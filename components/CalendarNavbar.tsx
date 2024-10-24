@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Calendar,
   CalendarCheckIcon,
@@ -45,6 +45,25 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     { length: 10 },
     (_, i) => currentDate.getFullYear() - 5 + i
   );
+
+  const monthParam = searchParams.get("month");
+  const yearParam = searchParams.get("year");
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const defaultMonth = currentDate.getMonth() + 1;
+    const defaultYear = currentDate.getFullYear();
+
+    // If month or year is not set in the URL, update the URL with default values
+    if (!monthParam || !yearParam) {
+      const params = new URLSearchParams(searchParams);
+      if (!monthParam)
+        params.set("month", defaultMonth.toString().padStart(2, "0"));
+      if (!yearParam) params.set("year", defaultYear.toString());
+
+      router.replace(`?${params.toString()}`);
+    }
+  }, [monthParam, yearParam, router, searchParams]);
 
   const handleMonthNavigation = (direction: number) => {
     const newDate = new Date(currentDate);

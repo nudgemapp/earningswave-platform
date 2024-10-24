@@ -102,6 +102,36 @@ model Logo {
   // One logo can be associated with many transcripts
   earningsCallTranscripts EarningsCallTranscript[] 
 }
+model EarningsReport {
+  id                String   @id @default(uuid())
+  symbol            String
+  name              String
+  reportDate        DateTime
+  // quarter           String?
+  fiscalDateEnding  DateTime
+  estimate          Float?
+  currency          String
+  companyId         Int
+  company           Company  @relation(fields: [companyId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Company {
+  id              Int              @id @default(autoincrement())
+  symbol          String           @unique
+  name            String
+  exchange        String           @default("NASDAQ")
+  marketCap       Decimal?         // in billions
+  price           Decimal?
+  revenue         Decimal?         // in billions
+  earningsReports EarningsReport[]
+
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
 
 
 // model EarningsCallTranscript {

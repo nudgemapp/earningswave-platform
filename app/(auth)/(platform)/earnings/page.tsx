@@ -6,6 +6,7 @@ import prisma from "../../../../lib/prismadb";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
 import FirecrawlApp from "@mendable/firecrawl-js";
+import { useSearchParams } from "next/navigation";
 
 // const revalidate = 0;
 
@@ -20,6 +21,8 @@ const EarningsPage = async ({
 }) => {
   let userInfo = null;
   const user = await currentUser();
+
+  console.log("searchParams:", searchParams);
 
   // Create start and end dates for the current month
   const startDate = new Date(`${searchParams.year}-${searchParams.month}-01`);
@@ -87,11 +90,53 @@ const EarningsPage = async ({
     console.log(userInfo);
   }
 
-  const app = new FirecrawlApp({
-    apiKey: "fc-3fb876bc4fd34cae90f0fe09e7ad042a",
-  });
+  console.log("startDate:", startDate);
+  console.log("endDate:", endDate);
 
-  console.log(app);
+  const futureEarningsReports = await prisma.earningsReport.findMany({
+    where: {
+      reportDate: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+  console.log(futureEarningsReports);
+
+  const getLimitedReportsForDate = async (date: Date) => {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await prisma.earningsReport.findMany({
+      where: {
+        reportDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      orderBy: {
+        reportDate: "asc",
+      },
+      take: 20,
+    });
+  };
+
+  const limitedEarningsReports = [];
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const reportsForDay = await getLimitedReportsForDate(new Date(d));
+    limitedEarningsReports.push(...reportsForDay);
+  }
+
+  console.log(limitedEarningsReports);
+
+  // const app = new FirecrawlApp({
+  //   apiKey: "fc-3fb876bc4fd34cae90f0fe09e7ad042a",
+  // });
+
+  // console.log(app);
 
   // const crawlResponse = await app.crawlUrl(
   //   "https://www.nasdaq.com/market-activity/earnings",
@@ -103,16 +148,18 @@ const EarningsPage = async ({
   //   }
   // );
 
-  const crawlResponse2 = await app.scrapeUrl(
-    "https://finance.yahoo.com/calendar/earnings/",
-    { formats: ["markdown", "html"] }
-  );
+  // const crawlResponse2 = await app.scrapeUrl(
+  //   "https://finance.yahoo.com/calendar/earnings/",
+  //   { formats: ["markdown", "html"] }
+  // );
 
-  if (!crawlResponse2.success) {
-    throw new Error(`Failed to crawl: ${crawlResponse2.error}`);
-  }
+  // if (!crawlResponse2.success) {
+  //   throw new Error(`Failed to crawl: ${crawlResponse2.error}`);
+  // }
 
-  console.log(crawlResponse2);
+  // console.log(crawlResponse2);
+
+  //XUDK7Q195S0UD5DX
 
   return (
     <div className="h-screen flex flex-col">
@@ -121,6 +168,7 @@ const EarningsPage = async ({
         userInfo={userInfo}
         // @ts-expect-error - Type mismatch between transcriptsWithLogos and expected prop type
         transcripts={transcriptsWithLogos}
+        futureEarningsReports={limitedEarningsReports}
       />
     </div>
   );
