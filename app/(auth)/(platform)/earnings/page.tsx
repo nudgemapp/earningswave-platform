@@ -5,13 +5,7 @@ import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
-import {
-  EarningsReport,
-  Company,
-  Logo,
-  User,
-  Subscription,
-} from "@prisma/client";
+import { EarningsReport, Company, Logo, Subscription } from "@prisma/client";
 
 // const revalidate = 0;
 
