@@ -1,18 +1,28 @@
 import { create } from "zustand";
+import { EarningsReport } from "@prisma/client";
 
 interface SelectedCompany {
-  id: any;
+  id: any | null;
 }
 
 interface EarningsState {
-  selectedCompany: SelectedCompany;
-  setSelectedCompany: (company: SelectedCompany) => void;
+  selectedCompany: SelectedCompany | null;
+  setSelectedCompany: (company: SelectedCompany | null) => void;
+  selectedFutureEarnings: EarningsReport | null;
+  setSelectedFutureEarnings: (report: EarningsReport | null) => void;
 }
 
-// Default company ID (replace with an actual ID from your database)
-const DEFAULT_COMPANY_ID = "670f141fc4ca8ac376a21884";
-
 export const useEarningsStore = create<EarningsState>((set) => ({
-  selectedCompany: { id: DEFAULT_COMPANY_ID },
-  setSelectedCompany: (company) => set({ selectedCompany: company }),
+  selectedCompany: null,
+  setSelectedCompany: (company) =>
+    set({
+      selectedCompany: company,
+      selectedFutureEarnings: null, // Clear future earnings when selecting a company
+    }),
+  selectedFutureEarnings: null,
+  setSelectedFutureEarnings: (report) =>
+    set({
+      selectedFutureEarnings: report,
+      selectedCompany: null, // Clear selected company when selecting future earnings
+    }),
 }));

@@ -93,15 +93,64 @@ model EarningsCallTranscript {
 }
 
 model Logo {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   filename   String
   data       Bytes
+  companies  Company[]
 
-  created_at DateTime @default(now())
+  created_at DateTime  @default(now())
 
   // One logo can be associated with many transcripts
   earningsCallTranscripts EarningsCallTranscript[] 
 }
+
+model EarningsReport {
+  id                String   @id @default(uuid())
+  symbol            String
+  name              String
+  reportDate        DateTime
+  fiscalDateEnding  DateTime
+  estimate          Float?
+  currency          String
+  companyId         Int
+  company           Company  @relation(fields: [companyId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([symbol, companyId, reportDate, fiscalDateEnding])
+}
+
+model Company {
+  id              Int              @id @default(autoincrement())
+  symbol          String           @unique
+  name            String
+  exchanges       Exchange[]       @relation("CompanyExchanges")
+  marketCap       Decimal?         // in billions
+  price           Decimal?
+  revenue         Decimal?         // in billions
+  earningsReports EarningsReport[]
+  logo            Logo?            @relation(fields: [logoId], references: [id])
+  logoId          Int?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum ExchangeType {
+  NYSE
+  NASDAQ
+}
+
+model Exchange {
+  id        Int          @id @default(autoincrement())
+  name      ExchangeType @unique
+  companies Company[]    @relation("CompanyExchanges")
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
 
 
 // model EarningsCallTranscript {

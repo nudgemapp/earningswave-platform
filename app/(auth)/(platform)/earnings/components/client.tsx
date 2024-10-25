@@ -1,15 +1,32 @@
 "use client";
 
-import { useEffect } from "react";
-import CalendarNavbar from "@/components/CalendarNavbar";
-import WeekView from "@/components/WeekView";
-import MonthView from "@/components/MonthView";
+import React, { useEffect, useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
-import { User, Subscription, EarningsCallTranscript } from "@prisma/client";
+import {
+  User,
+  Subscription,
+  EarningsCallTranscript,
+  EarningsReport,
+} from "@prisma/client";
+import { EarningsReportWithCompany } from "../page";
+import LoadingSpinner from "@/components/LoadingSpinner";
+
+const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
+  ssr: false,
+});
+const WeekView = dynamic(() => import("@/components/WeekView"), {
+  ssr: false,
+  loading: () => <LoadingSpinner />,
+});
+const MonthView = dynamic(() => import("@/components/MonthView"), {
+  ssr: false,
+  loading: () => <LoadingSpinner />,
+});
 
 export type UserWithSubscription =
   | (User & {
@@ -17,47 +34,45 @@ export type UserWithSubscription =
     })
   | null;
 
-const EarningsClient = ({
-  userInfo,
-  transcripts,
-}: {
+const EarningsClient: React.FC<{
   userInfo: UserWithSubscription;
   transcripts: EarningsCallTranscript[];
-}) => {
-  const setSelectedCompany = useEarningsStore(
-    (state) => state.setSelectedCompany
-  );
-
+  futureEarningsReports: EarningsReportWithCompany[];
+}> = React.memo(({ userInfo, transcripts, futureEarningsReports }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const emailModal = useEmailModal();
-
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
+  const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
-
     if (!hasModalBeenShown) {
       const timer = setTimeout(() => {
         emailModal.onOpen();
         localStorage.setItem("emailModalShown", "true");
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [emailModal]);
 
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(currentDate);
-    date.setDate(currentDate.getDate() - currentDate.getDay() + i);
-    return date;
-  });
+  const weekDays = useMemo(() => ["Mon", "Tue", "Wed", "Thu", "Fri"], []);
+  const weekDates = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(currentDate);
+      date.setDate(currentDate.getDate() - currentDate.getDay() + i);
+      return date;
+    });
+  }, [currentDate]);
 
-  const handleViewChange = (newView: "week" | "month") => {
-    setView(newView);
-  };
+  const handleViewChange = (newView: "week" | "month") => setView(newView);
 
   const handleDateChange = (newDate: Date) => {
     if (!userInfo) {
@@ -76,20 +91,26 @@ const EarningsClient = ({
   };
 
   const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
-    console.log(transcriptInfo);
-
-    if (!userInfo) {
-      console.log("open auth modal");
+    if (userInfo && userInfo.subscription?.status === "active") {
+      setSelectedCompany({ id: transcriptInfo.id });
+    } else if (!userInfo) {
       openAuthModal();
-    } else if (!userInfo.subscription) {
-      console.log("open subscription modal");
-      openSubscriptionModal();
     } else {
-      setSelectedCompany({
-        id: transcriptInfo.id,
-      });
+      openSubscriptionModal();
     }
   };
+
+  const handleFutureEarningsClick = (report: EarningsReport) => {
+    setSelectedCompany({ id: null });
+    if (!userInfo) {
+      openAuthModal();
+    }
+    setSelectedFutureEarnings(report);
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -109,17 +130,23 @@ const EarningsClient = ({
             weekDates={weekDates}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
+            futureEarningsReports={futureEarningsReports}
+            handleFutureEarningsClick={handleFutureEarningsClick}
           />
         ) : (
           <MonthView
             currentDate={currentDate}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
+            futureEarningsReports={futureEarningsReports}
+            handleFutureEarningsClick={handleFutureEarningsClick}
           />
         )}
       </div>
     </div>
   );
-};
+});
+
+EarningsClient.displayName = "EarningsClient";
 
 export default EarningsClient;

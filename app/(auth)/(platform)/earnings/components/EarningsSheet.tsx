@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import EarningsTranscript from "./EarningsTranscript";
+import FutureEarnings from "./FutureEarnings";
+import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 
@@ -12,10 +14,10 @@ interface EarningsTranscriptSheetProps {
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
-  const { selectedCompany } = useEarningsStore();
+  const { selectedCompany, selectedFutureEarnings } = useEarningsStore();
   const [transcriptData, setTranscriptData] =
     useState<EarningsCallTranscript | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +41,10 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 
     if (selectedCompany && selectedCompany.id) {
       fetchTranscript(selectedCompany.id);
+    } else {
+      setTranscriptData(null);
+      setIsLoading(false);
+      setError(null);
     }
   }, [selectedCompany]);
 
@@ -49,17 +55,25 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     </div>
   );
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <CustomLoadingSpinner />;
+    }
+    if (error) {
+      return <div className="p-4 text-red-500">Error: {error}</div>;
+    }
+    if (transcriptData) {
+      return <EarningsTranscript transcriptData={transcriptData} />;
+    }
+    if (selectedFutureEarnings) {
+      return <FutureEarnings report={selectedFutureEarnings} />;
+    }
+    return <WelcomeMessage />;
+  };
+
   return (
     <div className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}>
-      {isLoading ? (
-        <CustomLoadingSpinner />
-      ) : error ? (
-        <div className="p-4 text-red-500">Error: {error}</div>
-      ) : transcriptData ? (
-        <EarningsTranscript transcriptData={transcriptData} />
-      ) : (
-        <div className="p-4">No transcript available.</div>
-      )}
+      {renderContent()}
     </div>
   );
 };

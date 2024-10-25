@@ -3,19 +3,24 @@ import Image from "next/image";
 
 import { Calendar } from "lucide-react";
 import { equals, filter, path, pipe } from "ramda";
-import { EarningsCallTranscript } from "@prisma/client";
+import { EarningsCallTranscript, EarningsReport } from "@prisma/client";
+import { EarningsReportWithCompany } from "@/app/(auth)/(platform)/earnings/page";
 // import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
   currentDate: Date;
   transcripts: EarningsCallTranscript[];
   handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
+  futureEarningsReports: EarningsReportWithCompany[];
+  handleFutureEarningsClick: (report: EarningsReport) => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   transcripts,
   handleCompanyClick,
+  futureEarningsReports,
+  handleFutureEarningsClick,
 }) => {
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -66,6 +71,36 @@ const MonthView: React.FC<MonthViewProps> = ({
     return [];
   };
 
+  const getReportsForDate = (
+    date: Date,
+    reports: EarningsReportWithCompany[]
+  ) => {
+    // Extract the date in the format "MMM DD YYYY"
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+    // Filter reports for the given date
+    const matchingReports = filter(
+      pipe((report) => {
+        const reportDate = report.reportDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+        return equals(reportDate, formattedDate);
+      }),
+      reports
+    );
+
+    if (matchingReports.length > 0) {
+      return matchingReports;
+    }
+    return [];
+  };
+
   const NoEarnings = () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
       <div className="flex flex-row items-center space-y-1 gap-2">
@@ -91,6 +126,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
         {getDaysInMonth(currentDate).map((date, index) => {
           const dayContent = getLogosForDate(date, transcripts);
+          const dayReports = getReportsForDate(date, futureEarningsReports);
           return (
             <div
               key={index}
@@ -106,7 +142,7 @@ const MonthView: React.FC<MonthViewProps> = ({
             >
               <span className="text-xs">{date.getDate()}</span>
               <div className="flex-grow flex flex-wrap justify-center items-center mt-1">
-                {dayContent.length === 0 ? (
+                {dayContent.length === 0 && dayReports.length === 0 ? (
                   <div className="w-full h-full">
                     <NoEarnings />
                   </div>
@@ -136,6 +172,25 @@ const MonthView: React.FC<MonthViewProps> = ({
                           layout="fill"
                           objectFit="contain"
                         />
+                      </div>
+                    ))}
+                    {dayReports.map((report, reportIndex) => (
+                      <div
+                        key={reportIndex}
+                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
+                        title={`${report.name} (${report.symbol})`}
+                        onClick={() => handleFutureEarningsClick(report)}
+                      >
+                        {report.company?.logo?.dataBase64 ? (
+                          <Image
+                            src={report.company.logo.dataBase64}
+                            alt={`${report.name} logo`}
+                            layout="fill"
+                            objectFit="contain"
+                          />
+                        ) : (
+                          <span className="text-xs">{report.symbol}</span>
+                        )}
                       </div>
                     ))}
                   </div>
