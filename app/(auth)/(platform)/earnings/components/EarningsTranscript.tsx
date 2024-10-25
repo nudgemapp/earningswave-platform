@@ -64,22 +64,30 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
 
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Prepared Remarks</h3>
-        {transcriptData.sections["Prepared Remarks"].map((remark, index) => (
-          <div key={index} className="mb-4">
-            <p className="font-semibold">{remark.name}</p>
-            <p>{remark.text}</p>
-          </div>
-        ))}
+        {transcriptData.sections["Prepared Remarks"] ? (
+          transcriptData.sections["Prepared Remarks"].map((remark, index) => (
+            <div key={index} className="mb-4">
+              <p className="font-semibold">{remark.name}</p>
+              <p>{remark.text}</p>
+            </div>
+          ))
+        ) : (
+          <p>No prepared remarks available for this transcript.</p>
+        )}
       </div>
 
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Questions and Answers</h3>
-        {transcriptData.sections["Questions and Answers"].map((qa, index) => (
-          <div key={index} className="mb-4">
-            <p className="font-semibold">{qa.name}</p>
-            <p>{qa.text}</p>
-          </div>
-        ))}
+        {transcriptData.sections["Questions and Answers"] ? (
+          transcriptData.sections["Questions and Answers"].map((qa, index) => (
+            <div key={index} className="mb-4">
+              <p className="font-semibold">{qa.name}</p>
+              <p>{qa.text}</p>
+            </div>
+          ))
+        ) : (
+          <p>No questions and answers available for this transcript.</p>
+        )}
       </div>
     </div>
   );

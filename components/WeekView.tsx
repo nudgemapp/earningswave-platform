@@ -2,7 +2,8 @@ import React from "react";
 import Image from "next/image";
 import { Calendar } from "lucide-react";
 import { filter, pipe, equals, path } from "ramda";
-import { EarningsCallTranscript } from "@prisma/client";
+import { EarningsCallTranscript, EarningsReport } from "@prisma/client";
+import { EarningsReportWithCompany } from "@/app/(auth)/(platform)/earnings/page";
 import { useUser } from "@clerk/nextjs";
 
 const WeekView = ({
@@ -10,11 +11,15 @@ const WeekView = ({
   weekDates,
   transcripts,
   handleCompanyClick,
+  futureEarningsReports,
+  handleFutureEarningsClick,
 }: {
   weekDays: string[];
   weekDates: Date[];
   transcripts: EarningsCallTranscript[];
   handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
+  futureEarningsReports: EarningsReportWithCompany[];
+  handleFutureEarningsClick: (report: EarningsReport) => void;
 }) => {
   const user = useUser();
 
@@ -37,6 +42,29 @@ const WeekView = ({
     );
   };
 
+  const getReportsForDate = (
+    date: Date,
+    reports: EarningsReportWithCompany[]
+  ) => {
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+    return filter(
+      pipe((report) => {
+        const reportDate = report.reportDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        });
+        return equals(reportDate, formattedDate);
+      }),
+      reports
+    );
+  };
+
   const NoEarnings = () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
       <div className="flex flex-row items-center space-y-1 gap-2">
@@ -52,6 +80,10 @@ const WeekView = ({
     <div className="flex-1 flex flex-col sm:flex-row bg-white rounded-lg shadow-sm overflow-hidden h-full">
       {weekDays.map((day, index) => {
         const dayContent = getLogosForDate(weekDates[index], transcripts);
+        const dayReports = getReportsForDate(
+          weekDates[index],
+          futureEarningsReports
+        );
         return (
           <div
             key={day}
@@ -67,13 +99,13 @@ const WeekView = ({
               </p>
             </div>
             <div className="flex-1 p-3 bg-white flex flex-col">
-              {dayContent.length === 0 ? (
+              {dayContent.length === 0 && dayReports.length === 0 ? (
                 <NoEarnings />
               ) : (
                 <div className="grid grid-cols-2 gap-3 w-full h-full">
                   {dayContent.map((transcriptInfo, logoIndex) => (
                     <div
-                      key={logoIndex}
+                      key={`transcript-${logoIndex}`}
                       className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-blue-300 cursor-pointer"
                       onClick={() => handleCompanyClick(transcriptInfo)}
                     >
@@ -96,6 +128,30 @@ const WeekView = ({
                         objectFit="contain"
                         className="p-2"
                       />
+                    </div>
+                  ))}
+                  {dayReports.map((report, reportIndex) => (
+                    <div
+                      key={`report-${reportIndex}`}
+                      className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-blue-300 cursor-pointer"
+                      title={`${report.name} (${report.symbol})`}
+                      onClick={() => handleFutureEarningsClick(report)}
+                    >
+                      {report.company?.logo?.dataBase64 ? (
+                        <Image
+                          src={report.company.logo.dataBase64}
+                          alt={`${report.name} logo`}
+                          layout="fill"
+                          objectFit="contain"
+                          className="p-2"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-sm font-medium">
+                            {report.symbol}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

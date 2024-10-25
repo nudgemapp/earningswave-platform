@@ -9,6 +9,7 @@ import Logo from "./Logo";
 import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
@@ -26,6 +27,7 @@ function NavBar() {
   const [menu, setMenu] = useState(false);
   const { mounted, user, isLoaded } = useMount();
   const { signOut } = useClerk();
+  const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
 
   const links = [
     {
@@ -54,6 +56,10 @@ function NavBar() {
   };
 
   const handleNavigation = (route: string) => {
+    if (route === "/earnings") {
+      setSelectedCompany(null);
+      setSelectedFutureEarnings(null);
+    }
     router.push(route);
     if (menu) {
       setMenu(false);

@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import CalendarNavbar from "@/components/CalendarNavbar";
-import WeekView from "@/components/WeekView";
-import MonthView from "@/components/MonthView";
+import React, { useEffect, useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { useAuthModal } from "@/store/AuthModalStore";
@@ -14,47 +12,21 @@ import {
   Subscription,
   EarningsCallTranscript,
   EarningsReport,
-  Company,
-  Logo,
 } from "@prisma/client";
 import { EarningsReportWithCompany } from "../page";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-// TODO: Remove this, it is to fetch todays earnings calls
-// const fetchEarningsCalendar = async () => {
-//   try {
-//     const response = await fetch(
-//       "https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=demo"
-//     );
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-//     const csvText = await response.text();
-//     const rows = csvText.split("\n").map((row) => row.split(","));
-
-//     // Get today's date
-//     const today = new Date();
-//     const todayDateString = today.toISOString().split("T")[0]; // Format as 'YYYY-MM-DD'
-
-//     // Filter rows to match today's date
-//     const filteredRows = rows.filter((row) => {
-//       const reportDateString = row[2]; // Assuming reportDate is at index 2
-//       if (!reportDateString) return false; // Skip if reportDate is missing
-
-//       const reportDate = new Date(reportDateString);
-//       if (isNaN(reportDate.getTime())) return false; // Skip if invalid date
-
-//       return reportDate.toISOString().split("T")[0] === todayDateString;
-//     });
-
-//     console.log(filteredRows);
-//   } catch (error) {
-//     console.error("Failed to fetch earnings calendar:", error);
-//   }
-// };
-
-// fetchEarningsCalendar();
-
-// console.log("done");
+const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
+  ssr: false,
+});
+const WeekView = dynamic(() => import("@/components/WeekView"), {
+  ssr: false,
+  loading: () => <LoadingSpinner />,
+});
+const MonthView = dynamic(() => import("@/components/MonthView"), {
+  ssr: false,
+  loading: () => <LoadingSpinner />,
+});
 
 export type UserWithSubscription =
   | (User & {
@@ -62,49 +34,45 @@ export type UserWithSubscription =
     })
   | null;
 
-const EarningsClient = ({
-  userInfo,
-  transcripts,
-  futureEarningsReports,
-}: {
+const EarningsClient: React.FC<{
   userInfo: UserWithSubscription;
   transcripts: EarningsCallTranscript[];
   futureEarningsReports: EarningsReportWithCompany[];
-}) => {
-  const setSelectedCompany = useEarningsStore(
-    (state) => state.setSelectedCompany
-  );
-
+}> = React.memo(({ userInfo, transcripts, futureEarningsReports }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const emailModal = useEmailModal();
-
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
+  const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
-
     if (!hasModalBeenShown) {
       const timer = setTimeout(() => {
         emailModal.onOpen();
         localStorage.setItem("emailModalShown", "true");
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [emailModal]);
 
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(currentDate);
-    date.setDate(currentDate.getDate() - currentDate.getDay() + i);
-    return date;
-  });
+  const weekDays = useMemo(() => ["Mon", "Tue", "Wed", "Thu", "Fri"], []);
+  const weekDates = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(currentDate);
+      date.setDate(currentDate.getDate() - currentDate.getDay() + i);
+      return date;
+    });
+  }, [currentDate]);
 
-  const handleViewChange = (newView: "week" | "month") => {
-    setView(newView);
-  };
+  const handleViewChange = (newView: "week" | "month") => setView(newView);
 
   const handleDateChange = (newDate: Date) => {
     if (!userInfo) {
@@ -124,41 +92,25 @@ const EarningsClient = ({
 
   const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
     if (userInfo && userInfo.subscription?.status === "active") {
-      console.log("set selected company");
-      setSelectedCompany({
-        id: transcriptInfo.id,
-      });
+      setSelectedCompany({ id: transcriptInfo.id });
     } else if (!userInfo) {
-      console.log("open auth modal");
       openAuthModal();
     } else {
-      console.log("open subscription modal");
       openSubscriptionModal();
     }
   };
 
   const handleFutureEarningsClick = (report: EarningsReport) => {
-    console.log(report);
-    // setSelectedCompany({
-    //   id: report.id,
-    // });
+    setSelectedCompany({ id: null });
+    if (!userInfo) {
+      openAuthModal();
+    }
+    setSelectedFutureEarnings(report);
   };
 
-  // useEffect(() => {
-  //   const storeEarningsData = async () => {
-  //     try {
-  //       const response = await fetch("/api/transcripts/fetch", {
-  //         method: "GET",
-  //       });
-  //       const data = await response.json();
-  //       console.log(data.message);
-  //     } catch (error) {
-  //       console.error("Error storing earnings data:", error);
-  //     }
-  //   };
-
-  //   storeEarningsData();
-  // }, []);
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -178,6 +130,8 @@ const EarningsClient = ({
             weekDates={weekDates}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
+            futureEarningsReports={futureEarningsReports}
+            handleFutureEarningsClick={handleFutureEarningsClick}
           />
         ) : (
           <MonthView
@@ -191,6 +145,8 @@ const EarningsClient = ({
       </div>
     </div>
   );
-};
+});
+
+EarningsClient.displayName = "EarningsClient";
 
 export default EarningsClient;

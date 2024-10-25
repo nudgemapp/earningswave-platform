@@ -5,8 +5,6 @@ import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
-import FirecrawlApp from "@mendable/firecrawl-js";
-import { useSearchParams } from "next/navigation";
 import { EarningsReport, Company, Logo } from "@prisma/client";
 
 // const revalidate = 0;
@@ -121,7 +119,7 @@ const EarningsPage = async ({
       orderBy: {
         reportDate: "asc",
       },
-      take: 20,
+      // take: 20,
     });
 
     // Convert logo data to base64 and remove the original data property
@@ -151,8 +149,6 @@ const EarningsPage = async ({
     const reportsForDay = await getLimitedReportsForDate(new Date(d));
     limitedEarningsReports.push(...reportsForDay);
   }
-
-  console.log(limitedEarningsReports);
 
   // const app = new FirecrawlApp({
   //   apiKey: "fc-3fb876bc4fd34cae90f0fe09e7ad042a",
