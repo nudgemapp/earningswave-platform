@@ -7,8 +7,21 @@ import prisma from "../../../../lib/prismadb";
 // import LoadingSpinner from "@/components/LoadingSpinner";
 import FirecrawlApp from "@mendable/firecrawl-js";
 import { useSearchParams } from "next/navigation";
+import { EarningsReport, Company, Logo } from "@prisma/client";
 
 // const revalidate = 0;
+
+type LogoWithBase64 = Omit<Logo, "data"> & {
+  dataBase64?: string;
+};
+
+type CompanyWithLogo = Omit<Company, "logo"> & {
+  logo: LogoWithBase64 | null;
+};
+
+export type EarningsReportWithCompany = Omit<EarningsReport, "company"> & {
+  company: CompanyWithLogo | null;
+};
 
 const EarningsPage = async ({
   searchParams,
@@ -22,16 +35,11 @@ const EarningsPage = async ({
   let userInfo = null;
   const user = await currentUser();
 
-  console.log("searchParams:", searchParams);
-
   // Create start and end dates for the current month
   const startDate = new Date(`${searchParams.year}-${searchParams.month}-01`);
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + 1);
   endDate.setDate(endDate.getDate() - 1); // Set to last day of the month
-
-  console.log("startDate:", startDate);
-  console.log("endDate:", endDate);
 
   const transcripts = await prisma.earningsCallTranscript.findMany({
     where: {
@@ -56,8 +64,6 @@ const EarningsPage = async ({
       date: "asc",
     },
   });
-
-  console.log(transcripts);
 
   const transcriptsWithLogos = transcripts.map((transcript) => {
     const companyInfo =
@@ -87,34 +93,29 @@ const EarningsPage = async ({
         subscription: true,
       },
     });
-    console.log(userInfo);
   }
 
-  console.log("startDate:", startDate);
-  console.log("endDate:", endDate);
-
-  const futureEarningsReports = await prisma.earningsReport.findMany({
-    where: {
-      reportDate: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-  });
-  console.log(futureEarningsReports);
-
-  const getLimitedReportsForDate = async (date: Date) => {
+  const getLimitedReportsForDate = async (
+    date: Date
+  ): Promise<EarningsReportWithCompany[]> => {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    return await prisma.earningsReport.findMany({
+    const reports = await prisma.earningsReport.findMany({
       where: {
         reportDate: {
           gte: startOfDay,
           lte: endOfDay,
+        },
+      },
+      include: {
+        company: {
+          include: {
+            logo: true,
+          },
         },
       },
       orderBy: {
@@ -122,9 +123,30 @@ const EarningsPage = async ({
       },
       take: 20,
     });
+
+    // Convert logo data to base64 and remove the original data property
+    return reports.map((report) => ({
+      ...report,
+      company: report.company
+        ? {
+            ...report.company,
+            logo: report.company.logo
+              ? {
+                  ...report.company.logo,
+                  dataBase64: report.company.logo.data
+                    ? `data:image/png;base64,${Buffer.from(
+                        report.company.logo.data
+                      ).toString("base64")}`
+                    : undefined,
+                  data: undefined, // Remove the data property
+                }
+              : null,
+          }
+        : null,
+    }));
   };
 
-  const limitedEarningsReports = [];
+  const limitedEarningsReports: EarningsReportWithCompany[] = [];
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
     const reportsForDay = await getLimitedReportsForDate(new Date(d));
     limitedEarningsReports.push(...reportsForDay);

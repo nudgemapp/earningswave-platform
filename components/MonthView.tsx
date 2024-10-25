@@ -4,13 +4,14 @@ import Image from "next/image";
 import { Calendar } from "lucide-react";
 import { equals, filter, path, pipe } from "ramda";
 import { EarningsCallTranscript, EarningsReport } from "@prisma/client";
+import { EarningsReportWithCompany } from "@/app/(auth)/(platform)/earnings/page";
 // import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
 
 interface MonthViewProps {
   currentDate: Date;
   transcripts: EarningsCallTranscript[];
   handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
-  futureEarningsReports: EarningsReport[];
+  futureEarningsReports: EarningsReportWithCompany[];
   handleFutureEarningsClick: (report: EarningsReport) => void;
 }
 
@@ -42,8 +43,6 @@ const MonthView: React.FC<MonthViewProps> = ({
     return days.slice(0, firstDayOfMonth + daysInMonth);
   };
 
-  console.log(futureEarningsReports);
-
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const getLogosForDate = (
@@ -72,7 +71,10 @@ const MonthView: React.FC<MonthViewProps> = ({
     return [];
   };
 
-  const getReportsForDate = (date: Date, reports: EarningsReport[]) => {
+  const getReportsForDate = (
+    date: Date,
+    reports: EarningsReportWithCompany[]
+  ) => {
     // Extract the date in the format "MMM DD YYYY"
     const formattedDate = date.toLocaleDateString("en-US", {
       month: "short",
@@ -179,7 +181,16 @@ const MonthView: React.FC<MonthViewProps> = ({
                         title={`${report.name} (${report.symbol})`}
                         onClick={() => handleFutureEarningsClick(report)}
                       >
-                        <span className="text-xs">{report.symbol}</span>
+                        {report.company?.logo?.dataBase64 ? (
+                          <Image
+                            src={report.company.logo.dataBase64}
+                            alt={`${report.name} logo`}
+                            layout="fill"
+                            objectFit="contain"
+                          />
+                        ) : (
+                          <span className="text-xs">{report.symbol}</span>
+                        )}
                       </div>
                     ))}
                   </div>

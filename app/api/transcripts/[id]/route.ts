@@ -17,8 +17,6 @@ export async function GET(
       include: { logo: true },
     });
 
-    console.log(transcript);
-
     if (!transcript) {
       return new NextResponse("Transcript not found", { status: 404 });
     }

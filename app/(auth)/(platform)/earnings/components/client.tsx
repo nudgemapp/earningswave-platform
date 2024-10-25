@@ -14,7 +14,10 @@ import {
   Subscription,
   EarningsCallTranscript,
   EarningsReport,
+  Company,
+  Logo,
 } from "@prisma/client";
+import { EarningsReportWithCompany } from "../page";
 
 // TODO: Remove this, it is to fetch todays earnings calls
 // const fetchEarningsCalendar = async () => {
@@ -66,7 +69,7 @@ const EarningsClient = ({
 }: {
   userInfo: UserWithSubscription;
   transcripts: EarningsCallTranscript[];
-  futureEarningsReports: EarningsReport[];
+  futureEarningsReports: EarningsReportWithCompany[];
 }) => {
   const setSelectedCompany = useEarningsStore(
     (state) => state.setSelectedCompany
@@ -120,9 +123,6 @@ const EarningsClient = ({
   };
 
   const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
-    console.log(transcriptInfo);
-    console.log(userInfo);
-
     if (userInfo && userInfo.subscription?.status === "active") {
       console.log("set selected company");
       setSelectedCompany({
@@ -143,8 +143,6 @@ const EarningsClient = ({
     //   id: report.id,
     // });
   };
-
-  console.log(futureEarningsReports);
 
   // useEffect(() => {
   //   const storeEarningsData = async () => {

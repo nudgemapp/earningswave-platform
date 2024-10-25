@@ -23,7 +23,6 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       setIsLoading(true);
       setError(null);
       try {
-        console.log(id);
         const response = await fetch(`/api/transcripts/${id}`);
         if (!response.ok) {
           throw new Error("Failed to fetch transcript");
@@ -42,8 +41,6 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       fetchTranscript(selectedCompany.id);
     }
   }, [selectedCompany]);
-
-  console.log(transcriptData);
 
   const CustomLoadingSpinner = () => (
     <div className="flex flex-col items-center justify-center h-full">

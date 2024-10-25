@@ -65,30 +65,22 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Prepared Remarks</h3>
         {transcriptData.sections["Prepared Remarks"].map((remark, index) => (
-          <div key={index} className="mb-2">
+          <div key={index} className="mb-4">
             <p className="font-semibold">{remark.name}</p>
-            <p>{remark.text.substring(0, 100)}...</p>
+            <p>{remark.text}</p>
           </div>
         ))}
       </div>
 
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">Call Participants</h3>
-        <ul className="list-disc pl-5">
-          {transcriptData.call_participants.map((participant, index) => (
-            <li key={index}>{participant}</li>
-          ))}
-        </ul>
+        <h3 className="text-lg font-semibold mb-2">Questions and Answers</h3>
+        {transcriptData.sections["Questions and Answers"].map((qa, index) => (
+          <div key={index} className="mb-4">
+            <p className="font-semibold">{qa.name}</p>
+            <p>{qa.text}</p>
+          </div>
+        ))}
       </div>
-
-      <a
-        href={transcriptData.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        Read Full Transcript
-      </a>
     </div>
   );
 };

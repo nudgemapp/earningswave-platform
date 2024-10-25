@@ -1,6 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import { ExchangeType, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+// Define interfaces for company types
+interface CompanyInput {
+  symbol: string;
+  name: string;
+  exchanges?: ExchangeType[];
+}
+
+interface CompanyWithExchanges extends CompanyInput {
+  exchanges: ExchangeType[];
+}
 
 const NASDAQcompanies = [
   {
@@ -12541,33 +12552,5192 @@ const NASDAQcompanies = [
   },
 ];
 
-// async function main() {
-//   console.log("Start seeding...");
+const NYSEcompanies = [
+  {
+    symbol: "BRK.A",
+    name: "Berkshire Hathaway Inc.",
+  },
+  {
+    symbol: "BRK.B",
+    name: "Berkshire Hathaway Inc.",
+  },
+  {
+    symbol: "TSM",
+    name: "Taiwan Semiconductor Manufacturing Company Limited",
+  },
+  {
+    symbol: "LLY",
+    name: "Eli Lilly and Company",
+  },
+  {
+    symbol: "WMT",
+    name: "Walmart Inc.",
+  },
+  {
+    symbol: "JPM",
+    name: "JPMorgan Chase & Co.",
+  },
+  {
+    symbol: "V",
+    name: "Visa Inc.",
+  },
+  {
+    symbol: "XOM",
+    name: "Exxon Mobil Corporation",
+  },
+  {
+    symbol: "UNH",
+    name: "UnitedHealth Group Incorporated",
+  },
+  {
+    symbol: "NVO",
+    name: "Novo Nordisk A/S",
+  },
+  {
+    symbol: "ORCL",
+    name: "Oracle Corporation",
+  },
+  {
+    symbol: "MA",
+    name: "Mastercard Incorporated",
+  },
+  {
+    symbol: "HD",
+    name: "The Home Depot, Inc.",
+  },
+  {
+    symbol: "PG",
+    name: "The Procter & Gamble Company",
+  },
+  {
+    symbol: "JNJ",
+    name: "Johnson & Johnson",
+  },
+  {
+    symbol: "ABBV",
+    name: "AbbVie Inc.",
+  },
+  {
+    symbol: "BAC",
+    name: "Bank of America Corporation",
+  },
+  {
+    symbol: "KO",
+    name: "The Coca-Cola Company",
+  },
+  {
+    symbol: "CRM",
+    name: "Salesforce, Inc.",
+  },
+  {
+    symbol: "CVX",
+    name: "Chevron Corporation",
+  },
+  {
+    symbol: "SAP",
+    name: "SAP SE",
+  },
+  {
+    symbol: "MRK",
+    name: "Merck & Co., Inc.",
+  },
+  {
+    symbol: "NVS",
+    name: "Novartis AG",
+  },
+  {
+    symbol: "ACN",
+    name: "Accenture plc",
+  },
+  {
+    symbol: "TM",
+    name: "Toyota Motor Corporation",
+  },
+  {
+    symbol: "BABA",
+    name: "Alibaba Group Holding Limited",
+  },
+  {
+    symbol: "WFC",
+    name: "Wells Fargo & Company",
+  },
+  {
+    symbol: "TMO",
+    name: "Thermo Fisher Scientific Inc.",
+  },
+  {
+    symbol: "MCD",
+    name: "McDonald's Corporation",
+  },
+  {
+    symbol: "SHEL",
+    name: "Shell plc",
+  },
+  {
+    symbol: "PM",
+    name: "Philip Morris International Inc.",
+  },
+  {
+    symbol: "IBM",
+    name: "International Business Machines Corporation",
+  },
+  {
+    symbol: "ABT",
+    name: "Abbott Laboratories",
+  },
+  {
+    symbol: "NOW",
+    name: "ServiceNow, Inc.",
+  },
+  {
+    symbol: "GE",
+    name: "General Electric Company",
+  },
+  {
+    symbol: "AXP",
+    name: "American Express Company",
+  },
+  {
+    symbol: "MS",
+    name: "Morgan Stanley",
+  },
+  {
+    symbol: "CAT",
+    name: "Caterpillar Inc.",
+  },
+  {
+    symbol: "DHR",
+    name: "Danaher Corporation",
+  },
+  {
+    symbol: "VZ",
+    name: "Verizon Communications Inc.",
+  },
+  {
+    symbol: "RY",
+    name: "Royal Bank of Canada",
+  },
+  {
+    symbol: "DIS",
+    name: "The Walt Disney Company",
+  },
+  {
+    symbol: "GS",
+    name: "The Goldman Sachs Group, Inc.",
+  },
+  {
+    symbol: "NEE",
+    name: "NextEra Energy, Inc.",
+  },
+  {
+    symbol: "RTX",
+    name: "RTX Corporation",
+  },
+  {
+    symbol: "UBER",
+    name: "Uber Technologies, Inc.",
+  },
+  {
+    symbol: "PFE",
+    name: "Pfizer Inc.",
+  },
+  {
+    symbol: "T",
+    name: "AT&T Inc.",
+  },
+  {
+    symbol: "HDB",
+    name: "HDFC Bank Limited",
+  },
+  {
+    symbol: "HSBC",
+    name: "HSBC Holdings plc",
+  },
+  {
+    symbol: "SPGI",
+    name: "S&P Global Inc.",
+  },
+  {
+    symbol: "UL",
+    name: "Unilever PLC",
+  },
+  {
+    symbol: "LOW",
+    name: "Lowe's Companies, Inc.",
+  },
+  {
+    symbol: "TTE",
+    name: "TotalEnergies SE",
+  },
+  {
+    symbol: "BLK",
+    name: "BlackRock, Inc.",
+  },
+  {
+    symbol: "BHP",
+    name: "BHP Group Limited",
+  },
+  {
+    symbol: "PGR",
+    name: "The Progressive Corporation",
+  },
+  {
+    symbol: "UNP",
+    name: "Union Pacific Corporation",
+  },
+  {
+    symbol: "ETN",
+    name: "Eaton Corporation plc",
+  },
+  {
+    symbol: "BX",
+    name: "Blackstone Inc.",
+  },
+  {
+    symbol: "SYK",
+    name: "Stryker Corporation",
+  },
+  {
+    symbol: "LMT",
+    name: "Lockheed Martin Corporation",
+  },
+  {
+    symbol: "SCHW",
+    name: "The Charles Schwab Corporation",
+  },
+  {
+    symbol: "TJX",
+    name: "The TJX Companies, Inc.",
+  },
+  {
+    symbol: "BUD",
+    name: "Anheuser-Busch InBev SA/NV",
+  },
+  {
+    symbol: "ANET",
+    name: "Arista Networks, Inc.",
+  },
+  {
+    symbol: "KKR",
+    name: "KKR & Co. Inc.",
+  },
+  {
+    symbol: "BSX",
+    name: "Boston Scientific Corporation",
+  },
+  {
+    symbol: "COP",
+    name: "ConocoPhillips",
+  },
+  {
+    symbol: "MUFG",
+    name: "Mitsubishi UFJ Financial Group, Inc.",
+  },
+  {
+    symbol: "UPS",
+    name: "United Parcel Service, Inc.",
+  },
+  {
+    symbol: "C",
+    name: "Citigroup Inc.",
+  },
+  {
+    symbol: "NKE",
+    name: "NIKE, Inc.",
+  },
+  {
+    symbol: "MDT",
+    name: "Medtronic plc",
+  },
+  {
+    symbol: "FI",
+    name: "Fiserv, Inc.",
+  },
+  {
+    symbol: "DE",
+    name: "Deere & Company",
+  },
+  {
+    symbol: "CB",
+    name: "Chubb Limited",
+  },
+  {
+    symbol: "PLD",
+    name: "Prologis, Inc.",
+  },
+  {
+    symbol: "RIO",
+    name: "Rio Tinto Group",
+  },
+  {
+    symbol: "MMC",
+    name: "Marsh & McLennan Companies, Inc.",
+  },
+  {
+    symbol: "BMY",
+    name: "Bristol-Myers Squibb Company",
+  },
+  {
+    symbol: "IBN",
+    name: "ICICI Bank Limited",
+  },
+  {
+    symbol: "SONY",
+    name: "Sony Group Corporation",
+  },
+  {
+    symbol: "AMT",
+    name: "American Tower Corporation",
+  },
+  {
+    symbol: "UBS",
+    name: "UBS Group AG",
+  },
+  {
+    symbol: "SHOP",
+    name: "Shopify Inc.",
+  },
+  {
+    symbol: "SO",
+    name: "The Southern Company",
+  },
+  {
+    symbol: "PLTR",
+    name: "Palantir Technologies Inc.",
+  },
+  {
+    symbol: "ELV",
+    name: "Elevance Health, Inc.",
+  },
+  {
+    symbol: "TD",
+    name: "The Toronto-Dominion Bank",
+  },
+  {
+    symbol: "BA",
+    name: "The Boeing Company",
+  },
+  {
+    symbol: "ICE",
+    name: "Intercontinental Exchange, Inc.",
+  },
+  {
+    symbol: "HCA",
+    name: "HCA Healthcare, Inc.",
+  },
+  {
+    symbol: "INFY",
+    name: "Infosys Limited",
+  },
+  {
+    symbol: "SCCO",
+    name: "Southern Copper Corporation",
+  },
+  {
+    symbol: "DUK",
+    name: "Duke Energy Corporation",
+  },
+  {
+    symbol: "SHW",
+    name: "The Sherwin-Williams Company",
+  },
+  {
+    symbol: "ENB",
+    name: "Enbridge Inc.",
+  },
+  {
+    symbol: "CI",
+    name: "The Cigna Group",
+  },
+  {
+    symbol: "TT",
+    name: "Trane Technologies plc",
+  },
+  {
+    symbol: "RELX",
+    name: "RELX PLC",
+  },
+  {
+    symbol: "RACE",
+    name: "Ferrari N.V.",
+  },
+  {
+    symbol: "DELL",
+    name: "Dell Technologies Inc.",
+  },
+  {
+    symbol: "MO",
+    name: "Altria Group, Inc.",
+  },
+  {
+    symbol: "PBR.A",
+    name: "Petróleo Brasileiro S.A. - Petrobras",
+  },
+  {
+    symbol: "PBR",
+    name: "Petróleo Brasileiro S.A. - Petrobras",
+  },
+  {
+    symbol: "MCO",
+    name: "Moody's Corporation",
+  },
+  {
+    symbol: "BN",
+    name: "Brookfield Corporation",
+  },
+  {
+    symbol: "WM",
+    name: "Waste Management, Inc.",
+  },
+  {
+    symbol: "APH",
+    name: "Amphenol Corporation",
+  },
+  {
+    symbol: "GD",
+    name: "General Dynamics Corporation",
+  },
+  {
+    symbol: "AON",
+    name: "Aon plc",
+  },
+  {
+    symbol: "BP",
+    name: "BP p.l.c.",
+  },
+  {
+    symbol: "GEV",
+    name: "GE Vernova Inc.",
+  },
+  {
+    symbol: "ZTS",
+    name: "Zoetis Inc.",
+  },
+  {
+    symbol: "CMG",
+    name: "Chipotle Mexican Grill, Inc.",
+  },
+  {
+    symbol: "APO",
+    name: "Apollo Global Management, Inc.",
+  },
+  {
+    symbol: "WELL",
+    name: "Welltower Inc.",
+  },
+  {
+    symbol: "SMFG",
+    name: "Sumitomo Mitsui Financial Group, Inc.",
+  },
+  {
+    symbol: "PH",
+    name: "Parker-Hannifin Corporation",
+  },
+  {
+    symbol: "CL",
+    name: "Colgate-Palmolive Company",
+  },
+  {
+    symbol: "MSI",
+    name: "Motorola Solutions, Inc.",
+  },
+  {
+    symbol: "GSK",
+    name: "GSK plc",
+  },
+  {
+    symbol: "SPOT",
+    name: "Spotify Technology S.A.",
+  },
+  {
+    symbol: "NOC",
+    name: "Northrop Grumman Corporation",
+  },
+  {
+    symbol: "BTI",
+    name: "British American Tobacco p.l.c.",
+  },
+  {
+    symbol: "ITW",
+    name: "Illinois Tool Works Inc.",
+  },
+  {
+    symbol: "TDG",
+    name: "TransDigm Group Incorporated",
+  },
+  {
+    symbol: "SAN",
+    name: "Banco Santander, S.A.",
+  },
+  {
+    symbol: "USB",
+    name: "U.S. Bancorp",
+  },
+  {
+    symbol: "TRI",
+    name: "Thomson Reuters Corporation",
+  },
+  {
+    symbol: "CNQ",
+    name: "Canadian Natural Resources Limited",
+  },
+  {
+    symbol: "PNC",
+    name: "The PNC Financial Services Group, Inc.",
+  },
+  {
+    symbol: "DEO",
+    name: "Diageo plc",
+  },
+  {
+    symbol: "CP",
+    name: "Canadian Pacific Kansas City Limited",
+  },
+  {
+    symbol: "ECL",
+    name: "Ecolab Inc.",
+  },
+  {
+    symbol: "NU",
+    name: "Nu Holdings Ltd.",
+  },
+  {
+    symbol: "CVS",
+    name: "CVS Health Corporation",
+  },
+  {
+    symbol: "APD",
+    name: "Air Products and Chemicals, Inc.",
+  },
+  {
+    symbol: "EOG",
+    name: "EOG Resources, Inc.",
+  },
+  {
+    symbol: "TGT",
+    name: "Target Corporation",
+  },
+  {
+    symbol: "CNI",
+    name: "Canadian National Railway Company",
+  },
+  {
+    symbol: "BDX",
+    name: "Becton, Dickinson and Company",
+  },
+  {
+    symbol: "MMM",
+    name: "3M Company",
+  },
+  {
+    symbol: "EQNR",
+    name: "Equinor ASA",
+  },
+  {
+    symbol: "BMO",
+    name: "Bank of Montreal",
+  },
+  {
+    symbol: "FCX",
+    name: "Freeport-McMoRan Inc.",
+  },
+  {
+    symbol: "FDX",
+    name: "FedEx Corporation",
+  },
+  {
+    symbol: "CARR",
+    name: "Carrier Global Corporation",
+  },
+  {
+    symbol: "MCK",
+    name: "McKesson Corporation",
+  },
+  {
+    symbol: "BNS",
+    name: "The Bank of Nova Scotia",
+  },
+  {
+    symbol: "WMB",
+    name: "The Williams Companies, Inc.",
+  },
+  {
+    symbol: "NGG",
+    name: "National Grid plc",
+  },
+  {
+    symbol: "RSG",
+    name: "Republic Services, Inc.",
+  },
+  {
+    symbol: "EPD",
+    name: "Enterprise Products Partners L.P.",
+  },
+  {
+    symbol: "CRH",
+    name: "CRH plc",
+  },
+  {
+    symbol: "COF",
+    name: "Capital One Financial Corporation",
+  },
+  {
+    symbol: "EMR",
+    name: "Emerson Electric Co.",
+  },
+  {
+    symbol: "AJG",
+    name: "Arthur J. Gallagher & Co.",
+  },
+  {
+    symbol: "AFL",
+    name: "Aflac Incorporated",
+  },
+  {
+    symbol: "DLR",
+    name: "Digital Realty Trust, Inc.",
+  },
+  {
+    symbol: "CM",
+    name: "Canadian Imperial Bank of Commerce",
+  },
+  {
+    symbol: "SLB",
+    name: "Schlumberger Limited",
+  },
+  {
+    symbol: "DHI",
+    name: "D.R. Horton, Inc.",
+  },
+  {
+    symbol: "PSA",
+    name: "Public Storage",
+  },
+  {
+    symbol: "SE",
+    name: "Sea Limited",
+  },
+  {
+    symbol: "GM",
+    name: "General Motors Company",
+  },
+  {
+    symbol: "MET",
+    name: "MetLife, Inc.",
+  },
+  {
+    symbol: "HLT",
+    name: "Hilton Worldwide Holdings Inc.",
+  },
+  {
+    symbol: "NSC",
+    name: "Norfolk Southern Corporation",
+  },
+  {
+    symbol: "TRV",
+    name: "The Travelers Companies, Inc.",
+  },
+  {
+    symbol: "ITUB",
+    name: "Itaú Unibanco Holding S.A.",
+  },
+  {
+    symbol: "TFC",
+    name: "Truist Financial Corporation",
+  },
+  {
+    symbol: "OKE",
+    name: "ONEOK, Inc.",
+  },
+  {
+    symbol: "BBVA",
+    name: "Banco Bilbao Vizcaya Argentaria, S.A.",
+  },
+  {
+    symbol: "SPG",
+    name: "Simon Property Group, Inc.",
+  },
+  {
+    symbol: "ET",
+    name: "Energy Transfer LP",
+  },
+  {
+    symbol: "KMI",
+    name: "Kinder Morgan, Inc.",
+  },
+  {
+    symbol: "NEM",
+    name: "Newmont Corporation",
+  },
+  {
+    symbol: "BK",
+    name: "The Bank of New York Mellon Corporation",
+  },
+  {
+    symbol: "O",
+    name: "Realty Income Corporation",
+  },
+  {
+    symbol: "PSX",
+    name: "Phillips 66",
+  },
+  {
+    symbol: "RCL",
+    name: "Royal Caribbean Cruises Ltd.",
+  },
+  {
+    symbol: "SRE",
+    name: "Sempra",
+  },
+  {
+    symbol: "URI",
+    name: "United Rentals, Inc.",
+  },
+  {
+    symbol: "GWW",
+    name: "W.W. Grainger, Inc.",
+  },
+  {
+    symbol: "AZO",
+    name: "AutoZone, Inc.",
+  },
+  {
+    symbol: "ING",
+    name: "ING Groep N.V.",
+  },
+  {
+    symbol: "MFC",
+    name: "Manulife Financial Corporation",
+  },
+  {
+    symbol: "JCI",
+    name: "Johnson Controls International plc",
+  },
+  {
+    symbol: "MFG",
+    name: "Mizuho Financial Group, Inc.",
+  },
+  {
+    symbol: "MPC",
+    name: "Marathon Petroleum Corporation",
+  },
+  {
+    symbol: "AMX",
+    name: "América Móvil, S.A.B. de C.V.",
+  },
+  {
+    symbol: "D",
+    name: "Dominion Energy, Inc.",
+  },
+  {
+    symbol: "ALL",
+    name: "The Allstate Corporation",
+  },
+  {
+    symbol: "AIG",
+    name: "American International Group, Inc.",
+  },
+  {
+    symbol: "LYG",
+    name: "Lloyds Banking Group plc",
+  },
+  {
+    symbol: "FIS",
+    name: "Fidelity National Information Services, Inc.",
+  },
+  {
+    symbol: "FICO",
+    name: "Fair Isaac Corporation",
+  },
+  {
+    symbol: "AMP",
+    name: "Ameriprise Financial, Inc.",
+  },
+  {
+    symbol: "TRP",
+    name: "TC Energy Corporation",
+  },
+  {
+    symbol: "SU",
+    name: "Suncor Energy Inc.",
+  },
+  {
+    symbol: "OXY",
+    name: "Occidental Petroleum Corporation",
+  },
+  {
+    symbol: "E",
+    name: "Eni S.p.A.",
+  },
+  {
+    symbol: "LHX",
+    name: "L3Harris Technologies, Inc.",
+  },
+  {
+    symbol: "CCI",
+    name: "Crown Castle Inc.",
+  },
+  {
+    symbol: "LEN",
+    name: "Lennar Corporation",
+  },
+  {
+    symbol: "LEN.B",
+    name: "Lennar Corporation",
+  },
+  {
+    symbol: "HMC",
+    name: "Honda Motor Co., Ltd.",
+  },
+  {
+    symbol: "ALC",
+    name: "Alcon Inc.",
+  },
+  {
+    symbol: "BCS",
+    name: "Barclays PLC",
+  },
+  {
+    symbol: "CPNG",
+    name: "Coupang, Inc.",
+  },
+  {
+    symbol: "MSCI",
+    name: "MSCI Inc.",
+  },
+  {
+    symbol: "COR",
+    name: "Cencora, Inc.",
+  },
+  {
+    symbol: "WCN",
+    name: "Waste Connections, Inc.",
+  },
+  {
+    symbol: "KMB",
+    name: "Kimberly-Clark Corporation",
+  },
+  {
+    symbol: "PWR",
+    name: "Quanta Services, Inc.",
+  },
+  {
+    symbol: "CMI",
+    name: "Cummins Inc.",
+  },
+  {
+    symbol: "TEL",
+    name: "TE Connectivity plc",
+  },
+  {
+    symbol: "MPLX",
+    name: "MPLX LP",
+  },
+  {
+    symbol: "PEG",
+    name: "Public Service Enterprise Group Incorporated",
+  },
+  {
+    symbol: "SQ",
+    name: "Block, Inc.",
+  },
+  {
+    symbol: "VALE",
+    name: "Vale S.A.",
+  },
+  {
+    symbol: "PRU",
+    name: "Prudential Financial, Inc.",
+  },
+  {
+    symbol: "F",
+    name: "Ford Motor Company",
+  },
+  {
+    symbol: "HLN",
+    name: "Haleon plc",
+  },
+  {
+    symbol: "PCG",
+    name: "PG&E Corporation",
+  },
+  {
+    symbol: "KVUE",
+    name: "Kenvue Inc.",
+  },
+  {
+    symbol: "STZ",
+    name: "Constellation Brands, Inc.",
+  },
+  {
+    symbol: "AEM",
+    name: "Agnico Eagle Mines Limited",
+  },
+  {
+    symbol: "VST",
+    name: "Vistra Corp.",
+  },
+  {
+    symbol: "HES",
+    name: "Hess Corporation",
+  },
+  {
+    symbol: "TAK",
+    name: "Takeda Pharmaceutical Company Limited",
+  },
+  {
+    symbol: "VLO",
+    name: "Valero Energy Corporation",
+  },
+  {
+    symbol: "VRT",
+    name: "Vertiv Holdings Co",
+  },
+  {
+    symbol: "EW",
+    name: "Edwards Lifesciences Corporation",
+  },
+  {
+    symbol: "CTVA",
+    name: "Corteva, Inc.",
+  },
+  {
+    symbol: "LNG",
+    name: "Cheniere Energy, Inc.",
+  },
+  {
+    symbol: "KR",
+    name: "The Kroger Co.",
+  },
+  {
+    symbol: "HWM",
+    name: "Howmet Aerospace Inc.",
+  },
+  {
+    symbol: "OTIS",
+    name: "Otis Worldwide Corporation",
+  },
+  {
+    symbol: "FLUT",
+    name: "Flutter Entertainment plc",
+  },
+  {
+    symbol: "GLW",
+    name: "Corning Incorporated",
+  },
+  {
+    symbol: "CBRE",
+    name: "CBRE Group, Inc.",
+  },
+  {
+    symbol: "IT",
+    name: "Gartner, Inc.",
+  },
+  {
+    symbol: "FERG",
+    name: "Ferguson Enterprises Inc.",
+  },
+  {
+    symbol: "IQV",
+    name: "IQVIA Holdings Inc.",
+  },
+  {
+    symbol: "LVS",
+    name: "Las Vegas Sands Corp.",
+  },
+  {
+    symbol: "STLA",
+    name: "Stellantis N.V.",
+  },
+  {
+    symbol: "NWG",
+    name: "NatWest Group plc",
+  },
+  {
+    symbol: "IR",
+    name: "Ingersoll Rand Inc.",
+  },
+  {
+    symbol: "SNOW",
+    name: "Snowflake Inc.",
+  },
+  {
+    symbol: "AME",
+    name: "AMETEK, Inc.",
+  },
+  {
+    symbol: "DFS",
+    name: "Discover Financial Services",
+  },
+  {
+    symbol: "GIS",
+    name: "General Mills, Inc.",
+  },
+  {
+    symbol: "IRM",
+    name: "Iron Mountain Incorporated",
+  },
+  {
+    symbol: "RMD",
+    name: "ResMed Inc.",
+  },
+  {
+    symbol: "YUM",
+    name: "Yum! Brands, Inc.",
+  },
+  {
+    symbol: "A",
+    name: "Agilent Technologies, Inc.",
+  },
+  {
+    symbol: "HSY",
+    name: "The Hershey Company",
+  },
+  {
+    symbol: "TRGP",
+    name: "Targa Resources Corp.",
+  },
+  {
+    symbol: "ED",
+    name: "Consolidated Edison, Inc.",
+  },
+  {
+    symbol: "SYY",
+    name: "Sysco Corporation",
+  },
+  {
+    symbol: "HPQ",
+    name: "HP Inc.",
+  },
+  {
+    symbol: "GOLD",
+    name: "Barrick Gold Corporation",
+  },
+  {
+    symbol: "EXR",
+    name: "Extra Space Storage Inc.",
+  },
+  {
+    symbol: "ABEV",
+    name: "Ambev S.A.",
+  },
+  {
+    symbol: "CNC",
+    name: "Centene Corporation",
+  },
+  {
+    symbol: "DOW",
+    name: "Dow Inc.",
+  },
+  {
+    symbol: "MLM",
+    name: "Martin Marietta Materials, Inc.",
+  },
+  {
+    symbol: "DD",
+    name: "DuPont de Nemours, Inc.",
+  },
+  {
+    symbol: "DAL",
+    name: "Delta Air Lines, Inc.",
+  },
+  {
+    symbol: "HEI",
+    name: "HEICO Corporation",
+  },
+  {
+    symbol: "VEEV",
+    name: "Veeva Systems Inc.",
+  },
+  {
+    symbol: "ARES",
+    name: "Ares Management Corporation",
+  },
+  {
+    symbol: "NUE",
+    name: "Nucor Corporation",
+  },
+  {
+    symbol: "VICI",
+    name: "VICI Properties Inc.",
+  },
+  {
+    symbol: "VMC",
+    name: "Vulcan Materials Company",
+  },
+  {
+    symbol: "WIT",
+    name: "Wipro Limited",
+  },
+  {
+    symbol: "EFX",
+    name: "Equifax Inc.",
+  },
+  {
+    symbol: "WAB",
+    name: "Westinghouse Air Brake Technologies Corporation",
+  },
+  {
+    symbol: "DB",
+    name: "Deutsche Bank Aktiengesellschaft",
+  },
+  {
+    symbol: "AVB",
+    name: "AvalonBay Communities, Inc.",
+  },
+  {
+    symbol: "HIG",
+    name: "The Hartford Financial Services Group, Inc.",
+  },
+  {
+    symbol: "SLF",
+    name: "Sun Life Financial Inc.",
+  },
+  {
+    symbol: "EIX",
+    name: "Edison International",
+  },
+  {
+    symbol: "MTB",
+    name: "M&T Bank Corporation",
+  },
+  {
+    symbol: "HUM",
+    name: "Humana Inc.",
+  },
+  {
+    symbol: "XYL",
+    name: "Xylem Inc.",
+  },
+  {
+    symbol: "EL",
+    name: "The Estée Lauder Companies Inc.",
+  },
+  {
+    symbol: "GRMN",
+    name: "Garmin Ltd.",
+  },
+  {
+    symbol: "WEC",
+    name: "WEC Energy Group, Inc.",
+  },
+  {
+    symbol: "ROK",
+    name: "Rockwell Automation, Inc.",
+  },
+  {
+    symbol: "CVE",
+    name: "Cenovus Energy Inc.",
+  },
+  {
+    symbol: "WDS",
+    name: "Woodside Energy Group Ltd",
+  },
+  {
+    symbol: "FMX",
+    name: "Fomento Económico Mexicano, S.A.B. de C.V.",
+  },
+  {
+    symbol: "WPM",
+    name: "Wheaton Precious Metals Corp.",
+  },
+  {
+    symbol: "HEI.A",
+    name: "HEICO Corporation",
+  },
+  {
+    symbol: "NET",
+    name: "Cloudflare, Inc.",
+  },
+  {
+    symbol: "BCE",
+    name: "BCE Inc.",
+  },
+  {
+    symbol: "PHG",
+    name: "Koninklijke Philips N.V.",
+  },
+  {
+    symbol: "BRO",
+    name: "Brown & Brown, Inc.",
+  },
+  {
+    symbol: "RJF",
+    name: "Raymond James Financial, Inc.",
+  },
+  {
+    symbol: "CHT",
+    name: "Chunghwa Telecom Co., Ltd.",
+  },
+  {
+    symbol: "ETR",
+    name: "Entergy Corporation",
+  },
+  {
+    symbol: "PPG",
+    name: "PPG Industries, Inc.",
+  },
+  {
+    symbol: "LYB",
+    name: "LyondellBasell Industries N.V.",
+  },
+  {
+    symbol: "EQR",
+    name: "Equity Residential",
+  },
+  {
+    symbol: "NVR",
+    name: "NVR, Inc.",
+  },
+  {
+    symbol: "HUBS",
+    name: "HubSpot, Inc.",
+  },
+  {
+    symbol: "K",
+    name: "Kellanova",
+  },
+  {
+    symbol: "MTD",
+    name: "Mettler-Toledo International Inc.",
+  },
+  {
+    symbol: "PHM",
+    name: "PulteGroup, Inc.",
+  },
+  {
+    symbol: "RBLX",
+    name: "Roblox Corporation",
+  },
+  {
+    symbol: "VTR",
+    name: "Ventas, Inc.",
+  },
+  {
+    symbol: "STT",
+    name: "State Street Corporation",
+  },
+  {
+    symbol: "CCL",
+    name: "Carnival Corporation & plc",
+  },
+  {
+    symbol: "ADM",
+    name: "Archer-Daniels-Midland Company",
+  },
+  {
+    symbol: "AWK",
+    name: "American Water Works Company, Inc.",
+  },
+  {
+    symbol: "KB",
+    name: "KB Financial Group Inc.",
+  },
+  {
+    symbol: "KEYS",
+    name: "Keysight Technologies, Inc.",
+  },
+  {
+    symbol: "CUK",
+    name: "Carnival Corporation & plc",
+  },
+  {
+    symbol: "LYV",
+    name: "Live Nation Entertainment, Inc.",
+  },
+  {
+    symbol: "CAH",
+    name: "Cardinal Health, Inc.",
+  },
+  {
+    symbol: "IOT",
+    name: "Samsara Inc.",
+  },
+  {
+    symbol: "TEF",
+    name: "Telefónica, S.A.",
+  },
+  {
+    symbol: "DTE",
+    name: "DTE Energy Company",
+  },
+  {
+    symbol: "BBDO",
+    name: "Banco Bradesco S.A.",
+  },
+  {
+    symbol: "BBD",
+    name: "Banco Bradesco S.A.",
+  },
+  {
+    symbol: "FTV",
+    name: "Fortive Corporation",
+  },
+  {
+    symbol: "FNV",
+    name: "Franco-Nevada Corporation",
+  },
+  {
+    symbol: "DVN",
+    name: "Devon Energy Corporation",
+  },
+  {
+    symbol: "IFF",
+    name: "International Flavors & Fragrances Inc.",
+  },
+  {
+    symbol: "TYL",
+    name: "Tyler Technologies, Inc.",
+  },
+  {
+    symbol: "VLTO",
+    name: "Veralto Corporation",
+  },
+  {
+    symbol: "GIB",
+    name: "CGI Inc.",
+  },
+  {
+    symbol: "NOK",
+    name: "Nokia Oyj",
+  },
+  {
+    symbol: "DOV",
+    name: "Dover Corporation",
+  },
+  {
+    symbol: "DECK",
+    name: "Deckers Outdoor Corporation",
+  },
+  {
+    symbol: "HPE",
+    name: "Hewlett Packard Enterprise Company",
+  },
+  {
+    symbol: "BEKE",
+    name: "KE Holdings Inc.",
+  },
+  {
+    symbol: "GPN",
+    name: "Global Payments Inc.",
+  },
+  {
+    symbol: "STM",
+    name: "STMicroelectronics N.V.",
+  },
+  {
+    symbol: "FE",
+    name: "FirstEnergy Corp.",
+  },
+  {
+    symbol: "TPL",
+    name: "Texas Pacific Land Corporation",
+  },
+  {
+    symbol: "BR",
+    name: "Broadridge Financial Solutions, Inc.",
+  },
+  {
+    symbol: "HAL",
+    name: "Halliburton Company",
+  },
+  {
+    symbol: "CVNA",
+    name: "Carvana Co.",
+  },
+  {
+    symbol: "CHD",
+    name: "Church & Dwight Co., Inc.",
+  },
+  {
+    symbol: "PBA",
+    name: "Pembina Pipeline Corporation",
+  },
+  {
+    symbol: "PPL",
+    name: "PPL Corporation",
+  },
+  {
+    symbol: "TECK",
+    name: "Teck Resources Limited",
+  },
+  {
+    symbol: "SW",
+    name: "Smurfit Westrock Plc",
+  },
+  {
+    symbol: "HUBB",
+    name: "Hubbell Incorporated",
+  },
+  {
+    symbol: "IX",
+    name: "ORIX Corporation",
+  },
+  {
+    symbol: "BAH",
+    name: "Booz Allen Hamilton Holding Corporation",
+  },
+  {
+    symbol: "TU",
+    name: "TELUS Corporation",
+  },
+  {
+    symbol: "ES",
+    name: "Eversource Energy",
+  },
+  {
+    symbol: "CPAY",
+    name: "Corpay, Inc.",
+  },
+  {
+    symbol: "CQP",
+    name: "Cheniere Energy Partners, L.P.",
+  },
+  {
+    symbol: "NTR",
+    name: "Nutrien Ltd.",
+  },
+  {
+    symbol: "AEE",
+    name: "Ameren Corporation",
+  },
+  {
+    symbol: "CCJ",
+    name: "Cameco Corporation",
+  },
+  {
+    symbol: "WY",
+    name: "Weyerhaeuser Company",
+  },
+  {
+    symbol: "QSR",
+    name: "Restaurant Brands International Inc.",
+  },
+  {
+    symbol: "BF.B",
+    name: "Brown-Forman Corporation",
+  },
+  {
+    symbol: "BF.A",
+    name: "Brown-Forman Corporation",
+  },
+  {
+    symbol: "LDOS",
+    name: "Leidos Holdings, Inc.",
+  },
+  {
+    symbol: "PUK",
+    name: "Prudential plc",
+  },
+  {
+    symbol: "ROL",
+    name: "Rollins, Inc.",
+  },
+  {
+    symbol: "GDDY",
+    name: "GoDaddy Inc.",
+  },
+  {
+    symbol: "WST",
+    name: "West Pharmaceutical Services, Inc.",
+  },
+  {
+    symbol: "PINS",
+    name: "Pinterest, Inc.",
+  },
+  {
+    symbol: "STE",
+    name: "STERIS plc",
+  },
+  {
+    symbol: "WRB",
+    name: "W. R. Berkley Corporation",
+  },
+  {
+    symbol: "BAM",
+    name: "Brookfield Asset Management Ltd.",
+  },
+  {
+    symbol: "FTS",
+    name: "Fortis Inc.",
+  },
+  {
+    symbol: "ATO",
+    name: "Atmos Energy Corporation",
+  },
+  {
+    symbol: "TDY",
+    name: "Teledyne Technologies Incorporated",
+  },
+  {
+    symbol: "EQT",
+    name: "EQT Corporation",
+  },
+  {
+    symbol: "ASX",
+    name: "ASE Technology Holding Co., Ltd.",
+  },
+  {
+    symbol: "LII",
+    name: "Lennox International Inc.",
+  },
+  {
+    symbol: "SYF",
+    name: "Synchrony Financial",
+  },
+  {
+    symbol: "RF",
+    name: "Regions Financial Corporation",
+  },
+  {
+    symbol: "CMS",
+    name: "CMS Energy Corporation",
+  },
+  {
+    symbol: "SHG",
+    name: "Shinhan Financial Group Co., Ltd.",
+  },
+  {
+    symbol: "MKC.V",
+    name: "McCormick & Company, Incorporated",
+  },
+  {
+    symbol: "BLDR",
+    name: "Builders FirstSource, Inc.",
+  },
+  {
+    symbol: "MKC",
+    name: "McCormick & Company, Incorporated",
+  },
+  {
+    symbol: "TSN",
+    name: "Tyson Foods, Inc.",
+  },
+  {
+    symbol: "ZBH",
+    name: "Zimmer Biomet Holdings, Inc.",
+  },
+  {
+    symbol: "INVH",
+    name: "Invitation Homes Inc.",
+  },
+  {
+    symbol: "RCI",
+    name: "Rogers Communications Inc.",
+  },
+  {
+    symbol: "TEVA",
+    name: "Teva Pharmaceutical Industries Limited",
+  },
+  {
+    symbol: "TRU",
+    name: "TransUnion",
+  },
+  {
+    symbol: "PKG",
+    name: "Packaging Corporation of America",
+  },
+  {
+    symbol: "MKL",
+    name: "Markel Group Inc.",
+  },
+  {
+    symbol: "ARE",
+    name: "Alexandria Real Estate Equities, Inc.",
+  },
+  {
+    symbol: "BBY",
+    name: "Best Buy Co., Inc.",
+  },
+  {
+    symbol: "EME",
+    name: "EMCOR Group, Inc.",
+  },
+  {
+    symbol: "OMC",
+    name: "Omnicom Group Inc.",
+  },
+  {
+    symbol: "BALL",
+    name: "Ball Corporation",
+  },
+  {
+    symbol: "ZTO",
+    name: "ZTO Express (Cayman) Inc.",
+  },
+  {
+    symbol: "CLX",
+    name: "The Clorox Company",
+  },
+  {
+    symbol: "CSL",
+    name: "Carlisle Companies Incorporated",
+  },
+  {
+    symbol: "UMC",
+    name: "United Microelectronics Corporation",
+  },
+  {
+    symbol: "WAT",
+    name: "Waters Corporation",
+  },
+  {
+    symbol: "LH",
+    name: "Labcorp Holdings Inc.",
+  },
+  {
+    symbol: "MOH",
+    name: "Molina Healthcare, Inc.",
+  },
+  {
+    symbol: "CNP",
+    name: "CenterPoint Energy, Inc.",
+  },
+  {
+    symbol: "ESS",
+    name: "Essex Property Trust, Inc.",
+  },
+  {
+    symbol: "DRI",
+    name: "Darden Restaurants, Inc.",
+  },
+  {
+    symbol: "CRBG",
+    name: "Corebridge Financial, Inc.",
+  },
+  {
+    symbol: "BSBR",
+    name: "Banco Santander (Brasil) S.A.",
+  },
+  {
+    symbol: "PKX",
+    name: "POSCO Holdings Inc.",
+  },
+  {
+    symbol: "MT",
+    name: "ArcelorMittal S.A.",
+  },
+  {
+    symbol: "CFG",
+    name: "Citizens Financial Group, Inc.",
+  },
+  {
+    symbol: "TLK",
+    name: "Perusahaan Perseroan (Persero) PT Telekomunikasi Indonesia Tbk",
+  },
+  {
+    symbol: "APTV",
+    name: "Aptiv PLC",
+  },
+  {
+    symbol: "BAX",
+    name: "Baxter International Inc.",
+  },
+  {
+    symbol: "TME",
+    name: "Tencent Music Entertainment Group",
+  },
+  {
+    symbol: "NRG",
+    name: "NRG Energy, Inc.",
+  },
+  {
+    symbol: "AER",
+    name: "AerCap Holdings N.V.",
+  },
+  {
+    symbol: "KOF",
+    name: "Coca-Cola FEMSA, S.A.B. de C.V.",
+  },
+  {
+    symbol: "WSO.B",
+    name: "Watsco, Inc.",
+  },
+  {
+    symbol: "MAA",
+    name: "Mid-America Apartment Communities, Inc.",
+  },
+  {
+    symbol: "DG",
+    name: "Dollar General Corporation",
+  },
+  {
+    symbol: "MAS",
+    name: "Masco Corporation",
+  },
+  {
+    symbol: "WSO",
+    name: "Watsco, Inc.",
+  },
+  {
+    symbol: "PSTG",
+    name: "Pure Storage, Inc.",
+  },
+  {
+    symbol: "CTRA",
+    name: "Coterra Energy Inc.",
+  },
+  {
+    symbol: "LUV",
+    name: "Southwest Airlines Co.",
+  },
+  {
+    symbol: "L",
+    name: "Loews Corporation",
+  },
+  {
+    symbol: "DGX",
+    name: "Quest Diagnostics Incorporated",
+  },
+  {
+    symbol: "J",
+    name: "Jacobs Solutions Inc.",
+  },
+  {
+    symbol: "TS",
+    name: "Tenaris S.A.",
+  },
+  {
+    symbol: "SNAP",
+    name: "Snap Inc.",
+  },
+  {
+    symbol: "IHG",
+    name: "InterContinental Hotels Group PLC",
+  },
+  {
+    symbol: "FDS",
+    name: "FactSet Research Systems Inc.",
+  },
+  {
+    symbol: "WSM",
+    name: "Williams-Sonoma, Inc.",
+  },
+  {
+    symbol: "WLK",
+    name: "Westlake Corporation",
+  },
+  {
+    symbol: "HRL",
+    name: "Hormel Foods Corporation",
+  },
+  {
+    symbol: "SNA",
+    name: "Snap-on Incorporated",
+  },
+  {
+    symbol: "KEY",
+    name: "KeyCorp",
+  },
+  {
+    symbol: "SUI",
+    name: "Sun Communities, Inc.",
+  },
+  {
+    symbol: "IP",
+    name: "International Paper Company",
+  },
+  {
+    symbol: "EXPD",
+    name: "Expeditors International of Washington, Inc.",
+  },
+  {
+    symbol: "VIK",
+    name: "Viking Holdings Ltd",
+  },
+  {
+    symbol: "YUMC",
+    name: "Yum China Holdings, Inc.",
+  },
+  {
+    symbol: "DKS",
+    name: "DICK'S Sporting Goods, Inc.",
+  },
+  {
+    symbol: "TOST",
+    name: "Toast, Inc.",
+  },
+  {
+    symbol: "BIP",
+    name: "Brookfield Infrastructure Partners L.P.",
+  },
+  {
+    symbol: "RPM",
+    name: "RPM International Inc.",
+  },
+  {
+    symbol: "FNF",
+    name: "Fidelity National Financial, Inc.",
+  },
+  {
+    symbol: "EC",
+    name: "Ecopetrol S.A.",
+  },
+  {
+    symbol: "AVY",
+    name: "Avery Dennison Corporation",
+  },
+  {
+    symbol: "PNR",
+    name: "Pentair plc",
+  },
+  {
+    symbol: "EG",
+    name: "Everest Group, Ltd.",
+  },
+  {
+    symbol: "ONON",
+    name: "On Holding AG",
+  },
+  {
+    symbol: "DT",
+    name: "Dynatrace, Inc.",
+  },
+  {
+    symbol: "GFL",
+    name: "GFL Environmental Inc.",
+  },
+  {
+    symbol: "KIM",
+    name: "Kimco Realty Corporation",
+  },
+  {
+    symbol: "BURL",
+    name: "Burlington Stores, Inc.",
+  },
+  {
+    symbol: "GFI",
+    name: "Gold Fields Limited",
+  },
+  {
+    symbol: "OC",
+    name: "Owens Corning",
+  },
+  {
+    symbol: "DOC",
+    name: "Healthpeak Properties, Inc.",
+  },
+  {
+    symbol: "AMCR",
+    name: "Amcor plc",
+  },
+  {
+    symbol: "CAVA",
+    name: "CAVA Group, Inc.",
+  },
+  {
+    symbol: "SWK",
+    name: "Stanley Black & Decker, Inc.",
+  },
+  {
+    symbol: "GPC",
+    name: "Genuine Parts Company",
+  },
+  {
+    symbol: "NI",
+    name: "NiSource Inc.",
+  },
+  {
+    symbol: "GWRE",
+    name: "Guidewire Software, Inc.",
+  },
+  {
+    symbol: "RS",
+    name: "Reliance, Inc.",
+  },
+  {
+    symbol: "UI",
+    name: "Ubiquiti Inc.",
+  },
+  {
+    symbol: "RBA",
+    name: "RB Global, Inc.",
+  },
+  {
+    symbol: "VIV",
+    name: "Telefônica Brasil S.A.",
+  },
+  {
+    symbol: "H",
+    name: "Hyatt Hotels Corporation",
+  },
+  {
+    symbol: "IEX",
+    name: "IDEX Corporation",
+  },
+  {
+    symbol: "SN",
+    name: "SharkNinja, Inc.",
+  },
+  {
+    symbol: "EBR",
+    name: "Centrais Elétricas Brasileiras S.A. - Eletrobrás",
+  },
+  {
+    symbol: "AVTR",
+    name: "Avantor, Inc.",
+  },
+  {
+    symbol: "TXT",
+    name: "Textron Inc.",
+  },
+  {
+    symbol: "TOL",
+    name: "Toll Brothers, Inc.",
+  },
+  {
+    symbol: "CF",
+    name: "CF Industries Holdings, Inc.",
+  },
+  {
+    symbol: "BAP",
+    name: "Credicorp Ltd.",
+  },
+  {
+    symbol: "NMR",
+    name: "Nomura Holdings, Inc.",
+  },
+  {
+    symbol: "MRO",
+    name: "Marathon Oil Corporation",
+  },
+  {
+    symbol: "USFD",
+    name: "US Foods Holding Corp.",
+  },
+  {
+    symbol: "WES",
+    name: "Western Midstream Partners, LP",
+  },
+  {
+    symbol: "COHR",
+    name: "Coherent Corp.",
+  },
+  {
+    symbol: "UDR",
+    name: "UDR, Inc.",
+  },
+  {
+    symbol: "DPZ",
+    name: "Domino's Pizza, Inc.",
+  },
+  {
+    symbol: "RVTY",
+    name: "Revvity, Inc.",
+  },
+  {
+    symbol: "EQH",
+    name: "Equitable Holdings, Inc.",
+  },
+  {
+    symbol: "JBL",
+    name: "Jabil Inc.",
+  },
+  {
+    symbol: "CE",
+    name: "Celanese Corporation",
+  },
+  {
+    symbol: "JHX",
+    name: "James Hardie Industries plc",
+  },
+  {
+    symbol: "CNH",
+    name: "CNH Industrial N.V.",
+  },
+  {
+    symbol: "AMH",
+    name: "American Homes 4 Rent",
+  },
+  {
+    symbol: "UHAL",
+    name: "U-Haul Holding Company",
+  },
+  {
+    symbol: "CNH",
+    name: "CNH Industrial N.V.",
+  },
+  {
+    symbol: "RNR",
+    name: "RenaissanceRe Holdings Ltd.",
+  },
+  {
+    symbol: "ACM",
+    name: "AECOM",
+  },
+  {
+    symbol: "AGR",
+    name: "Avangrid, Inc.",
+  },
+  {
+    symbol: "RGA",
+    name: "Reinsurance Group of America, Incorporated",
+  },
+  {
+    symbol: "GGG",
+    name: "Graco Inc.",
+  },
+  {
+    symbol: "BXP",
+    name: "BXP, Inc.",
+  },
+  {
+    symbol: "CLH",
+    name: "Clean Harbors, Inc.",
+  },
+  {
+    symbol: "UHS",
+    name: "Universal Health Services, Inc.",
+  },
+  {
+    symbol: "XPO",
+    name: "XPO, Inc.",
+  },
+  {
+    symbol: "THC",
+    name: "Tenet Healthcare Corporation",
+  },
+  {
+    symbol: "BEP",
+    name: "Brookfield Renewable Partners L.P.",
+  },
+  {
+    symbol: "RDDT",
+    name: "Reddit, Inc.",
+  },
+  {
+    symbol: "KGC",
+    name: "Kinross Gold Corporation",
+  },
+  {
+    symbol: "CNA",
+    name: "CNA Financial Corporation",
+  },
+  {
+    symbol: "DVA",
+    name: "DaVita Inc.",
+  },
+  {
+    symbol: "CW",
+    name: "Curtiss-Wright Corporation",
+  },
+  {
+    symbol: "ELS",
+    name: "Equity LifeStyle Properties, Inc.",
+  },
+  {
+    symbol: "JEF",
+    name: "Jefferies Financial Group Inc.",
+  },
+  {
+    symbol: "UHAL.B",
+    name: "U-Haul Holding Company",
+  },
+  {
+    symbol: "RDY",
+    name: "Dr. Reddy's Laboratories Limited",
+  },
+  {
+    symbol: "JNPR",
+    name: "Juniper Networks, Inc.",
+  },
+  {
+    symbol: "JLL",
+    name: "Jones Lang LaSalle Incorporated",
+  },
+  {
+    symbol: "FIX",
+    name: "Comfort Systems USA, Inc.",
+  },
+  {
+    symbol: "PFGC",
+    name: "Performance Food Group Company",
+  },
+  {
+    symbol: "OWL",
+    name: "Blue Owl Capital Inc.",
+  },
+  {
+    symbol: "BG",
+    name: "Bunge Global SA",
+  },
+  {
+    symbol: "CPT",
+    name: "Camden Property Trust",
+  },
+  {
+    symbol: "SNN",
+    name: "Smith & Nephew plc",
+  },
+  {
+    symbol: "SUZ",
+    name: "Suzano S.A.",
+  },
+  {
+    symbol: "SOLV",
+    name: "Solventum Corporation",
+  },
+  {
+    symbol: "WPC",
+    name: "W. P. Carey Inc.",
+  },
+  {
+    symbol: "BEPC",
+    name: "Brookfield Renewable Corporation",
+  },
+  {
+    symbol: "ALLE",
+    name: "Allegion plc",
+  },
+  {
+    symbol: "BCH",
+    name: "Banco de Chile",
+  },
+  {
+    symbol: "AU",
+    name: "AngloGold Ashanti plc",
+  },
+  {
+    symbol: "SJM",
+    name: "The J. M. Smucker Company",
+  },
+  {
+    symbol: "FMS",
+    name: "Fresenius Medical Care AG",
+  },
+  {
+    symbol: "CACI",
+    name: "CACI International Inc",
+  },
+  {
+    symbol: "EMN",
+    name: "Eastman Chemical Company",
+  },
+  {
+    symbol: "RL",
+    name: "Ralph Lauren Corporation",
+  },
+  {
+    symbol: "MGM",
+    name: "MGM Resorts International",
+  },
+  {
+    symbol: "NVT",
+    name: "nVent Electric plc",
+  },
+  {
+    symbol: "RTO",
+    name: "Rentokil Initial plc",
+  },
+  {
+    symbol: "MGA",
+    name: "Magna International Inc.",
+  },
+  {
+    symbol: "AES",
+    name: "The AES Corporation",
+  },
+  {
+    symbol: "YPF",
+    name: "YPF Sociedad Anónima",
+  },
+  {
+    symbol: "ITT",
+    name: "ITT Inc.",
+  },
+  {
+    symbol: "TPR",
+    name: "Tapestry, Inc.",
+  },
+  {
+    symbol: "SQM",
+    name: "Sociedad Química y Minera de Chile S.A.",
+  },
+  {
+    symbol: "TAP.A",
+    name: "Molson Coors Beverage Company",
+  },
+  {
+    symbol: "TAP",
+    name: "Molson Coors Beverage Company",
+  },
+  {
+    symbol: "WMS",
+    name: "Advanced Drainage Systems, Inc.",
+  },
+  {
+    symbol: "HLI",
+    name: "Houlihan Lokey, Inc.",
+  },
+  {
+    symbol: "WPP",
+    name: "WPP plc",
+  },
+  {
+    symbol: "UNM",
+    name: "Unum Group",
+  },
+  {
+    symbol: "TFII",
+    name: "TFI International Inc.",
+  },
+  {
+    symbol: "TWLO",
+    name: "Twilio Inc.",
+  },
+  {
+    symbol: "CHWY",
+    name: "Chewy, Inc.",
+  },
+  {
+    symbol: "FTI",
+    name: "TechnipFMC plc",
+  },
+  {
+    symbol: "BJ",
+    name: "BJ's Wholesale Club Holdings, Inc.",
+  },
+  {
+    symbol: "ATR",
+    name: "AptarGroup, Inc.",
+  },
+  {
+    symbol: "KMX",
+    name: "CarMax, Inc.",
+  },
+  {
+    symbol: "BWXT",
+    name: "BWX Technologies, Inc.",
+  },
+  {
+    symbol: "AOS",
+    name: "A. O. Smith Corporation",
+  },
+  {
+    symbol: "PSN",
+    name: "Parsons Corporation",
+  },
+  {
+    symbol: "RRX",
+    name: "Regal Rexnord Corporation",
+  },
+  {
+    symbol: "CCK",
+    name: "Crown Holdings, Inc.",
+  },
+  {
+    symbol: "IPG",
+    name: "The Interpublic Group of Companies, Inc.",
+  },
+  {
+    symbol: "FND",
+    name: "Floor & Decor Holdings, Inc.",
+  },
+  {
+    symbol: "BLD",
+    name: "TopBuild Corp.",
+  },
+  {
+    symbol: "TFX",
+    name: "Teleflex Incorporated",
+  },
+  {
+    symbol: "ALB",
+    name: "Albemarle Corporation",
+  },
+  {
+    symbol: "LW",
+    name: "Lamb Weston Holdings, Inc.",
+  },
+  {
+    symbol: "NIO",
+    name: "NIO Inc.",
+  },
+  {
+    symbol: "EPAM",
+    name: "EPAM Systems, Inc.",
+  },
+  {
+    symbol: "CUBE",
+    name: "CubeSmart",
+  },
+  {
+    symbol: "SBS",
+    name: "Companhia de Saneamento Básico do Estado de São Paulo - SABESP",
+  },
+  {
+    symbol: "AFG",
+    name: "American Financial Group, Inc.",
+  },
+  {
+    symbol: "SCI",
+    name: "Service Corporation International",
+  },
+  {
+    symbol: "ACI",
+    name: "Albertsons Companies, Inc.",
+  },
+  {
+    symbol: "AA",
+    name: "Alcoa Corporation",
+  },
+  {
+    symbol: "OHI",
+    name: "Omega Healthcare Investors, Inc.",
+  },
+  {
+    symbol: "CTLT",
+    name: "Catalent, Inc.",
+  },
+  {
+    symbol: "FBIN",
+    name: "Fortune Brands Innovations, Inc.",
+  },
+  {
+    symbol: "WTRG",
+    name: "Essential Utilities, Inc.",
+  },
+  {
+    symbol: "SF",
+    name: "Stifel Financial Corp.",
+  },
+  {
+    symbol: "KEP",
+    name: "Korea Electric Power Corporation",
+  },
+  {
+    symbol: "ULS",
+    name: "UL Solutions Inc.",
+  },
+  {
+    symbol: "BEN",
+    name: "Franklin Resources, Inc.",
+  },
+  {
+    symbol: "NLY",
+    name: "Annaly Capital Management, Inc.",
+  },
+  {
+    symbol: "XPEV",
+    name: "XPeng Inc.",
+  },
+  {
+    symbol: "ALLY",
+    name: "Ally Financial Inc.",
+  },
+  {
+    symbol: "OVV",
+    name: "Ovintiv Inc.",
+  },
+  {
+    symbol: "AEG",
+    name: "Aegon Ltd.",
+  },
+  {
+    symbol: "KVYO",
+    name: "Klaviyo, Inc.",
+  },
+  {
+    symbol: "SNX",
+    name: "TD SYNNEX Corporation",
+  },
+  {
+    symbol: "DAY",
+    name: "Dayforce Inc.",
+  },
+  {
+    symbol: "NCLH",
+    name: "Norwegian Cruise Line Holdings Ltd.",
+  },
+  {
+    symbol: "PAG",
+    name: "Penske Automotive Group, Inc.",
+  },
+  {
+    symbol: "SARO",
+    name: "StandardAero, Inc.",
+  },
+  {
+    symbol: "ONTO",
+    name: "Onto Innovation Inc.",
+  },
+  {
+    symbol: "PNW",
+    name: "Pinnacle West Capital Corporation",
+  },
+  {
+    symbol: "EVR",
+    name: "Evercore Inc.",
+  },
+  {
+    symbol: "HII",
+    name: "Huntington Ingalls Industries, Inc.",
+  },
+  {
+    symbol: "GMED",
+    name: "Globus Medical, Inc.",
+  },
+  {
+    symbol: "EDU",
+    name: "New Oriental Education & Technology Group Inc.",
+  },
+  {
+    symbol: "AIZ",
+    name: "Assurant, Inc.",
+  },
+  {
+    symbol: "GNRC",
+    name: "Generac Holdings Inc.",
+  },
+  {
+    symbol: "ARMK",
+    name: "Aramark",
+  },
+  {
+    symbol: "KNSL",
+    name: "Kinsale Capital Group, Inc.",
+  },
+  {
+    symbol: "BSAC",
+    name: "Banco Santander-Chile",
+  },
+  {
+    symbol: "REXR",
+    name: "Rexford Industrial Realty, Inc.",
+  },
+  {
+    symbol: "MUSA",
+    name: "Murphy USA Inc.",
+  },
+  {
+    symbol: "EXP",
+    name: "Eagle Materials Inc.",
+  },
+  {
+    symbol: "PR",
+    name: "Permian Resources Corporation",
+  },
+  {
+    symbol: "MTZ",
+    name: "MasTec, Inc.",
+  },
+  {
+    symbol: "GL",
+    name: "Globe Life Inc.",
+  },
+  {
+    symbol: "FRT",
+    name: "Federal Realty Investment Trust",
+  },
+  {
+    symbol: "YMM",
+    name: "Full Truck Alliance Co. Ltd.",
+  },
+  {
+    symbol: "CRL",
+    name: "Charles River Laboratories International, Inc.",
+  },
+  {
+    symbol: "EHC",
+    name: "Encompass Health Corporation",
+  },
+  {
+    symbol: "STN",
+    name: "Stantec Inc.",
+  },
+  {
+    symbol: "TKO",
+    name: "TKO Group Holdings, Inc.",
+  },
+  {
+    symbol: "GLOB",
+    name: "Globant S.A.",
+  },
+  {
+    symbol: "BIRK",
+    name: "Birkenstock Holding plc",
+  },
+  {
+    symbol: "PRI",
+    name: "Primerica, Inc.",
+  },
+  {
+    symbol: "GME",
+    name: "GameStop Corp.",
+  },
+  {
+    symbol: "CIEN",
+    name: "Ciena Corporation",
+  },
+  {
+    symbol: "MLI",
+    name: "Mueller Industries, Inc.",
+  },
+  {
+    symbol: "QGEN",
+    name: "Qiagen N.V.",
+  },
+  {
+    symbol: "PCOR",
+    name: "Procore Technologies, Inc.",
+  },
+  {
+    symbol: "PAAS",
+    name: "Pan American Silver Corp.",
+  },
+  {
+    symbol: "PAYC",
+    name: "Paycom Software, Inc.",
+  },
+  {
+    symbol: "BNT",
+    name: "Brookfield Wealth Solutions Ltd.",
+  },
+  {
+    symbol: "WF",
+    name: "Woori Financial Group Inc.",
+  },
+  {
+    symbol: "BIO.B",
+    name: "Bio-Rad Laboratories, Inc.",
+  },
+  {
+    symbol: "AYI",
+    name: "Acuity Brands, Inc.",
+  },
+  {
+    symbol: "FHN",
+    name: "First Horizon Corporation",
+  },
+  {
+    symbol: "AS",
+    name: "Amer Sports, Inc.",
+  },
+  {
+    symbol: "NYT",
+    name: "The New York Times Company",
+  },
+  {
+    symbol: "SKX",
+    name: "Skechers U.S.A., Inc.",
+  },
+  {
+    symbol: "APG",
+    name: "APi Group Corporation",
+  },
+  {
+    symbol: "BIO",
+    name: "Bio-Rad Laboratories, Inc.",
+  },
+  {
+    symbol: "CHE",
+    name: "Chemed Corporation",
+  },
+  {
+    symbol: "WAL",
+    name: "Western Alliance Bancorporation",
+  },
+  {
+    symbol: "PSO",
+    name: "Pearson plc",
+  },
+  {
+    symbol: "DCI",
+    name: "Donaldson Company, Inc.",
+  },
+  {
+    symbol: "GPK",
+    name: "Graphic Packaging Holding Company",
+  },
+  {
+    symbol: "RBC",
+    name: "RBC Bearings Incorporated",
+  },
+  {
+    symbol: "FN",
+    name: "Fabrinet",
+  },
+  {
+    symbol: "LAD",
+    name: "Lithia Motors, Inc.",
+  },
+  {
+    symbol: "AIT",
+    name: "Applied Industrial Technologies, Inc.",
+  },
+  {
+    symbol: "FLR",
+    name: "Fluor Corporation",
+  },
+  {
+    symbol: "KBR",
+    name: "KBR, Inc.",
+  },
+  {
+    symbol: "EDR",
+    name: "Endeavor Group Holdings, Inc.",
+  },
+  {
+    symbol: "AGI",
+    name: "Alamos Gold Inc.",
+  },
+  {
+    symbol: "SKM",
+    name: "SK Telecom Co., Ltd.",
+  },
+  {
+    symbol: "INGR",
+    name: "Ingredion Incorporated",
+  },
+  {
+    symbol: "ORI",
+    name: "Old Republic International Corporation",
+  },
+  {
+    symbol: "WBS",
+    name: "Webster Financial Corporation",
+  },
+  {
+    symbol: "CNM",
+    name: "Core & Main, Inc.",
+  },
+  {
+    symbol: "CX",
+    name: "CEMEX, S.A.B. de C.V.",
+  },
+  {
+    symbol: "X",
+    name: "United States Steel Corporation",
+  },
+  {
+    symbol: "EGP",
+    name: "EastGroup Properties, Inc.",
+  },
+  {
+    symbol: "WCC",
+    name: "WESCO International, Inc.",
+  },
+  {
+    symbol: "PAC",
+    name: "Grupo Aeroportuario del Pacífico, S.A.B. de C.V.",
+  },
+  {
+    symbol: "MOS",
+    name: "The Mosaic Company",
+  },
+  {
+    symbol: "NNN",
+    name: "NNN REIT, Inc.",
+  },
+  {
+    symbol: "ALSN",
+    name: "Allison Transmission Holdings, Inc.",
+  },
+  {
+    symbol: "CR",
+    name: "Crane Company",
+  },
+  {
+    symbol: "AR",
+    name: "Antero Resources Corporation",
+  },
+  {
+    symbol: "KNX",
+    name: "Knight-Swift Transportation Holdings Inc.",
+  },
+  {
+    symbol: "DTM",
+    name: "DT Midstream, Inc.",
+  },
+  {
+    symbol: "TTC",
+    name: "The Toro Company",
+  },
+  {
+    symbol: "MHK",
+    name: "Mohawk Industries, Inc.",
+  },
+  {
+    symbol: "LTM",
+    name: "LATAM Airlines Group S.A.",
+  },
+  {
+    symbol: "BRX",
+    name: "Brixmor Property Group Inc.",
+  },
+  {
+    symbol: "BRBR",
+    name: "BellRing Brands, Inc.",
+  },
+  {
+    symbol: "S",
+    name: "SentinelOne, Inc.",
+  },
+  {
+    symbol: "HRB",
+    name: "H&R Block, Inc.",
+  },
+  {
+    symbol: "TPX",
+    name: "Tempur Sealy International, Inc.",
+  },
+  {
+    symbol: "RYAN",
+    name: "Ryan Specialty Holdings, Inc.",
+  },
+  {
+    symbol: "VNO",
+    name: "Vornado Realty Trust",
+  },
+  {
+    symbol: "CMA",
+    name: "Comerica Incorporated",
+  },
+  {
+    symbol: "DINO",
+    name: "HF Sinclair Corporation",
+  },
+  {
+    symbol: "ESTC",
+    name: "Elastic N.V.",
+  },
+  {
+    symbol: "CFR",
+    name: "Cullen/Frost Bankers, Inc.",
+  },
+  {
+    symbol: "INFA",
+    name: "Informatica Inc.",
+  },
+  {
+    symbol: "OGE",
+    name: "OGE Energy Corp.",
+  },
+  {
+    symbol: "GAP",
+    name: "The Gap, Inc.",
+  },
+  {
+    symbol: "ASR",
+    name: "Grupo Aeroportuario del Sureste, S. A. B. de C. V.",
+  },
+  {
+    symbol: "CIB",
+    name: "Bancolombia S.A.",
+  },
+  {
+    symbol: "PEN",
+    name: "Penumbra, Inc.",
+  },
+  {
+    symbol: "IVZ",
+    name: "Invesco Ltd.",
+  },
+  {
+    symbol: "CLS",
+    name: "Celestica Inc.",
+  },
+  {
+    symbol: "SUM",
+    name: "Summit Materials, Inc.",
+  },
+  {
+    symbol: "KT",
+    name: "KT Corporation",
+  },
+  {
+    symbol: "SMAR",
+    name: "Smartsheet Inc.",
+  },
+  {
+    symbol: "VOYA",
+    name: "Voya Financial, Inc.",
+  },
+  {
+    symbol: "BERY",
+    name: "Berry Global Group, Inc.",
+  },
+  {
+    symbol: "ADC",
+    name: "Agree Realty Corporation",
+  },
+  {
+    symbol: "U",
+    name: "Unity Software Inc.",
+  },
+  {
+    symbol: "AXTA",
+    name: "Axalta Coating Systems Ltd.",
+  },
+  {
+    symbol: "FMC",
+    name: "FMC Corporation",
+  },
+  {
+    symbol: "WFG",
+    name: "West Fraser Timber Co. Ltd.",
+  },
+  {
+    symbol: "BWA",
+    name: "BorgWarner Inc.",
+  },
+  {
+    symbol: "ATI",
+    name: "ATI Inc.",
+  },
+  {
+    symbol: "CRS",
+    name: "Carpenter Technology Corporation",
+  },
+  {
+    symbol: "DOCS",
+    name: "Doximity, Inc.",
+  },
+  {
+    symbol: "SSD",
+    name: "Simpson Manufacturing Co., Inc.",
+  },
+  {
+    symbol: "LOAR",
+    name: "Loar Holdings Inc.",
+  },
+  {
+    symbol: "GIL",
+    name: "Gildan Activewear Inc.",
+  },
+  {
+    symbol: "BFAM",
+    name: "Bright Horizons Family Solutions Inc.",
+  },
+  {
+    symbol: "VIPS",
+    name: "Vipshop Holdings Limited",
+  },
+  {
+    symbol: "RRC",
+    name: "Range Resources Corporation",
+  },
+  {
+    symbol: "AGCO",
+    name: "AGCO Corporation",
+  },
+  {
+    symbol: "ALV",
+    name: "Autoliv, Inc.",
+  },
+  {
+    symbol: "COLD",
+    name: "Americold Realty Trust, Inc.",
+  },
+  {
+    symbol: "JXN",
+    name: "Jackson Financial Inc.",
+  },
+  {
+    symbol: "SSB",
+    name: "SouthState Corporation",
+  },
+  {
+    symbol: "TIMB",
+    name: "TIM S.A.",
+  },
+  {
+    symbol: "GXO",
+    name: "GXO Logistics, Inc.",
+  },
+  {
+    symbol: "SPXC",
+    name: "SPX Technologies, Inc.",
+  },
+  {
+    symbol: "AMTM",
+    name: "Amentum Holdings, Inc.",
+  },
+  {
+    symbol: "AM",
+    name: "Antero Midstream Corporation",
+  },
+  {
+    symbol: "KEX",
+    name: "Kirby Corporation",
+  },
+  {
+    symbol: "RBRK",
+    name: "Rubrik, Inc.",
+  },
+  {
+    symbol: "GKOS",
+    name: "Glaukos Corporation",
+  },
+  {
+    symbol: "ANF",
+    name: "Abercrombie & Fitch Co.",
+  },
+  {
+    symbol: "BLCO",
+    name: "Bausch + Lomb Corporation",
+  },
+  {
+    symbol: "WEX",
+    name: "WEX Inc.",
+  },
+  {
+    symbol: "ADT",
+    name: "ADT Inc.",
+  },
+  {
+    symbol: "TMHC",
+    name: "Taylor Morrison Home Corporation",
+  },
+  {
+    symbol: "FCN",
+    name: "FTI Consulting, Inc.",
+  },
+  {
+    symbol: "RLI",
+    name: "RLI Corp.",
+  },
+  {
+    symbol: "BRFS",
+    name: "BRF S.A.",
+  },
+  {
+    symbol: "HMY",
+    name: "Harmony Gold Mining Company Limited",
+  },
+  {
+    symbol: "FR",
+    name: "First Industrial Realty Trust, Inc.",
+  },
+  {
+    symbol: "LPX",
+    name: "Louisiana-Pacific Corporation",
+  },
+  {
+    symbol: "WH",
+    name: "Wyndham Hotels & Resorts, Inc.",
+  },
+  {
+    symbol: "ZK",
+    name: "ZEEKR Intelligent Technology Holding Limited",
+  },
+  {
+    symbol: "SUN",
+    name: "Sunoco LP",
+  },
+  {
+    symbol: "ARW",
+    name: "Arrow Electronics, Inc.",
+  },
+  {
+    symbol: "TREX",
+    name: "Trex Company, Inc.",
+  },
+  {
+    symbol: "DLB",
+    name: "Dolby Laboratories, Inc.",
+  },
+  {
+    symbol: "RHI",
+    name: "Robert Half Inc.",
+  },
+  {
+    symbol: "TX",
+    name: "Ternium S.A.",
+  },
+  {
+    symbol: "FLS",
+    name: "Flowserve Corporation",
+  },
+  {
+    symbol: "LEVI",
+    name: "Levi Strauss & Co.",
+  },
+  {
+    symbol: "PLNT",
+    name: "Planet Fitness, Inc.",
+  },
+  {
+    symbol: "OSK",
+    name: "Oshkosh Corporation",
+  },
+  {
+    symbol: "SNV",
+    name: "Synovus Financial Corp.",
+  },
+  {
+    symbol: "PB",
+    name: "Prosperity Bancshares, Inc.",
+  },
+  {
+    symbol: "G",
+    name: "Genpact Limited",
+  },
+  {
+    symbol: "PATH",
+    name: "UiPath Inc.",
+  },
+  {
+    symbol: "ENLC",
+    name: "EnLink Midstream, LLC",
+  },
+  {
+    symbol: "STAG",
+    name: "STAG Industrial, Inc.",
+  },
+  {
+    symbol: "AXS",
+    name: "AXIS Capital Holdings Limited",
+  },
+  {
+    symbol: "STWD",
+    name: "Starwood Property Trust, Inc.",
+  },
+  {
+    symbol: "MTH",
+    name: "Meritage Homes Corporation",
+  },
+  {
+    symbol: "BBWI",
+    name: "Bath & Body Works, Inc.",
+  },
+  {
+    symbol: "CHH",
+    name: "Choice Hotels International, Inc.",
+  },
+  {
+    symbol: "ESAB",
+    name: "ESAB Corporation",
+  },
+  {
+    symbol: "MOD",
+    name: "Modine Manufacturing Company",
+  },
+  {
+    symbol: "TAL",
+    name: "TAL Education Group",
+  },
+  {
+    symbol: "ESI",
+    name: "Element Solutions Inc",
+  },
+  {
+    symbol: "COTY",
+    name: "Coty Inc.",
+  },
+  {
+    symbol: "WTS",
+    name: "Watts Water Technologies, Inc.",
+  },
+  {
+    symbol: "MSA",
+    name: "MSA Safety Incorporated",
+  },
+  {
+    symbol: "VFC",
+    name: "V.F. Corporation",
+  },
+  {
+    symbol: "HR",
+    name: "Healthcare Realty Trust Incorporated",
+  },
+  {
+    symbol: "POST",
+    name: "Post Holdings, Inc.",
+  },
+  {
+    symbol: "FAF",
+    name: "First American Financial Corporation",
+  },
+  {
+    symbol: "PACS",
+    name: "PACS Group, Inc.",
+  },
+  {
+    symbol: "LUMN",
+    name: "Lumen Technologies, Inc.",
+  },
+  {
+    symbol: "RHP",
+    name: "Ryman Hospitality Properties, Inc.",
+  },
+  {
+    symbol: "IBP",
+    name: "Installed Building Products, Inc.",
+  },
+  {
+    symbol: "GGB",
+    name: "Gerdau S.A.",
+  },
+  {
+    symbol: "MTG",
+    name: "MGIC Investment Corporation",
+  },
+  {
+    symbol: "ESNT",
+    name: "Essent Group Ltd.",
+  },
+  {
+    symbol: "ERJ",
+    name: "Embraer S.A.",
+  },
+  {
+    symbol: "SITE",
+    name: "SiteOne Landscape Supply, Inc.",
+  },
+  {
+    symbol: "VMI",
+    name: "Valmont Industries, Inc.",
+  },
+  {
+    symbol: "MTN",
+    name: "Vail Resorts, Inc.",
+  },
+  {
+    symbol: "BYD",
+    name: "Boyd Gaming Corporation",
+  },
+  {
+    symbol: "MTDR",
+    name: "Matador Resources Company",
+  },
+  {
+    symbol: "ZETA",
+    name: "Zeta Global Holdings Corp.",
+  },
+  {
+    symbol: "JHG",
+    name: "Janus Henderson Group plc",
+  },
+  {
+    symbol: "DAR",
+    name: "Darling Ingredients Inc.",
+  },
+  {
+    symbol: "FOUR",
+    name: "Shift4 Payments, Inc.",
+  },
+  {
+    symbol: "MOG.B",
+    name: "Moog Inc.",
+  },
+  {
+    symbol: "BIPC",
+    name: "Brookfield Infrastructure Corporation",
+  },
+  {
+    symbol: "AZEK",
+    name: "The AZEK Company Inc.",
+  },
+  {
+    symbol: "NOV",
+    name: "NOV Inc.",
+  },
+  {
+    symbol: "CIG",
+    name: "Companhia Energética de Minas Gerais - CEMIG",
+  },
+  {
+    symbol: "ZWS",
+    name: "Zurn Elkay Water Solutions Corporation",
+  },
+  {
+    symbol: "ELF",
+    name: "e.l.f. Beauty, Inc.",
+  },
+  {
+    symbol: "CLF",
+    name: "Cleveland-Cliffs Inc.",
+  },
+  {
+    symbol: "MOG.A",
+    name: "Moog Inc.",
+  },
+  {
+    symbol: "AN",
+    name: "AutoNation, Inc.",
+  },
+  {
+    symbol: "ELAN",
+    name: "Elanco Animal Health Incorporated",
+  },
+  {
+    symbol: "DDS",
+    name: "Dillard's, Inc.",
+  },
+  {
+    symbol: "RH",
+    name: "RH",
+  },
+  {
+    symbol: "CADE",
+    name: "Cadence Bank",
+  },
+  {
+    symbol: "CBT",
+    name: "Cabot Corporation",
+  },
+  {
+    symbol: "TRNO",
+    name: "Terreno Realty Corporation",
+  },
+  {
+    symbol: "HRI",
+    name: "Herc Holdings Inc.",
+  },
+  {
+    symbol: "TKR",
+    name: "The Timken Company",
+  },
+  {
+    symbol: "BMI",
+    name: "Badger Meter, Inc.",
+  },
+  {
+    symbol: "CMC",
+    name: "Commercial Metals Company",
+  },
+  {
+    symbol: "OBDC",
+    name: "Blue Owl Capital Corporation",
+  },
+  {
+    symbol: "AWI",
+    name: "Armstrong World Industries, Inc.",
+  },
+  {
+    symbol: "BMA",
+    name: "Banco Macro S.A.",
+  },
+  {
+    symbol: "ALTM",
+    name: "Arcadium Lithium plc",
+  },
+  {
+    symbol: "R",
+    name: "Ryder System, Inc.",
+  },
+  {
+    symbol: "CAE",
+    name: "CAE Inc.",
+  },
+  {
+    symbol: "BILL",
+    name: "BILL Holdings, Inc.",
+  },
+  {
+    symbol: "INSP",
+    name: "Inspire Medical Systems, Inc.",
+  },
+  {
+    symbol: "MDU",
+    name: "MDU Resources Group, Inc.",
+  },
+  {
+    symbol: "FSK",
+    name: "FS KKR Capital Corp.",
+  },
+  {
+    symbol: "INGM",
+    name: "Ingram Micro Holding Corporation",
+  },
+  {
+    symbol: "EPRT",
+    name: "Essential Properties Realty Trust, Inc.",
+  },
+  {
+    symbol: "CWAN",
+    name: "Clearwater Analytics Holdings, Inc.",
+  },
+  {
+    symbol: "KBH",
+    name: "KB Home",
+  },
+  {
+    symbol: "WHR",
+    name: "Whirlpool Corporation",
+  },
+  {
+    symbol: "ALK",
+    name: "Alaska Air Group, Inc.",
+  },
+  {
+    symbol: "AMG",
+    name: "Affiliated Managers Group, Inc.",
+  },
+  {
+    symbol: "KRG",
+    name: "Kite Realty Group Trust",
+  },
+  {
+    symbol: "NFG",
+    name: "National Fuel Gas Company",
+  },
+  {
+    symbol: "DY",
+    name: "Dycom Industries, Inc.",
+  },
+  {
+    symbol: "GBCI",
+    name: "Glacier Bancorp, Inc.",
+  },
+  {
+    symbol: "TKC",
+    name: "Turkcell Iletisim Hizmetleri A.S.",
+  },
+  {
+    symbol: "KD",
+    name: "Kyndryl Holdings, Inc.",
+  },
+  {
+    symbol: "LEA",
+    name: "Lear Corporation",
+  },
+  {
+    symbol: "OMF",
+    name: "OneMain Holdings, Inc.",
+  },
+  {
+    symbol: "IDA",
+    name: "IDACORP, Inc.",
+  },
+  {
+    symbol: "W",
+    name: "Wayfair Inc.",
+  },
+  {
+    symbol: "THO",
+    name: "THOR Industries, Inc.",
+  },
+  {
+    symbol: "RITM",
+    name: "Rithm Capital Corp.",
+  },
+  {
+    symbol: "PHI",
+    name: "PLDT Inc.",
+  },
+  {
+    symbol: "LNC",
+    name: "Lincoln National Corporation",
+  },
+  {
+    symbol: "SLGN",
+    name: "Silgan Holdings Inc.",
+  },
+  {
+    symbol: "CNX",
+    name: "CNX Resources Corporation",
+  },
+  {
+    symbol: "BHVN",
+    name: "Biohaven Ltd.",
+  },
+  {
+    symbol: "MNSO",
+    name: "MINISO Group Holding Limited",
+  },
+  {
+    symbol: "HOMB",
+    name: "Home Bancshares, Inc. (Conway, AR)",
+  },
+  {
+    symbol: "BC",
+    name: "Brunswick Corporation",
+  },
+  {
+    symbol: "VVV",
+    name: "Valvoline Inc.",
+  },
+  {
+    symbol: "THG",
+    name: "The Hanover Insurance Group, Inc.",
+  },
+  {
+    symbol: "SWX",
+    name: "Southwest Gas Holdings, Inc.",
+  },
+  {
+    symbol: "USM",
+    name: "United States Cellular Corporation",
+  },
+  {
+    symbol: "ST",
+    name: "Sensata Technologies Holding plc",
+  },
+  {
+    symbol: "BCC",
+    name: "Boise Cascade Company",
+  },
+  {
+    symbol: "SEE",
+    name: "Sealed Air Corporation",
+  },
+  {
+    symbol: "UGI",
+    name: "UGI Corporation",
+  },
+  {
+    symbol: "KNF",
+    name: "Knife River Corporation",
+  },
+  {
+    symbol: "ICL",
+    name: "ICL Group Ltd",
+  },
+  {
+    symbol: "MMS",
+    name: "Maximus, Inc.",
+  },
+  {
+    symbol: "SON",
+    name: "Sonoco Products Company",
+  },
+  {
+    symbol: "MSGS",
+    name: "Madison Square Garden Sports Corp.",
+  },
+  {
+    symbol: "VNT",
+    name: "Vontier Corporation",
+  },
+  {
+    symbol: "FG",
+    name: "F&G Annuities & Life, Inc.",
+  },
+  {
+    symbol: "PVH",
+    name: "PVH Corp.",
+  },
+  {
+    symbol: "FSS",
+    name: "Federal Signal Corporation",
+  },
+  {
+    symbol: "GTLS",
+    name: "Chart Industries, Inc.",
+  },
+  {
+    symbol: "NE",
+    name: "Noble Corporation plc",
+  },
+  {
+    symbol: "PFSI",
+    name: "PennyMac Financial Services, Inc.",
+  },
+  {
+    symbol: "SKY",
+    name: "Champion Homes, Inc.",
+  },
+  {
+    symbol: "SOBO",
+    name: "South Bow Corporation",
+  },
+  {
+    symbol: "FNB",
+    name: "F.N.B. Corporation",
+  },
+  {
+    symbol: "NEU",
+    name: "NewMarket Corporation",
+  },
+  {
+    symbol: "CNS",
+    name: "Cohen & Steers, Inc.",
+  },
+  {
+    symbol: "QTWO",
+    name: "Q2 Holdings, Inc.",
+  },
+  {
+    symbol: "HXL",
+    name: "Hexcel Corporation",
+  },
+  {
+    symbol: "RDN",
+    name: "Radian Group Inc.",
+  },
+  {
+    symbol: "SLG",
+    name: "SL Green Realty Corp.",
+  },
+  {
+    symbol: "POR",
+    name: "Portland General Electric Company",
+  },
+  {
+    symbol: "CIVI",
+    name: "Civitas Resources, Inc.",
+  },
+  {
+    symbol: "SMG",
+    name: "The Scotts Miracle-Gro Company",
+  },
+  {
+    symbol: "AL",
+    name: "Air Lease Corporation",
+  },
+  {
+    symbol: "SM",
+    name: "SM Energy Company",
+  },
+  {
+    symbol: "SNDR",
+    name: "Schneider National, Inc.",
+  },
+  {
+    symbol: "GATX",
+    name: "GATX Corporation",
+  },
+  {
+    symbol: "ELPC",
+    name: "Companhia Paranaense de Energia - COPEL",
+  },
+  {
+    symbol: "ELP",
+    name: "Companhia Paranaense de Energia - COPEL",
+  },
+  {
+    symbol: "MGY",
+    name: "Magnolia Oil & Gas Corporation",
+  },
+  {
+    symbol: "KRC",
+    name: "Kilroy Realty Corporation",
+  },
+  {
+    symbol: "BOOT",
+    name: "Boot Barn Holdings, Inc.",
+  },
+  {
+    symbol: "OLN",
+    name: "Olin Corporation",
+  },
+  {
+    symbol: "CUZ",
+    name: "Cousins Properties Incorporated",
+  },
+  {
+    symbol: "LTH",
+    name: "Life Time Group Holdings, Inc.",
+  },
+  {
+    symbol: "CTRE",
+    name: "CareTrust REIT, Inc.",
+  },
+  {
+    symbol: "ORA",
+    name: "Ormat Technologies, Inc.",
+  },
+  {
+    symbol: "BDC",
+    name: "Belden Inc.",
+  },
+  {
+    symbol: "DNB",
+    name: "Dun & Bradstreet Holdings, Inc.",
+  },
+  {
+    symbol: "BBU",
+    name: "Brookfield Business Partners L.P.",
+  },
+  {
+    symbol: "MUR",
+    name: "Murphy Oil Corporation",
+  },
+  {
+    symbol: "STVN",
+    name: "Stevanato Group S.p.A.",
+  },
+  {
+    symbol: "RYN",
+    name: "Rayonier Inc.",
+  },
+  {
+    symbol: "HIMS",
+    name: "Hims & Hers Health, Inc.",
+  },
+  {
+    symbol: "FLO",
+    name: "Flowers Foods, Inc.",
+  },
+  {
+    symbol: "CRC",
+    name: "California Resources Corporation",
+  },
+  {
+    symbol: "MC",
+    name: "Moelis & Company",
+  },
+  {
+    symbol: "WTM",
+    name: "White Mountains Insurance Group, Ltd.",
+  },
+  {
+    symbol: "GTES",
+    name: "Gates Industrial Corporation plc",
+  },
+  {
+    symbol: "VIST",
+    name: "Vista Energy, S.A.B. de C.V.",
+  },
+  {
+    symbol: "CLVT",
+    name: "Clarivate Plc",
+  },
+  {
+    symbol: "BOX",
+    name: "Box, Inc.",
+  },
+  {
+    symbol: "LAZ",
+    name: "Lazard, Inc.",
+  },
+  {
+    symbol: "ACA",
+    name: "Arcosa, Inc.",
+  },
+  {
+    symbol: "NJR",
+    name: "New Jersey Resources Corporation",
+  },
+  {
+    symbol: "GPI",
+    name: "Group 1 Automotive, Inc.",
+  },
+  {
+    symbol: "PIPR",
+    name: "Piper Sandler Companies",
+  },
+  {
+    symbol: "SFBS",
+    name: "ServisFirst Bancshares, Inc.",
+  },
+  {
+    symbol: "FRO",
+    name: "Frontline plc",
+  },
+  {
+    symbol: "MAIN",
+    name: "Main Street Capital Corporation",
+  },
+  {
+    symbol: "RXO",
+    name: "RXO, Inc.",
+  },
+  {
+    symbol: "PAM",
+    name: "Pampa Energía S.A.",
+  },
+  {
+    symbol: "BCO",
+    name: "The Brink's Company",
+  },
+  {
+    symbol: "ABG",
+    name: "Asbury Automotive Group, Inc.",
+  },
+  {
+    symbol: "MATX",
+    name: "Matson, Inc.",
+  },
+  {
+    symbol: "IRT",
+    name: "Independence Realty Trust, Inc.",
+  },
+  {
+    symbol: "OGN",
+    name: "Organon & Co.",
+  },
+  {
+    symbol: "MSM",
+    name: "MSC Industrial Direct Co., Inc.",
+  },
+  {
+    symbol: "PRMW",
+    name: "Primo Water Corporation",
+  },
+  {
+    symbol: "AB",
+    name: "AllianceBernstein Holding L.P.",
+  },
+  {
+    symbol: "SHAK",
+    name: "Shake Shack Inc.",
+  },
+  {
+    symbol: "AVNT",
+    name: "Avient Corporation",
+  },
+  {
+    symbol: "AGO",
+    name: "Assured Guaranty Ltd.",
+  },
+  {
+    symbol: "WK",
+    name: "Workiva Inc.",
+  },
+  {
+    symbol: "MHO",
+    name: "M/I Homes, Inc.",
+  },
+  {
+    symbol: "NYCB",
+    name: "New York Community Bancorp, Inc.",
+  },
+  {
+    symbol: "SG",
+    name: "Sweetgreen, Inc.",
+  },
+  {
+    symbol: "NXE",
+    name: "NexGen Energy Ltd.",
+  },
+  {
+    symbol: "KTB",
+    name: "Kontoor Brands, Inc.",
+  },
+  {
+    symbol: "M",
+    name: "Macy's, Inc.",
+  },
+  {
+    symbol: "EAT",
+    name: "Brinker International, Inc.",
+  },
+  {
+    symbol: "HL",
+    name: "Hecla Mining Company",
+  },
+  {
+    symbol: "TEO",
+    name: "Telecom Argentina S.A.",
+  },
+  {
+    symbol: "ITGR",
+    name: "Integer Holdings Corporation",
+  },
+  {
+    symbol: "HOG",
+    name: "Harley-Davidson, Inc.",
+  },
+  {
+    symbol: "ABCB",
+    name: "Ameris Bancorp",
+  },
+  {
+    symbol: "IGT",
+    name: "International Game Technology PLC",
+  },
+  {
+    symbol: "BKH",
+    name: "Black Hills Corporation",
+  },
+  {
+    symbol: "ASGN",
+    name: "ASGN Incorporated",
+  },
+  {
+    symbol: "SEM",
+    name: "Select Medical Holdings Corporation",
+  },
+  {
+    symbol: "OGS",
+    name: "ONE Gas, Inc.",
+  },
+  {
+    symbol: "CPA",
+    name: "Copa Holdings, S.A.",
+  },
+  {
+    symbol: "FUL",
+    name: "H.B. Fuller Company",
+  },
+  {
+    symbol: "ASH",
+    name: "Ashland Inc.",
+  },
+  {
+    symbol: "SIG",
+    name: "Signet Jewelers Limited",
+  },
+  {
+    symbol: "NNI",
+    name: "Nelnet, Inc.",
+  },
+  {
+    symbol: "KMPR",
+    name: "Kemper Corporation",
+  },
+  {
+    symbol: "FUN",
+    name: "Six Flags Entertainment Corporation",
+  },
+  {
+    symbol: "BROS",
+    name: "Dutch Bros Inc.",
+  },
+  {
+    symbol: "ENS",
+    name: "EnerSys",
+  },
+  {
+    symbol: "TXNM",
+    name: "TXNM Energy, Inc.",
+  },
+  {
+    symbol: "PII",
+    name: "Polaris Inc.",
+  },
+  {
+    symbol: "HASI",
+    name: "HA Sustainable Infrastructure Capital, Inc.",
+  },
+  {
+    symbol: "TGS",
+    name: "Transportadora de Gas del Sur S.A.",
+  },
+  {
+    symbol: "AHR",
+    name: "American Healthcare REIT, Inc.",
+  },
+  {
+    symbol: "MAC",
+    name: "The Macerich Company",
+  },
+  {
+    symbol: "OSCR",
+    name: "Oscar Health, Inc.",
+  },
+  {
+    symbol: "UGP",
+    name: "Ultrapar Participações S.A.",
+  },
+  {
+    symbol: "HUN",
+    name: "Huntsman Corporation",
+  },
+  {
+    symbol: "WHD",
+    name: "Cactus, Inc.",
+  },
+  {
+    symbol: "HGV",
+    name: "Hilton Grand Vacations Inc.",
+  },
+  {
+    symbol: "LRN",
+    name: "Stride, Inc.",
+  },
+  {
+    symbol: "HAE",
+    name: "Haemonetics Corporation",
+  },
+  {
+    symbol: "TNET",
+    name: "TriNet Group, Inc.",
+  },
+  {
+    symbol: "OR",
+    name: "Osisko Gold Royalties Ltd",
+  },
+  {
+    symbol: "CSAN",
+    name: "Cosan S.A.",
+  },
+  {
+    symbol: "ENIC",
+    name: "Enel Chile S.A.",
+  },
+  {
+    symbol: "SSL",
+    name: "Sasol Limited",
+  },
+  {
+    symbol: "TPH",
+    name: "Tri Pointe Homes, Inc.",
+  },
+  {
+    symbol: "TBBB",
+    name: "BBB Foods Inc.",
+  },
+  {
+    symbol: "VRN",
+    name: "Veren Inc.",
+  },
+  {
+    symbol: "WD",
+    name: "Walker & Dunlop, Inc.",
+  },
+  {
+    symbol: "WU",
+    name: "The Western Union Company",
+  },
+  {
+    symbol: "ALIT",
+    name: "Alight, Inc.",
+  },
+  {
+    symbol: "HHH",
+    name: "Howard Hughes Holdings Inc.",
+  },
+  {
+    symbol: "AQN",
+    name: "Algonquin Power & Utilities Corp.",
+  },
+  {
+    symbol: "AEO",
+    name: "American Eagle Outfitters, Inc.",
+  },
+  {
+    symbol: "SR",
+    name: "Spire Inc.",
+  },
+  {
+    symbol: "HBM",
+    name: "Hudbay Minerals Inc.",
+  },
+  {
+    symbol: "UAA",
+    name: "Under Armour, Inc.",
+  },
+  {
+    symbol: "KAI",
+    name: "Kadant Inc.",
+  },
+  {
+    symbol: "IIPR",
+    name: "Innovative Industrial Properties, Inc.",
+  },
+  {
+    symbol: "DOCN",
+    name: "DigitalOcean Holdings, Inc.",
+  },
+  {
+    symbol: "PBF",
+    name: "PBF Energy Inc.",
+  },
+  {
+    symbol: "GOLF",
+    name: "Acushnet Holdings Corp.",
+  },
+  {
+    symbol: "MCY",
+    name: "Mercury General Corporation",
+  },
+  {
+    symbol: "ALE",
+    name: "ALLETE, Inc.",
+  },
+  {
+    symbol: "AX",
+    name: "Axos Financial, Inc.",
+  },
+  {
+    symbol: "NOG",
+    name: "Northern Oil and Gas, Inc.",
+  },
+  {
+    symbol: "HIW",
+    name: "Highwoods Properties, Inc.",
+  },
+  {
+    symbol: "JWN",
+    name: "Nordstrom, Inc.",
+  },
+  {
+    symbol: "SKT",
+    name: "Tanger Inc.",
+  },
+  {
+    symbol: "VAL",
+    name: "Valaris Limited",
+  },
+  { symbol: "TFPM", name: "Triple Flag Precious Metals Corp." },
+  { symbol: "EGO", name: "Eldorado Gold Corporation" },
+  { symbol: "AUB", name: "Atlantic Union Bankshares Corporation" },
+  { symbol: "SPR", name: "Spirit AeroSystems Holdings, Inc." },
+  { symbol: "JOBY", name: "Joby Aviation, Inc." },
+  { symbol: "LPL", name: "LG Display Co., Ltd." },
+  { symbol: "CDP", name: "COPT Defense Properties" },
+  { symbol: "JBT", name: "John Bean Technologies Corporation" },
+  { symbol: "CNO", name: "CNO Financial Group, Inc." },
+  { symbol: "PBH", name: "Prestige Consumer Healthcare Inc." },
+  { symbol: "KFY", name: "Korn Ferry" },
+  { symbol: "RIG", name: "Transocean Ltd." },
+  { symbol: "APLE", name: "Apple Hospitality REIT, Inc." },
+  { symbol: "AROC", name: "Archrock, Inc." },
+  { symbol: "TEX", name: "Terex Corporation" },
+  { symbol: "UA", name: "Under Armour, Inc." },
+  { symbol: "DXC", name: "DXC Technology Company" },
+  { symbol: "IONQ", name: "IonQ, Inc." },
+  { symbol: "GBTG", name: "Global Business Travel Group, Inc." },
+  { symbol: "GVA", name: "Granite Construction Incorporated" },
+  { symbol: "EPR", name: "EPR Properties" },
+  { symbol: "GMS", name: "GMS Inc." },
+  { symbol: "UNF", name: "UniFirst Corporation" },
+  { symbol: "SLVM", name: "Sylvamo Corporation" },
+  { symbol: "NHI", name: "National Health Investors, Inc." },
+  { symbol: "ATHM", name: "Autohome Inc." },
+  { symbol: "ENV", name: "Envestnet, Inc." },
+  { symbol: "CRK", name: "Comstock Resources, Inc." },
+  { symbol: "SAM", name: "The Boston Beer Company, Inc." },
+  { symbol: "BRC", name: "Brady Corporation" },
+  { symbol: "INST", name: "Instructure Holdings, Inc." },
+  { symbol: "PRGO", name: "Perrigo Company plc" },
+  { symbol: "IAG", name: "IAMGOLD Corporation" },
+  { symbol: "CNK", name: "Cinemark Holdings, Inc." },
+  { symbol: "ASB", name: "Associated Banc-Corp" },
+  { symbol: "HP", name: "Helmerich & Payne, Inc." },
+  { symbol: "MWA", name: "Mueller Water Products, Inc." },
+  { symbol: "BNL", name: "Broadstone Net Lease, Inc." },
+  { symbol: "GHC", name: "Graham Holdings Company" },
+  { symbol: "BVN", name: "Compañía de Minas Buenaventura S.A.A." },
+  { symbol: "GRBK", name: "Green Brick Partners, Inc." },
+  { symbol: "ESE", name: "ESCO Technologies Inc." },
+  { symbol: "YOU", name: "Clear Secure, Inc." },
+  { symbol: "PJT", name: "PJT Partners Inc." },
+  { symbol: "ABM", name: "ABM Industries Incorporated" },
+  { symbol: "CBZ", name: "CBIZ, Inc." },
+  { symbol: "SBSW", name: "Sibanye Stillwater Limited" },
+  { symbol: "SXT", name: "Sensient Technologies Corporation" },
+  { symbol: "UCB", name: "United Community Banks, Inc." },
+  { symbol: "KLC", name: "KinderCare Learning Companies, Inc." },
+  { symbol: "ATMU", name: "Atmus Filtration Technologies Inc." },
+  { symbol: "TGLS", name: "Tecnoglass Inc." },
+  { symbol: "NSA", name: "National Storage Affiliates Trust" },
+  { symbol: "PRIM", name: "Primoris Services Corporation" },
+  { symbol: "TDS", name: "Telephone and Data Systems, Inc." },
+  { symbol: "HESM", name: "Hess Midstream LP" },
+  { symbol: "NVST", name: "Envista Holdings Corporation" },
+  { symbol: "BXMT", name: "Blackstone Mortgage Trust, Inc." },
+  { symbol: "TNL", name: "Travel + Leisure Co." },
+  { symbol: "AI", name: "C3.ai, Inc." },
+  { symbol: "HAYW", name: "Hayward Holdings, Inc." },
+  { symbol: "HAFN", name: "Hafnia Limited" },
+  { symbol: "HTGC", name: "Hercules Capital, Inc." },
+  { symbol: "TDW", name: "Tidewater Inc." },
+  { symbol: "CEIX", name: "CONSOL Energy Inc." },
+  { symbol: "QS", name: "QuantumScape Corporation" },
+  { symbol: "BSM", name: "Black Stone Minerals, L.P." },
+  { symbol: "HCC", name: "Warrior Met Coal, Inc." },
+  { symbol: "CXT", name: "Crane NXT, Co." },
+  { symbol: "PRKS", name: "United Parks & Resorts Inc." },
+  { symbol: "GFF", name: "Griffon Corporation" },
+  { symbol: "NPO", name: "Enpro Inc." },
+  { symbol: "RNG", name: "RingCentral, Inc." },
+  { symbol: "JOE", name: "The St. Joe Company" },
+  { symbol: "AWR", name: "American States Water Company" },
+  { symbol: "TDC", name: "Teradata Corporation" },
+  { symbol: "CWK", name: "Cushman & Wakefield plc" },
+  { symbol: "BTU", name: "Peabody Energy Corporation" },
+  { symbol: "GEF.B", name: "Greif, Inc." },
+  { symbol: "IFS", name: "Intercorp Financial Services Inc." },
+  { symbol: "FBP", name: "First BanCorp." },
+  { symbol: "DEI", name: "Douglas Emmett, Inc." },
+  { symbol: "ATKR", name: "Atkore Inc." },
+  { symbol: "CWT", name: "California Water Service Group" },
+  { symbol: "FHI", name: "Federated Hermes, Inc." },
+  { symbol: "YETI", name: "YETI Holdings, Inc." },
+  { symbol: "TAC", name: "TransAlta Corporation" },
+  { symbol: "OUT", name: "OUTFRONT Media Inc." },
+  { symbol: "BUR", name: "Burford Capital Limited" },
+  { symbol: "APAM", name: "Artisan Partners Asset Management Inc." },
+  { symbol: "MP", name: "MP Materials Corp." },
+  { symbol: "CWEN", name: "Clearway Energy, Inc." },
+  { symbol: "PAY", name: "Paymentus Holdings, Inc." },
+  { symbol: "NSP", name: "Insperity, Inc." },
+  { symbol: "CAAP", name: "Corporación América Airports S.A." },
+  { symbol: "BBAR", name: "Banco BBVA Argentina S.A." },
+  { symbol: "MIR", name: "Mirion Technologies, Inc." },
+  { symbol: "AVA", name: "Avista Corporation" },
+  { symbol: "MAN", name: "ManpowerGroup Inc." },
+  { symbol: "KNTK", name: "Kinetik Holdings Inc." },
+  { symbol: "DFH", name: "Dream Finders Homes, Inc." },
+  { symbol: "ATS", name: "ATS Corporation" },
+  { symbol: "CBU", name: "Community Financial System, Inc." },
+  { symbol: "DBRG", name: "DigitalBridge Group, Inc." },
+  { symbol: "CMBT", name: "Cmb.Tech NV" },
+  { symbol: "GEF", name: "Greif, Inc." },
+  { symbol: "STNG", name: "Scorpio Tankers Inc." },
+  { symbol: "BHC", name: "Bausch Health Companies Inc." },
+  { symbol: "REZI", name: "Resideo Technologies, Inc." },
+  { symbol: "TRN", name: "Trinity Industries, Inc." },
+  { symbol: "LBRT", name: "Liberty Energy Inc." },
+  { symbol: "PK", name: "Park Hotels & Resorts Inc." },
+  { symbol: "GNW", name: "Genworth Financial, Inc." },
+  { symbol: "COMP", name: "Compass, Inc." },
+  { symbol: "ABR", name: "Arbor Realty Trust, Inc." },
+  { symbol: "DV", name: "DoubleVerify Holdings, Inc." },
+  { symbol: "CCS", name: "Century Communities, Inc." },
+  { symbol: "LCII", name: "LCI Industries" },
+  { symbol: "CWEN.A", name: "Clearway Energy, Inc." },
+  { symbol: "NOMD", name: "Nomad Foods Limited" },
+  { symbol: "MPW", name: "Medical Properties Trust, Inc." },
+  { symbol: "LXP", name: "LXP Industrial Trust" },
+  { symbol: "EVH", name: "Evolent Health, Inc." },
+  { symbol: "KWR", name: "Quaker Chemical Corporation" },
+  { symbol: "CC", name: "The Chemours Company" },
+  { symbol: "VAC", name: "Marriott Vacations Worldwide Corporation" },
+  { symbol: "SID", name: "Companhia Siderúrgica Nacional" },
+  { symbol: "ATGE", name: "Adtalem Global Education Inc." },
+  { symbol: "ZIM", name: "ZIM Integrated Shipping Services Ltd." },
+  { symbol: "CPK", name: "Chesapeake Utilities Corporation" },
+  { symbol: "CDE", name: "Coeur Mining, Inc." },
+  { symbol: "MANU", name: "Manchester United plc" },
+  { symbol: "ASAN", name: "Asana, Inc." },
+  { symbol: "TGNA", name: "TEGNA Inc." },
+  { symbol: "WLYB", name: "John Wiley & Sons, Inc." },
+  { symbol: "WLY", name: "John Wiley & Sons, Inc." },
+  { symbol: "AMR", name: "Alpha Metallurgical Resources, Inc." },
+  { symbol: "UE", name: "Urban Edge Properties" },
+  { symbol: "CON", name: "Concentra Group Holdings Parent, Inc." },
+  { symbol: "PAGS", name: "PagSeguro Digital Ltd." },
+  { symbol: "FCPT", name: "Four Corners Property Trust, Inc." },
+  { symbol: "BOH", name: "Bank of Hawaii Corporation" },
+  { symbol: "KGS", name: "Kodiak Gas Services, Inc." },
+  { symbol: "GPOR", name: "Gulfport Energy Corporation" },
+  { symbol: "AKO.B", name: "Embotelladora Andina S.A." },
+  { symbol: "AKO.A", name: "Embotelladora Andina S.A." },
+  { symbol: "BKU", name: "BankUnited, Inc." },
+  { symbol: "USAC", name: "USA Compression Partners, LP" },
+  { symbol: "OII", name: "Oceaneering International, Inc." },
+  { symbol: "BANC", name: "Banc of California, Inc." },
+  { symbol: "ARCH", name: "Arch Resources, Inc." },
+  { symbol: "VSTO", name: "Vista Outdoor Inc." },
+  { symbol: "CALX", name: "Calix, Inc." },
+  { symbol: "ARDT", name: "Ardent Health Partners, Inc." },
+  { symbol: "AKR", name: "Acadia Realty Trust" },
+  { symbol: "SDRL", name: "Seadrill Limited" },
+  { symbol: "CPRI", name: "Capri Holdings Limited" },
+  { symbol: "SPB", name: "Spectrum Brands Holdings, Inc." },
+  { symbol: "VSH", name: "Vishay Intertechnology, Inc." },
+  { symbol: "HBI", name: "Hanesbrands Inc." },
+  { symbol: "BFH", name: "Bread Financial Holdings, Inc." },
+  { symbol: "MTX", name: "Minerals Technologies Inc." },
+  { symbol: "HNI", name: "HNI Corporation" },
+  { symbol: "PFS", name: "Provident Financial Services, Inc." },
+  { symbol: "EPAC", name: "Enerpac Tool Group Corp." },
+  { symbol: "CDLR", name: "Cadeler A/S" },
+  { symbol: "BAK", name: "Braskem S.A." },
+  { symbol: "CURB", name: "Curbline Properties Corp." },
+  { symbol: "LU", name: "Lufax Holding Ltd" },
+  { symbol: "B", name: "Barnes Group Inc." },
+  { symbol: "CVI", name: "CVR Energy, Inc." },
+  { symbol: "AG", name: "First Majestic Silver Corp." },
+  { symbol: "AVAL", name: "Grupo Aval Acciones y Valores S.A." },
+  { symbol: "ENR", name: "Energizer Holdings, Inc." },
+  { symbol: "OKLO", name: "Oklo Inc." },
+  { symbol: "GRND", name: "Grindr Inc." },
+  { symbol: "RKT", name: "Rocket Companies, Inc." },
+  { symbol: "NABL", name: "N-able, Inc." },
+  { symbol: "SPNT", name: "SiriusPoint Ltd." },
+  { symbol: "BTE", name: "Baytex Energy Corp." },
+  { symbol: "LSPD", name: "Lightspeed Commerce Inc." },
+  { symbol: "AZZ", name: "AZZ Inc." },
+  { symbol: "MBC", name: "MasterBrand, Inc." },
+  { symbol: "FL", name: "Foot Locker, Inc." },
+  { symbol: "AMBP", name: "Ardagh Metal Packaging S.A." },
+  { symbol: "IVT", name: "InvenTrust Properties Corp." },
+  { symbol: "YELP", name: "Yelp Inc." },
+  { symbol: "INSW", name: "International Seaways, Inc." },
+  { symbol: "ENVA", name: "Enova International, Inc." },
+  { symbol: "FBK", name: "FB Financial Corporation" },
+  { symbol: "ENOV", name: "Enovis Corporation" },
+  { symbol: "VSCO", name: "Victoria's Secret & Co." },
+  { symbol: "VZIO", name: "VIZIO Holding Corp." },
+  { symbol: "AIN", name: "Albany International Corp." },
+  { symbol: "IBTA", name: "Ibotta, Inc." },
+  { symbol: "VTMX", name: "Corporación Inmobiliaria Vesta, S.A.B. de C.V." },
+  { symbol: "AAP", name: "Advance Auto Parts, Inc." },
+  { symbol: "BE", name: "Bloom Energy Corporation" },
+  { symbol: "AESI", name: "Atlas Energy Solutions Inc." },
+  { symbol: "CRI", name: "Carter's, Inc." },
+  { symbol: "MTRN", name: "Materion Corporation" },
+  { symbol: "TR", name: "Tootsie Roll Industries, Inc." },
+  { symbol: "CCU", name: "Compañía Cervecerías Unidas S.A." },
+  { symbol: "PAR", name: "PAR Technology Corporation" },
+  { symbol: "RNST", name: "Renasant Corporation" },
+  { symbol: "AIR", name: "AAR Corp." },
+  { symbol: "EQC", name: "Equity Commonwealth" },
+  { symbol: "KSS", name: "Kohl's Corporation" },
+  { symbol: "SWI", name: "SolarWinds Corporation" },
+  { symbol: "SXI", name: "Standex International Corporation" },
+  { symbol: "BKE", name: "The Buckle, Inc." },
+  { symbol: "SHO", name: "Sunstone Hotel Investors, Inc." },
+  { symbol: "SGHC", name: "Super Group (SGHC) Limited" },
+  { symbol: "GEO", name: "The GEO Group, Inc." },
+  { symbol: "MCW", name: "Mister Car Wash, Inc." },
+  { symbol: "EVTC", name: "EVERTEC, Inc." },
+  { symbol: "ALG", name: "Alamo Group Inc." },
+  { symbol: "WRBY", name: "Warby Parker Inc." },
+  { symbol: "RLX", name: "RLX Technology Inc." },
+  { symbol: "CRGY", name: "Crescent Energy Company" },
+  { symbol: "ZGN", name: "Ermenegildo Zegna N.V." },
+  { symbol: "MSGE", name: "Madison Square Garden Entertainment Corp." },
+  { symbol: "WNS", name: "WNS (Holdings) Limited" },
+  { symbol: "ERO", name: "Ero Copper Corp." },
+  { symbol: "TROX", name: "Tronox Holdings plc" },
+  { symbol: "DKL", name: "Delek Logistics Partners, LP" },
+  { symbol: "FIHL", name: "Fidelis Insurance Holdings Limited" },
+  { symbol: "AGM", name: "Federal Agricultural Mortgage Corporation" },
+  { symbol: "HTH", name: "Hilltop Holdings Inc." },
+  { symbol: "AGM.A", name: "Federal Agricultural Mortgage Corporation" },
+  { symbol: "CEPU", name: "Central Puerto S.A." },
+  { symbol: "THS", name: "TreeHouse Foods, Inc." },
+  { symbol: "KMT", name: "Kennametal Inc." },
+  { symbol: "WOR", name: "Worthington Enterprises, Inc." },
+  { symbol: "NEP", name: "NextEra Energy Partners, LP" },
+  { symbol: "SAH", name: "Sonic Automotive, Inc." },
+  { symbol: "PHIN", name: "PHINIA Inc." },
+  { symbol: "VVX", name: "V2X, Inc." },
+  { symbol: "HI", name: "Hillenbrand, Inc." },
+  { symbol: "CNMD", name: "CONMED Corporation" },
+  { symbol: "CABO", name: "Cable One, Inc." },
+  { symbol: "PRM", name: "Perimeter Solutions, SA" },
+  { symbol: "STC", name: "Stewart Information Services Corporation" },
+  { symbol: "KOS", name: "Kosmos Energy Ltd." },
+  { symbol: "TSLX", name: "Sixth Street Specialty Lending, Inc." },
+  { symbol: "GBX", name: "The Greenbrier Companies, Inc." },
+  { symbol: "NATL", name: "NCR Atleos Corporation" },
+  { symbol: "OI", name: "O-I Glass, Inc." },
+  { symbol: "WOLF", name: "Wolfspeed, Inc." },
+  { symbol: "ROG", name: "Rogers Corporation" },
+  { symbol: "ARCO", name: "Arcos Dorados Holdings Inc." },
+  { symbol: "TALO", name: "Talos Energy Inc." },
+  { symbol: "SAND", name: "Sandstorm Gold Ltd." },
+  { symbol: "GNL", name: "Global Net Lease, Inc." },
+  { symbol: "WS", name: "Worthington Steel, Inc." },
+  { symbol: "SEMR", name: "Semrush Holdings, Inc." },
+  { symbol: "DFIN", name: "Donnelley Financial Solutions, Inc." },
+  { symbol: "VYX", name: "NCR Voyix Corporation" },
+  { symbol: "SJW", name: "SJW Group" },
+  { symbol: "VSTS", name: "Vestis Corporation" },
+  { symbol: "CXM", name: "Sprinklr, Inc." },
+  { symbol: "DRH", name: "DiamondRock Hospitality Company" },
+  { symbol: "LGF.A", name: "Lions Gate Entertainment Corp." },
+  { symbol: "ADNT", name: "Adient plc" },
+  { symbol: "OFG", name: "OFG Bancorp" },
+  { symbol: "ESRT", name: "Empire State Realty Trust, Inc." },
+  { symbol: "LOB", name: "Live Oak Bancshares, Inc." },
+  { symbol: "STR", name: "Sitio Royalties Corp." },
+  { symbol: "MODG", name: "Topgolf Callaway Brands Corp." },
+  { symbol: "GTY", name: "Getty Realty Corp." },
+  { symbol: "HG", name: "Hamilton Insurance Group, Ltd." },
+  { symbol: "ASAI", name: "Sendas Distribuidora S.A." },
+  { symbol: "PRG", name: "PROG Holdings, Inc." },
+  { symbol: "DBD", name: "Diebold Nixdorf, Incorporated" },
+  { symbol: "NMM", name: "Navios Maritime Partners L.P." },
+  { symbol: "KAR", name: "OPENLANE, Inc." },
+  { symbol: "RVLV", name: "Revolve Group, Inc." },
+  { symbol: "BWLP", name: "BW LPG Limited" },
+  { symbol: "OBDE", name: "Blue Owl Capital Corporation III" },
+  { symbol: "MSDL", name: "Morgan Stanley Direct Lending Fund" },
+  { symbol: "SA", name: "Seabridge Gold Inc." },
+  { symbol: "BBUC", name: "Brookfield Business Corporation" },
+  { symbol: "SMR", name: "NuScale Power Corporation" },
+  { symbol: "WMK", name: "Weis Markets, Inc." },
+  { symbol: "EPC", name: "Edgewell Personal Care Company" },
+  { symbol: "TNK", name: "Teekay Tankers Ltd." },
+  { symbol: "TNC", name: "Tennant Company" },
+  { symbol: "SOC", name: "Sable Offshore Corp." },
+  { symbol: "DHT", name: "DHT Holdings, Inc." },
+  { symbol: "FCF", name: "First Commonwealth Financial Corporation" },
+  { symbol: "MNR", name: "Mach Natural Resources LP" },
+  { symbol: "AGX", name: "Argan, Inc." },
+  { symbol: "NBHC", name: "National Bank Holdings Corporation" },
+  { symbol: "LGF.B", name: "Lions Gate Entertainment Corp." },
+  { symbol: "BOWL", name: "Bowlero Corp." },
+  { symbol: "AAT", name: "American Assets Trust, Inc." },
+  { symbol: "PD", name: "PagerDuty, Inc." },
+  { symbol: "DQ", name: "Daqo New Energy Corp." },
+  { symbol: "LZB", name: "La-Z-Boy Incorporated" },
+  { symbol: "SAFE", name: "Safehold Inc." },
+  { symbol: "RAMP", name: "LiveRamp Holdings, Inc." },
+  { symbol: "LEG", name: "Leggett & Platt, Incorporated" },
+  { symbol: "FSM", name: "Fortuna Mining Corp." },
+  { symbol: "CMRE", name: "Costamare Inc." },
+  { symbol: "NTB", name: "The Bank of N.T. Butterfield & Son Limited" },
+  { symbol: "CSTM", name: "Constellium SE" },
+  { symbol: "SCL", name: "Stepan Company" },
+  { symbol: "ATUS", name: "Altice USA, Inc." },
+  { symbol: "GETY", name: "Getty Images Holdings, Inc." },
+  { symbol: "CTRI", name: "Centuri Holdings, Inc." },
+  { symbol: "NAPA", name: "The Duckhorn Portfolio, Inc." },
+  { symbol: "SPHR", name: "Sphere Entertainment Co." },
+  { symbol: "BHE", name: "Benchmark Electronics, Inc." },
+  { symbol: "WKC", name: "World Kinect Corporation" },
+  { symbol: "DAC", name: "Danaos Corporation" },
+  { symbol: "HE", name: "Hawaiian Electric Industries, Inc." },
+  { symbol: "FOR", name: "Forestar Group Inc." },
+  { symbol: "CGAU", name: "Centerra Gold Inc." },
+  { symbol: "AMRC", name: "Ameresco, Inc." },
+  { symbol: "XPRO", name: "Expro Group Holdings N.V." },
+  { symbol: "GEL", name: "Genesis Energy, L.P." },
+  { symbol: "GLP", name: "Global Partners LP" },
+  { symbol: "VRE", name: "Veris Residential, Inc." },
+  { symbol: "AMC", name: "AMC Entertainment Holdings, Inc." },
+  { symbol: "GSBD", name: "Goldman Sachs BDC, Inc." },
+  { symbol: "FINV", name: "FinVolution Group" },
+  { symbol: "KN", name: "Knowles Corporation" },
+  { symbol: "HLIO", name: "Helios Technologies, Inc." },
+  { symbol: "SVV", name: "Savers Value Village, Inc." },
+  { symbol: "MLNK", name: "MeridianLink, Inc." },
+  { symbol: "JBGS", name: "JBG SMITH Properties" },
+  { symbol: "WT", name: "WisdomTree, Inc." },
+  { symbol: "ASPN", name: "Aspen Aerogels, Inc." },
+  { symbol: "CODI", name: "Compass Diversified" },
+  { symbol: "LTC", name: "LTC Properties, Inc." },
+  { symbol: "WGO", name: "Winnebago Industries, Inc." },
+  { symbol: "NWN", name: "Northwest Natural Holding Company" },
+  { symbol: "DOLE", name: "Dole plc" },
+  { symbol: "BKV", name: "BKV Corporation" },
+  { symbol: "VET", name: "Vermilion Energy Inc." },
+  { symbol: "ZUO", name: "Zuora, Inc." },
+  { symbol: "CXW", name: "CoreCivic, Inc." },
+  { symbol: "LC", name: "LendingClub Corporation" },
+  { symbol: "HMN", name: "Horace Mann Educators Corporation" },
+  { symbol: "BV", name: "BrightView Holdings, Inc." },
+  { symbol: "ELME", name: "Elme Communities" },
+  { symbol: "RCUS", name: "Arcus Biosciences, Inc." },
+  { symbol: "NIC", name: "Nicolet Bankshares, Inc." },
+  { symbol: "UP", name: "Wheels Up Experience Inc." },
+  { symbol: "CDRE", name: "Cadre Holdings, Inc." },
+  { symbol: "VRTS", name: "Virtus Investment Partners, Inc." },
+  { symbol: "KW", name: "Kennedy-Wilson Holdings, Inc." },
+  { symbol: "UMH", name: "UMH Properties, Inc." },
+  { symbol: "PEB", name: "Pebblebrook Hotel Trust" },
+  { symbol: "AMN", name: "AMN Healthcare Services, Inc." },
+  { symbol: "GENI", name: "Genius Sports Limited" },
+  { symbol: "DAN", name: "Dana Incorporated" },
+  { symbol: "XHR", name: "Xenia Hotels & Resorts, Inc." },
+  { symbol: "KLG", name: "WK Kellogg Co" },
+  { symbol: "MMI", name: "Marcus & Millichap, Inc." },
+  { symbol: "TDOC", name: "Teladoc Health, Inc." },
+  { symbol: "DAVA", name: "Endava plc" },
+  { symbol: "KEN", name: "Kenon Holdings Ltd." },
+  { symbol: "CTS", name: "CTS Corporation" },
+  { symbol: "SFL", name: "SFL Corporation Ltd." },
+  { symbol: "JBI", name: "Janus International Group, Inc." },
+  { symbol: "LADR", name: "Ladder Capital Corp" },
+  { symbol: "BB", name: "BlackBerry Limited" },
+  { symbol: "SCS", name: "Steelcase Inc." },
+  { symbol: "HLX", name: "Helix Energy Solutions Group, Inc." },
+  { symbol: "DEA", name: "Easterly Government Properties, Inc." },
+  { symbol: "CUBI", name: "Customers Bancorp, Inc." },
+  { symbol: "SILA", name: "Sila Realty Trust, Inc." },
+  { symbol: "STEL", name: "Stellar Bancorp, Inc." },
+  { symbol: "NX", name: "Quanex Building Products Corporation" },
+  { symbol: "REVG", name: "REV Group, Inc." },
+  { symbol: "RLJ", name: "RLJ Lodging Trust" },
+  { symbol: "FDP", name: "Fresh Del Monte Produce Inc." },
+  {
+    symbol: "EDN",
+    name: "Empresa Distribuidora y Comercializadora Norte Sociedad Anónima",
+  },
+  { symbol: "ALEX", name: "Alexander & Baldwin, Inc." },
+  { symbol: "UTZ", name: "Utz Brands, Inc." },
+  { symbol: "TPC", name: "Tutor Perini Corporation" },
+  { symbol: "EXK", name: "Endeavour Silver Corp." },
+  { symbol: "KRO", name: "Kronos Worldwide, Inc." },
+  { symbol: "TWO", name: "Two Harbors Investment Corp." },
+  { symbol: "GATO", name: "Gatos Silver, Inc." },
+  { symbol: "PSFE", name: "Paysafe Limited" },
+  { symbol: "FLNG", name: "FLEX LNG Ltd." },
+  { symbol: "LMND", name: "Lemonade, Inc." },
+  { symbol: "LPG", name: "Dorian LPG Ltd." },
+  { symbol: "LNN", name: "Lindsay Corporation" },
+  { symbol: "KRP", name: "Kimbell Royalty Partners, LP" },
+  { symbol: "PDM", name: "Piedmont Office Realty Trust, Inc." },
+  { symbol: "GIC", name: "Global Industrial Company" },
+  { symbol: "SBH", name: "Sally Beauty Holdings, Inc." },
+  { symbol: "PBI", name: "Pitney Bowes Inc." },
+  { symbol: "DNOW", name: "DNOW Inc." },
+  { symbol: "RES", name: "RPC, Inc." },
+  { symbol: "WWW", name: "Wolverine World Wide, Inc." },
+  { symbol: "TV", name: "Grupo Televisa, S.A.B." },
+  { symbol: "JKS", name: "JinkoSolar Holding Co., Ltd." },
+  { symbol: "PX", name: "P10, Inc." },
+  { symbol: "MFA", name: "MFA Financial, Inc." },
+  { symbol: "GB", name: "Global Blue Group Holding AG" },
+  { symbol: "NRP", name: "Natural Resource Partners L.P." },
+  { symbol: "CIM", name: "Chimera Investment Corporation" },
+  { symbol: "AIV", name: "Apartment Investment and Management Company" },
+  { symbol: "UVV", name: "Universal Corporation" },
+  { symbol: "VTEX", name: "VTEX" },
+  { symbol: "NTST", name: "NETSTREIT Corp." },
+  { symbol: "BKD", name: "Brookdale Senior Living Inc." },
+  { symbol: "ARI", name: "Apollo Commercial Real Estate Finance, Inc." },
+  { symbol: "USPH", name: "U.S. Physical Therapy, Inc." },
+  { symbol: "HCI", name: "HCI Group, Inc." },
+  { symbol: "NGVT", name: "Ingevity Corporation" },
+  { symbol: "MSC", name: "Studio City International Holdings Limited" },
+  { symbol: "AGRO", name: "Adecoagro S.A." },
+  { symbol: "JELD", name: "JELD-WEN Holding, Inc." },
+  { symbol: "BLX", name: "Banco Latinoamericano de Comercio Exterior, S. A." },
+  { symbol: "UNFI", name: "United Natural Foods, Inc." },
+  { symbol: "CNNE", name: "Cannae Holdings, Inc." },
+  { symbol: "PMT", name: "PennyMac Mortgage Investment Trust" },
+  { symbol: "SPH", name: "Suburban Propane Partners, L.P." },
+  { symbol: "EIG", name: "Employers Holdings, Inc." },
+  { symbol: "SII", name: "Sprott Inc." },
+  { symbol: "OXM", name: "Oxford Industries, Inc." },
+  { symbol: "KBDC", name: "Kayne Anderson BDC, Inc." },
+  { symbol: "LVWR", name: "LiveWire Group, Inc." },
+  { symbol: "ALX", name: "Alexander's, Inc." },
+  { symbol: "BORR", name: "Borr Drilling Limited" },
+  { symbol: "BY", name: "Byline Bancorp, Inc." },
+  { symbol: "DESP", name: "Despegar.com, Corp." },
+  { symbol: "RC", name: "Ready Capital Corporation" },
+  { symbol: "IDT", name: "IDT Corporation" },
+  { symbol: "BHLB", name: "Berkshire Hills Bancorp, Inc." },
+  { symbol: "EVRI", name: "Everi Holdings Inc." },
+  { symbol: "WTTR", name: "Select Water Solutions, Inc." },
+  { symbol: "HY", name: "Hyster-Yale, Inc." },
+  { symbol: "TGI", name: "Triumph Group, Inc." },
+  { symbol: "PGRE", name: "Paramount Group, Inc." },
+  { symbol: "NVGS", name: "Navigator Holdings Ltd." },
+  { symbol: "DK", name: "Delek US Holdings, Inc." },
+  { symbol: "AORT", name: "Artivion, Inc." },
+  { symbol: "NXRT", name: "NexPoint Residential Trust, Inc." },
+  { symbol: "EFC", name: "Ellington Financial Inc." },
+  { symbol: "ACHR", name: "Archer Aviation Inc." },
+  { symbol: "GRDN", name: "Guardian Pharmacy Services, Inc." },
+  { symbol: "SKE", name: "Skeena Resources Limited" },
+  { symbol: "PGRU", name: "PropertyGuru Group Limited" },
+  { symbol: "ARR", name: "ARMOUR Residential REIT, Inc." },
+  { symbol: "ARLO", name: "Arlo Technologies, Inc." },
+  { symbol: "IMAX", name: "IMAX Corporation" },
+  {
+    symbol: "IRS",
+    name: "IRSA Inversiones y Representaciones Sociedad Anónima",
+  },
+  { symbol: "AGL", name: "agilon health, inc." },
+  { symbol: "COUR", name: "Coursera, Inc." },
+  { symbol: "BCSF", name: "Bain Capital Specialty Finance, Inc." },
+  { symbol: "MAX", name: "MediaAlpha, Inc." },
+  { symbol: "CSR", name: "Centerspace" },
+  {
+    symbol: "LOMA",
+    name: "Loma Negra Compañía Industrial Argentina Sociedad Anónima",
+  },
+  { symbol: "ATEN", name: "A10 Networks, Inc." },
+  { symbol: "FBRT", name: "Franklin BSP Realty Trust, Inc." },
+  { symbol: "NEXA", name: "Nexa Resources S.A." },
+  { symbol: "PHR", name: "Phreesia, Inc." },
+  { symbol: "MRC", name: "MRC Global Inc." },
+  { symbol: "MD", name: "Pediatrix Medical Group, Inc." },
+  { symbol: "SSTK", name: "Shutterstock, Inc." },
+  { symbol: "HOV", name: "Hovnanian Enterprises, Inc." },
+  { symbol: "BBDC", name: "Barings BDC, Inc." },
+  { symbol: "CARS", name: "Cars.com Inc." },
+  { symbol: "DRD", name: "DRDGOLD Limited" },
+  { symbol: "FBMS", name: "The First Bancshares, Inc." },
+  { symbol: "SHCO", name: "Soho House & Co Inc." },
+  { symbol: "OMI", name: "Owens & Minor, Inc." },
+  { symbol: "FIGS", name: "FIGS, Inc." },
+  { symbol: "EVEX", name: "Eve Holding, Inc." },
+  { symbol: "KFRC", name: "Kforce Inc." },
+  { symbol: "TIXT", name: "TELUS International (Cda) Inc." },
+  { symbol: "MTAL", name: "Metals Acquisition Limited" },
+  { symbol: "CAL", name: "Caleres, Inc." },
+  { symbol: "FSLY", name: "Fastly, Inc." },
+  { symbol: "IHS", name: "IHS Holding Limited" },
+  { symbol: "RWT", name: "Redwood Trust, Inc." },
+  { symbol: "VTLE", name: "Vital Energy, Inc." },
+  { symbol: "INVX", name: "Innovex International, Inc." },
+  { symbol: "GOOS", name: "Canada Goose Holdings Inc." },
+  { symbol: "DX", name: "Dynex Capital, Inc." },
+  { symbol: "VTOL", name: "Bristow Group Inc." },
+  { symbol: "GRC", name: "The Gorman-Rupp Company" },
+  { symbol: "VHI", name: "Valhi, Inc." },
+  { symbol: "AVNS", name: "Avanos Medical, Inc." },
+  { symbol: "OBK", name: "Origin Bancorp, Inc." },
+  { symbol: "WEAV", name: "Weave Communications, Inc." },
+  { symbol: "BOW", name: "Bowhead Specialty Holdings Inc." },
+  { symbol: "BSIG", name: "BrightSphere Investment Group Inc." },
+  { symbol: "ETWO", name: "E2open Parent Holdings, Inc." },
+  { symbol: "BFS", name: "Saul Centers, Inc." },
+  { symbol: "CWH", name: "Camping World Holdings, Inc." },
+  { symbol: "PARR", name: "Par Pacific Holdings, Inc." },
+  { symbol: "NCDL", name: "Nuveen Churchill Direct Lending Corp." },
+  { symbol: "PLYM", name: "Plymouth Industrial REIT, Inc." },
+  { symbol: "PLYM", name: "Plymouth Industrial REIT, Inc." },
+  { symbol: "HGTY", name: "Hagerty, Inc." },
+  { symbol: "UTL", name: "Unitil Corporation" },
+  { symbol: "BZH", name: "Beazer Homes USA, Inc." },
+  { symbol: "LB", name: "LandBridge Company LLC" },
+  { symbol: "CINT", name: "CI&T Inc." },
+  { symbol: "MEG", name: "Montrose Environmental Group, Inc." },
+  { symbol: "ECO", name: "Okeanis Eco Tankers Corp." },
+  { symbol: "ACEL", name: "Accel Entertainment, Inc." },
+  { symbol: "CLB", name: "Core Laboratories Inc." },
+  { symbol: "DCO", name: "Ducommun Incorporated" },
+  { symbol: "THR", name: "Thermon Group Holdings, Inc." },
+  { symbol: "BDN", name: "Brandywine Realty Trust" },
+  { symbol: "OEC", name: "Orion S.A." },
+  { symbol: "GES", name: "Guess?, Inc." },
+  { symbol: "ZIP", name: "ZipRecruiter, Inc." },
+  { symbol: "GHLD", name: "Guild Holdings Company" },
+  { symbol: "SUPV", name: "Grupo Supervielle S.A." },
+  { symbol: "BXC", name: "BlueLinx Holdings Inc." },
+  { symbol: "UTI", name: "Universal Technical Institute, Inc." },
+  { symbol: "SITC", name: "SITE Centers Corp." },
+  { symbol: "SBR", name: "Sabine Royalty Trust" },
+  { symbol: "CMTG", name: "Claros Mortgage Trust, Inc." },
+  { symbol: "AHH", name: "Armada Hoffler Properties, Inc." },
+  { symbol: "TUYA", name: "Tuya Inc." },
+  { symbol: "PRO", name: "PROS Holdings, Inc." },
+  { symbol: "YEXT", name: "Yext, Inc." },
+  { symbol: "KIND", name: "Nextdoor Holdings, Inc." },
+  { symbol: "AMTB", name: "Amerant Bancorp Inc." },
+  { symbol: "RSI", name: "Rush Street Interactive, Inc." },
+  { symbol: "MATV", name: "Mativ Holdings, Inc." },
+  { symbol: "GSL", name: "Global Ship Lease, Inc." },
+  { symbol: "BLND", name: "Blend Labs, Inc." },
+  { symbol: "PFLT", name: "PennantPark Floating Rate Capital Ltd." },
+  { symbol: "VVI", name: "Viad Corp" },
+  { symbol: "OLO", name: "Olo Inc." },
+  { symbol: "ENFN", name: "Enfusion, Inc." },
+  { symbol: "GCI", name: "Gannett Co., Inc." },
+  { symbol: "NOAH", name: "Noah Holdings Limited" },
+  { symbol: "KREF", name: "KKR Real Estate Finance Trust Inc." },
+  { symbol: "DLX", name: "Deluxe Corporation" },
+  { symbol: "CBL", name: "CBL & Associates Properties, Inc." },
+  { symbol: "PDS", name: "Precision Drilling Corporation" },
+  { symbol: "TPB", name: "Turning Point Brands, Inc." },
+  { symbol: "CAPL", name: "CrossAmerica Partners LP" },
+  {
+    symbol: "VLRS",
+    name: "Controladora Vuela Compañía de Aviación, S.A.B. de C.V.",
+  },
+  { symbol: "PUMP", name: "ProPetro Holding Corp." },
+  { symbol: "NVRI", name: "Enviri Corporation" },
+  { symbol: "EFXT", name: "Enerflex Ltd." },
+  { symbol: "FVRR", name: "Fiverr International Ltd." },
+  { symbol: "WLKP", name: "Westlake Chemical Partners LP" },
+  { symbol: "DDL", name: "Dingdong (Cayman) Limited" },
+  { symbol: "REX", name: "REX American Resources Corporation" },
+  { symbol: "CCO", name: "Clear Channel Outdoor Holdings, Inc." },
+  { symbol: "HUYA", name: "HUYA Inc." },
+  { symbol: "SPLP", name: "Steel Partners Holdings L.P." },
+  { symbol: "GRNT", name: "Granite Ridge Resources, Inc." },
+  { symbol: "ASIX", name: "AdvanSix Inc." },
+  { symbol: "WNC", name: "Wabash National Corporation" },
+  { symbol: "AC", name: "Associated Capital Group, Inc." },
+  { symbol: "GOTU", name: "Gaotu Techedu Inc." },
+  { symbol: "CPF", name: "Central Pacific Financial Corp." },
+  { symbol: "PRA", name: "ProAssurance Corporation" },
+  { symbol: "CTOS", name: "Custom Truck One Source, Inc." },
+  { symbol: "RSKD", name: "Riskified Ltd." },
+  { symbol: "MLR", name: "Miller Industries, Inc." },
+  { symbol: "TXO", name: "TXO Partners, L.P." },
+  { symbol: "LAC", name: "Lithium Americas Corp." },
+  { symbol: "UAN", name: "CVR Partners, LP" },
+  { symbol: "NUVB", name: "Nuvation Bio Inc." },
+  { symbol: "ETD", name: "Ethan Allen Interiors Inc." },
+  { symbol: "VTS", name: "Vitesse Energy, Inc." },
+  { symbol: "NBR", name: "Nabors Industries Ltd." },
+  { symbol: "SXC", name: "SunCoke Energy, Inc." },
+  { symbol: "ECVT", name: "Ecovyst Inc." },
+  { symbol: "RYI", name: "Ryerson Holding Corporation" },
+  { symbol: "TK", name: "Teekay Corporation Ltd." },
+  { symbol: "USNA", name: "USANA Health Sciences, Inc." },
+  { symbol: "WSR", name: "Whitestone REIT" },
+  { symbol: "AXL", name: "American Axle & Manufacturing Holdings, Inc." },
+  { symbol: "BALY", name: "Bally's Corporation" },
+  { symbol: "KOP", name: "Koppers Holdings Inc." },
+  { symbol: "NAT", name: "Nordic American Tankers Limited" },
+  { symbol: "SMWB", name: "Similarweb Ltd." },
+  { symbol: "BRSP", name: "BrightSpire Capital, Inc." },
+  { symbol: "EXTO", name: "Almacenes Éxito S.A." },
+  { symbol: "HLF", name: "Herbalife Ltd." },
+  { symbol: "RGR", name: "Sturm, Ruger & Company, Inc." },
+  { symbol: "AACT", name: "Ares Acquisition Corporation II" },
+  { symbol: "TRTX", name: "TPG RE Finance Trust, Inc." },
+  { symbol: "CVLG", name: "Covenant Logistics Group, Inc." },
+  { symbol: "GNK", name: "Genco Shipping & Trading Limited" },
+  { symbol: "TEN", name: "Tsakos Energy Navigation Limited" },
+  { symbol: "HZO", name: "MarineMax, Inc." },
+  { symbol: "PL", name: "Planet Labs PBC" },
+  { symbol: "PRLB", name: "Proto Labs, Inc." },
+  { symbol: "INN", name: "Summit Hotel Properties, Inc." },
+  { symbol: "UWMC", name: "UWM Holdings Corporation" },
+  { symbol: "HKD", name: "AMTD Digital Inc." },
+  { symbol: "NPWR", name: "NET Power Inc." },
+  { symbol: "YALA", name: "Yalla Group Limited" },
+  { symbol: "NOVA", name: "Sunnova Energy International Inc." },
+  { symbol: "BGS", name: "B&G Foods, Inc." },
+  { symbol: "EQBK", name: "Equity Bancshares, Inc." },
+  { symbol: "VEL", name: "Velocity Financial, Inc." },
+  { symbol: "CION", name: "CION Investment Corporation" },
+  { symbol: "SMP", name: "Standard Motor Products, Inc." },
+  { symbol: "MYTE", name: "MYT Netherlands Parent B.V." },
+  { symbol: "ORC", name: "Orchid Island Capital, Inc." },
+  { symbol: "HPP", name: "Hudson Pacific Properties, Inc." },
+  { symbol: "ASC", name: "Ardmore Shipping Corporation" },
+  { symbol: "LXU", name: "LSB Industries, Inc." },
+  { symbol: "GDOT", name: "Green Dot Corporation" },
+  { symbol: "NGVC", name: "Natural Grocers by Vitamin Cottage, Inc." },
+  { symbol: "MTUS", name: "Metallus Inc." },
+  { symbol: "GMRE", name: "Global Medical REIT Inc." },
+  { symbol: "ZKH", name: "ZKH Group Limited" },
+  { symbol: "CTO", name: "CTO Realty Growth, Inc." },
+  { symbol: "PLOW", name: "Douglas Dynamics, Inc." },
+  { symbol: "LAAC", name: "Lithium Americas (Argentina) Corp." },
+  { symbol: "JMIA", name: "Jumia Technologies AG" },
+  { symbol: "MCB", name: "Metropolitan Bank Holding Corp." },
+  { symbol: "DAO", name: "Youdao, Inc." },
+  { symbol: "NR", name: "Newpark Resources, Inc." },
+  { symbol: "EE", name: "Excelerate Energy, Inc." },
+  { symbol: "OLP", name: "One Liberty Properties, Inc." },
+  { symbol: "EGY", name: "VAALCO Energy, Inc." },
+  { symbol: "RDW", name: "Redwire Corporation" },
+  { symbol: "CRD.A", name: "Crawford & Company" },
+  { symbol: "DEC", name: "Diversified Energy Company PLC" },
+  { symbol: "RERE", name: "ATRenew Inc." },
+  { symbol: "CLCO", name: "Cool Company Ltd." },
+  { symbol: "UHT", name: "Universal Health Realty Income Trust" },
+  { symbol: "CMP", name: "Compass Minerals International, Inc." },
+  { symbol: "NGL", name: "NGL Energy Partners LP" },
+  { symbol: "MUX", name: "McEwen Mining Inc." },
+  { symbol: "CRD.B", name: "Crawford & Company" },
+  { symbol: "CHPT", name: "ChargePoint Holdings, Inc." },
+  { symbol: "OPY", name: "Oppenheimer Holdings Inc." },
+  { symbol: "GTN.A", name: "Gray Television, Inc." },
+  { symbol: "PBT", name: "Permian Basin Royalty Trust" },
+  { symbol: "UVE", name: "Universal Insurance Holdings, Inc." },
+  { symbol: "AMPS", name: "Altus Power, Inc." },
+  { symbol: "IIIN", name: "Insteel Industries, Inc." },
+  { symbol: "SMBK", name: "SmartFinancial, Inc." },
+  { symbol: "EBF", name: "Ennis, Inc." },
+  { symbol: "MCS", name: "The Marcus Corporation" },
+  { symbol: "AMBC", name: "Ambac Financial Group, Inc." },
+  { symbol: "CYH", name: "Community Health Systems, Inc." },
+  { symbol: "GTN", name: "Gray Television, Inc." },
+  { symbol: "NPK", name: "National Presto Industries, Inc." },
+  { symbol: "PSBD", name: "Palmer Square Capital BDC Inc." },
+  { symbol: "RYAM", name: "Rayonier Advanced Materials Inc." },
+  { symbol: "BH", name: "Biglari Holdings Inc." },
+  { symbol: "FPI", name: "Farmland Partners Inc." },
+  { symbol: "BH.A", name: "Biglari Holdings Inc." },
+  { symbol: "CPAC", name: "Cementos Pacasmayo S.A.A." },
+  { symbol: "FUBO", name: "fuboTV Inc." },
+  { symbol: "ODC", name: "Oil-Dri Corporation of America" },
+  { symbol: "AUNA", name: "Auna S.A." },
+  { symbol: "FC", name: "Franklin Covey Co." },
+  { symbol: "LZM", name: "Lifezone Metals Limited" },
+  { symbol: "ML", name: "MoneyLion Inc." },
+  { symbol: "YRD", name: "Yiren Digital Ltd." },
+  { symbol: "EAF", name: "GrafTech International Ltd." },
+  { symbol: "BBW", name: "Build-A-Bear Workshop, Inc." },
+  { symbol: "GFR", name: "Greenfire Resources Ltd." },
+  { symbol: "TYG", name: "Tortoise Energy Infrastructure Corporation" },
+  { symbol: "CSV", name: "Carriage Services, Inc." },
+  { symbol: "PKST", name: "Peakstone Realty Trust" },
+  { symbol: "PACK", name: "Ranpak Holdings Corp." },
+  { symbol: "EBS", name: "Emergent BioSolutions Inc." },
+  { symbol: "BOC", name: "Boston Omaha Corporation" },
+  { symbol: "BWMX", name: "Betterware de México, S.A.P.I. de C.V." },
+  { symbol: "CHCT", name: "Community Healthcare Trust Incorporated" },
+  { symbol: "AGS", name: "PlayAGS, Inc." },
+  { symbol: "NOA", name: "North American Construction Group Ltd." },
+  { symbol: "IVR", name: "Invesco Mortgage Capital Inc." },
+  { symbol: "GBLI", name: "Global Indemnity Group, LLC" },
+  { symbol: "ACCO", name: "ACCO Brands Corporation" },
+  { symbol: "DNA", name: "Ginkgo Bioworks Holdings, Inc." },
+  { symbol: "ARIS", name: "Aris Water Solutions, Inc." },
+  { symbol: "CYD", name: "China Yuchai International Limited" },
+  { symbol: "DIN", name: "Dine Brands Global, Inc." },
+  { symbol: "PNNT", name: "PennantPark Investment Corporation" },
+  { symbol: "CLW", name: "Clearwater Paper Corporation" },
+  { symbol: "HIPO", name: "Hippo Holdings Inc." },
+  { symbol: "SB", name: "Safe Bulkers, Inc." },
+  { symbol: "SNDA", name: "Sonida Senior Living, Inc." },
+  { symbol: "MYE", name: "Myers Industries, Inc." },
+  { symbol: "TWI", name: "Titan International, Inc." },
+  { symbol: "QD", name: "Qudian Inc." },
+  { symbol: "AAM", name: "AA Mission Acquisition Corp." },
+  { symbol: "BRDG", name: "Bridge Investment Group Holdings Inc." },
+  { symbol: "EQV", name: "EQV Ventures Acquisition Corp." },
+  { symbol: "NLOP", name: "Net Lease Office Properties" },
+  { symbol: "WOW", name: "WideOpenWest, Inc." },
+  { symbol: "GNE", name: "Genie Energy Ltd." },
+  { symbol: "XPER", name: "Xperi Inc." },
+  { symbol: "TRC", name: "Tejon Ranch Co." },
+  { symbol: "WDH", name: "Waterdrop Inc." },
+  { symbol: "MLP", name: "Maui Land & Pineapple Company, Inc." },
+  { symbol: "ASA", name: "ASA Gold and Precious Metals Limited" },
+  { symbol: "HOUS", name: "Anywhere Real Estate Inc." },
+  { symbol: "HYLN", name: "Hyliion Holdings Corp." },
+  { symbol: "SD", name: "SandRidge Energy, Inc." },
+  { symbol: "HBB", name: "Hamilton Beach Brands Holding Company" },
+  { symbol: "MEC", name: "Mayville Engineering Company, Inc." },
+  { symbol: "MOV", name: "Movado Group, Inc." },
+  { symbol: "GPRK", name: "GeoPark Limited" },
+  {
+    symbol: "LND",
+    name: "BrasilAgro - Companhia Brasileira de Propriedades Agrícolas",
+  },
+  { symbol: "FNA", name: "Paragon 28, Inc." },
+  { symbol: "BBAI", name: "BigBear.ai Holdings, Inc." },
+  { symbol: "SEI", name: "Solaris Energy Infrastructure, Inc." },
+  { symbol: "SGU", name: "Star Group, L.P." },
+  { symbol: "CVEO", name: "Civeo Corporation" },
+  { symbol: "COOK", name: "Traeger, Inc." },
+  { symbol: "CLDT", name: "Chatham Lodging Trust" },
+  { symbol: "TTI", name: "TETRA Technologies, Inc." },
+  { symbol: "XPOF", name: "Xponential Fitness, Inc." },
+  { symbol: "HVT.A", name: "Haverty Furniture Companies, Inc." },
+  { symbol: "LDI", name: "loanDepot, Inc." },
+  { symbol: "HVT", name: "Haverty Furniture Companies, Inc." },
+  { symbol: "DDD", name: "3D Systems Corporation" },
+  { symbol: "UIS", name: "Unisys Corporation" },
+  { symbol: "SPMC", name: "Sound Point Meridian Capital, Inc." },
+  { symbol: "BFLY", name: "Butterfly Network, Inc." },
+  { symbol: "GNTY", name: "Guaranty Bancshares, Inc." },
+  { symbol: "NL", name: "NL Industries, Inc." },
+  { symbol: "KODK", name: "Eastman Kodak Company" },
+  { symbol: "CURV", name: "Torrid Holdings Inc." },
+  { symbol: "SMC", name: "Summit Midstream Corporation" },
+  { symbol: "SCM", name: "Stellus Capital Investment Corporation" },
+  { symbol: "OUST", name: "Ouster, Inc." },
+  { symbol: "YSG", name: "Yatsen Holding Limited" },
+  { symbol: "JILL", name: "J.Jill, Inc." },
+  { symbol: "TRAK", name: "ReposiTrak, Inc." },
+  { symbol: "EHAB", name: "Enhabit, Inc." },
+  { symbol: "ACRE", name: "Ares Commercial Real Estate Corporation" },
+  { symbol: "LAW", name: "CS Disco, Inc." },
+  { symbol: "HRTG", name: "Heritage Insurance Holdings, Inc." },
+  { symbol: "SMRT", name: "SmartRent, Inc." },
+  { symbol: "SLQT", name: "SelectQuote, Inc." },
+  { symbol: "MTW", name: "The Manitowoc Company, Inc." },
+  { symbol: "ZH", name: "Zhihu Inc." },
+  { symbol: "LXFR", name: "Luxfer Holdings PLC" },
+  { symbol: "AZUL", name: "Azul S.A." },
+  { symbol: "MG", name: "Mistras Group, Inc." },
+  { symbol: "XYF", name: "X Financial" },
+  { symbol: "PSTL", name: "Postal Realty Trust, Inc." },
+  { symbol: "BRT", name: "BRT Apartments Corp." },
+  { symbol: "SAR", name: "Saratoga Investment Corp." },
+  { symbol: "HLLY", name: "Holley Inc." },
+  { symbol: "MPX", name: "Marine Products Corporation" },
+  { symbol: "MSB", name: "Mesabi Trust" },
+  { symbol: "GHM", name: "Graham Corporation" },
+  { symbol: "MEI", name: "Methode Electronics, Inc." },
+  { symbol: "OOMA", name: "Ooma, Inc." },
+  { symbol: "HYAC", name: "Haymaker Acquisition Corp. 4" },
+  { symbol: "WTI", name: "W&T Offshore, Inc." },
+  { symbol: "DBI", name: "Designer Brands Inc." },
+  { symbol: "SAVE", name: "Spirit Airlines, Inc." },
+  { symbol: "VPG", name: "Vishay Precision Group, Inc." },
+  { symbol: "NUS", name: "Nu Skin Enterprises, Inc." },
+  { symbol: "SDHC", name: "Smith Douglas Homes Corp." },
+  { symbol: "IPI", name: "Intrepid Potash, Inc." },
+  { symbol: "GHI", name: "Greystone Housing Impact Investors LP" },
+  { symbol: "GCO", name: "Genesco Inc." },
+  { symbol: "BYON", name: "Beyond, Inc." },
+  { symbol: "CTV", name: "Innovid Corp." },
+  { symbol: "HSHP", name: "Himalaya Shipping Ltd." },
+  { symbol: "FVR", name: "FrontView REIT, Inc." },
+  { symbol: "RM", name: "Regional Management Corp." },
+  { symbol: "EB", name: "Eventbrite, Inc." },
+  { symbol: "GHG", name: "GreenTree Hospitality Group Ltd." },
+  { symbol: "ADCT", name: "ADC Therapeutics SA" },
+  { symbol: "FPH", name: "Five Point Holdings, LLC" },
+  { symbol: "PKE", name: "Park Aerospace Corp." },
+  { symbol: "FF", name: "FutureFuel Corp." },
+  { symbol: "RNGR", name: "Ranger Energy Services, Inc." },
+  { symbol: "OIS", name: "Oil States International, Inc." },
+  { symbol: "BNED", name: "Barnes & Noble Education, Inc." },
+  { symbol: "DSX", name: "Diana Shipping Inc." },
+  { symbol: "QUAD", name: "Quad/Graphics, Inc." },
+  { symbol: "AMPY", name: "Amplify Energy Corp." },
+  { symbol: "TPVG", name: "TriplePoint Venture Growth BDC Corp." },
+  { symbol: "TBN", name: "Tamboran Resources Corporation" },
+  { symbol: "ONTF", name: "ON24, Inc." },
+  { symbol: "TG", name: "Tredegar Corporation" },
+  { symbol: "PINE", name: "Alpine Income Property Trust, Inc." },
+  { symbol: "AKA", name: "a.k.a. Brands Holding Corp." },
+  { symbol: "SRI", name: "Stoneridge, Inc." },
+  { symbol: "NGS", name: "Natural Gas Services Group, Inc." },
+  { symbol: "KFS", name: "Kingsway Financial Services Inc." },
+  { symbol: "NREF", name: "NexPoint Real Estate Finance, Inc." },
+  { symbol: "NRGV", name: "Energy Vault Holdings, Inc." },
+  { symbol: "SMHI", name: "SEACOR Marine Holdings Inc." },
+  { symbol: "SRG", name: "Seritage Growth Properties" },
+  { symbol: "CIA", name: "Citizens, Inc." },
+  { symbol: "TCI", name: "Transcontinental Realty Investors, Inc." },
+  { symbol: "BARK", name: "BARK, Inc." },
+  { symbol: "ONIT", name: "Onity Group Inc." },
+  { symbol: "CPS", name: "Cooper-Standard Holdings Inc." },
+  { symbol: "LANV", name: "Lanvin Group Holdings Limited" },
+  { symbol: "ARL", name: "American Realty Investors, Inc." },
+  { symbol: "WBX", name: "Wallbox N.V." },
+  { symbol: "BRCC", name: "BRC Inc." },
+  { symbol: "CANG", name: "Cango Inc." },
+  { symbol: "CIO", name: "City Office REIT, Inc." },
+  { symbol: "KNOP", name: "KNOT Offshore Partners LP" },
+  { symbol: "RMAX", name: "RE/MAX Holdings, Inc." },
+  { symbol: "FRGE", name: "Forge Global Holdings, Inc." },
+  { symbol: "CLBR", name: "Colombier Acquisition Corp. II" },
+  { symbol: "TBI", name: "TrueBlue, Inc." },
+  { symbol: "AEVA", name: "Aeva Technologies, Inc." },
+  { symbol: "SPIR", name: "Spire Global, Inc." },
+  { symbol: "BW", name: "Babcock & Wilcox Enterprises, Inc." },
+  { symbol: "AOMR", name: "Angel Oak Mortgage REIT, Inc." },
+  { symbol: "ONL", name: "Orion Office REIT Inc." },
+  { symbol: "MITT", name: "AG Mortgage Investment Trust, Inc." },
+  { symbol: "QBTS", name: "D-Wave Quantum Inc." },
+  { symbol: "SES", name: "SES AI Corporation" },
+  { symbol: "ALTG", name: "Alta Equipment Group Inc." },
+  { symbol: "ORN", name: "Orion Group Holdings, Inc." },
+  { symbol: "ODV", name: "Osisko Development Corp." },
+  { symbol: "SBXD", name: "SilverBox Corp IV" },
+  { symbol: "SPCE", name: "Virgin Galactic Holdings, Inc." },
+  { symbol: "NC", name: "NACCO Industries, Inc." },
+  { symbol: "PERF", name: "Perfect Corp." },
+  { symbol: "BHR", name: "Braemar Hotels & Resorts Inc." },
+  { symbol: "SJT", name: "San Juan Basin Royalty Trust" },
+  { symbol: "EVC", name: "Entravision Communications Corporation" },
+  { symbol: "VLN", name: "Valens Semiconductor Ltd." },
+  { symbol: "BKSY", name: "BlackSky Technology Inc." },
+  { symbol: "SBXC", name: "SilverBox Corp III" },
+  { symbol: "MED", name: "Medifast, Inc." },
+  { symbol: "MBI", name: "MBIA Inc." },
+  { symbol: "MX", name: "Magnachip Semiconductor Corporation" },
+  { symbol: "FET", name: "Forum Energy Technologies, Inc." },
+  { symbol: "EARN", name: "Ellington Credit Company" },
+  { symbol: "NVRO", name: "Nevro Corp." },
+  { symbol: "TSE", name: "Trinseo PLC" },
+  { symbol: "RRAC", name: "Rigel Resource Acquisition Corp." },
+  { symbol: "MDV", name: "Modiv Industrial, Inc." },
+  { symbol: "NMG", name: "Nouveau Monde Graphite Inc." },
+  { symbol: "DOUG", name: "Douglas Elliman Inc." },
+  { symbol: "CHGG", name: "Chegg, Inc." },
+  { symbol: "DM", name: "Desktop Metal, Inc." },
+  { symbol: "MPLN", name: "MultiPlan Corporation" },
+  { symbol: "TSQ", name: "Townsquare Media, Inc." },
+  { symbol: "AXR", name: "AMREP Corporation" },
+  { symbol: "AVD", name: "American Vanguard Corporation" },
+  { symbol: "GPMT", name: "Granite Point Mortgage Trust Inc." },
+  { symbol: "NOTE", name: "FiscalNote Holdings, Inc." },
+  { symbol: "AMPX", name: "Amprius Technologies, Inc." },
+  { symbol: "ARC", name: "ARC Document Solutions, Inc." },
+  { symbol: "FTK", name: "Flotek Industries, Inc." },
+  { symbol: "FREY", name: "FREYR Battery, Inc." },
+  { symbol: "AJX", name: "Great Ajax Corp." },
+  { symbol: "LEV", name: "The Lion Electric Company" },
+  { symbol: "AMWL", name: "American Well Corporation" },
+  { symbol: "DLNG", name: "Dynagas LNG Partners LP" },
+  { symbol: "PHX", name: "PHX Minerals Inc." },
+  { symbol: "BFAC", name: "Battery Future Acquisition Corp." },
+  { symbol: "CBNA", name: "Chain Bridge Bancorp, Inc." },
+  { symbol: "LFT", name: "Lument Finance Trust, Inc." },
+  { symbol: "MNTN", name: "Everest Consolidator Acquisition Corporation" },
+  { symbol: "PHYT", name: "Pyrophyte Acquisition Corp." },
+  { symbol: "CMCM", name: "Cheetah Mobile Inc." },
+  { symbol: "ANVS", name: "Annovis Bio, Inc." },
+  { symbol: "SKIL", name: "Skillsoft Corp." },
+  { symbol: "EVTL", name: "Vertical Aerospace Ltd." },
+  { symbol: "WHG", name: "Westwood Holdings Group, Inc." },
+  { symbol: "UFI", name: "Unifi, Inc." },
+  { symbol: "GCTS", name: "GCT Semiconductor Holding, Inc." },
+  { symbol: "RCFA", name: "Perception Capital Corp. IV" },
+  { symbol: "SRL", name: "Scully Royalty Ltd." },
+  { symbol: "SOL", name: "Emeren Group Ltd" },
+  { symbol: "FOA", name: "Finance of America Companies Inc." },
+  { symbol: "TLYS", name: "Tilly's, Inc." },
+  { symbol: "SEDA", name: "SDCL EDGE Acquisition Corporation" },
+  { symbol: "ANRO", name: "Alto Neuroscience, Inc." },
+  { symbol: "ACR", name: "ACRES Commercial Realty Corp." },
+  { symbol: "CATO", name: "The Cato Corporation" },
+  { symbol: "CCRD", name: "CoreCard Corporation" },
+  { symbol: "OCFT", name: "OneConnect Financial Technology Co., Ltd." },
+  { symbol: "NRDY", name: "Nerdy, Inc." },
+  { symbol: "CLPR", name: "Clipper Realty Inc." },
+  { symbol: "OPFI", name: "OppFi Inc." },
+  { symbol: "CHMI", name: "Cherry Hill Mortgage Investment Corporation" },
+  { symbol: "SKLZ", name: "Skillz Inc." },
+  { symbol: "STG", name: "Sunlands Technology Group" },
+  { symbol: "IH", name: "iHuman Inc." },
+  { symbol: "CNF", name: "CNFinance Holdings Limited" },
+  { symbol: "VOC", name: "VOC Energy Trust" },
+  { symbol: "MKFG", name: "Markforged Holding Corporation" },
+  { symbol: "AMTD", name: "AMTD IDEA Group" },
+  { symbol: "GWH", name: "ESS Tech, Inc." },
+  { symbol: "STEM", name: "Stem, Inc." },
+  { symbol: "BGSF", name: "BGSF, Inc." },
+  { symbol: "TISI", name: "Team, Inc." },
+  { symbol: "WEL", name: "Integrated Wellness Acquisition Corp" },
+  { symbol: "PSQH", name: "PSQ Holdings, Inc." },
+  { symbol: "VATE", name: "INNOVATE Corp." },
+  { symbol: "SUP", name: "Superior Industries International, Inc." },
+  { symbol: "GLT", name: "Glatfelter Corporation" },
+  { symbol: "OPAD", name: "Offerpad Solutions Inc." },
+  { symbol: "DHX", name: "DHI Group, Inc." },
+  { symbol: "DTC", name: "Solo Brands, Inc." },
+  { symbol: "SST", name: "System1, Inc." },
+  { symbol: "CULP", name: "Culp, Inc." },
+  { symbol: "BKKT", name: "Bakkt Holdings, Inc." },
+  { symbol: "ZVIA", name: "Zevia PBC" },
+  { symbol: "CRT", name: "Cross Timbers Royalty Trust" },
+  { symbol: "OWLT", name: "Owlet, Inc." },
+  { symbol: "ENZ", name: "Enzo Biochem, Inc." },
+  { symbol: "SQNS", name: "Sequans Communications S.A." },
+  { symbol: "BEDU", name: "Bright Scholar Education Holdings Limited" },
+  { symbol: "GROV", name: "Grove Collaborative Holdings, Inc." },
+  { symbol: "PVL", name: "Permianville Royalty Trust" },
+  { symbol: "ZEPP", name: "Zepp Health Corporation" },
+  { symbol: "BEST", name: "BEST Inc." },
+  { symbol: "LLAP", name: "Terran Orbital Corporation" },
+  { symbol: "PRT", name: "PermRock Royalty Trust" },
+  { symbol: "LICY", name: "Li-Cycle Holdings Corp." },
+  { symbol: "ALUR", name: "Allurion Technologies Inc." },
+  { symbol: "NRT", name: "North European Oil Royalty Trust" },
+  { symbol: "NTZ", name: "Natuzzi S.p.A." },
+  { symbol: "DNMR", name: "Danimer Scientific, Inc." },
+  { symbol: "RBOT", name: "Vicarious Surgical Inc." },
+  { symbol: "SPRU", name: "Spruce Power Holding Corporation" },
+  { symbol: "BODI", name: "The Beachbody Company, Inc." },
+  { symbol: "RFL", name: "Rafael Holdings, Inc." },
+  { symbol: "PNST", name: "Pinstripes Holdings Inc." },
+  { symbol: "NEUE", name: "NeueHealth, Inc." },
+  { symbol: "LITB", name: "LightInTheBox Holding Co., Ltd." },
+  { symbol: "AP", name: "Ampco-Pittsburgh Corporation" },
+  { symbol: "KORE", name: "KORE Group Holdings, Inc." },
+  { symbol: "NINE", name: "Nine Energy Service, Inc." },
+  { symbol: "FENG", name: "Phoenix New Media Limited" },
+  { symbol: "CCM", name: "Concord Medical Services Holdings Limited" },
+  { symbol: "TCS", name: "The Container Store Group, Inc." },
+  { symbol: "BTCM", name: "BIT Mining Limited" },
+  { symbol: "AHT", name: "Ashford Hospitality Trust, Inc." },
+  { symbol: "CGA", name: "China Green Agriculture, Inc." },
+  { symbol: "KUKE", name: "Kuke Music Holding Limited" },
+  { symbol: "SRFM", name: "Surf Air Mobility Inc." },
+  { symbol: "ATIP", name: "ATI Physical Therapy, Inc." },
+  { symbol: "BPT", name: "BP Prudhoe Bay Royalty Trust" },
+  { symbol: "FEDU", name: "Four Seasons Education (Cayman) Inc." },
+  { symbol: "VHC", name: "VirnetX Holding Corporation" },
+  { symbol: "NYC", name: "American Strategic Investment Co." },
+  { symbol: "VNCE", name: "Vince Holding Corp." },
+  { symbol: "LOCL", name: "Local Bounti Corporation" },
+  { symbol: "XIN", name: "Xinyuan Real Estate Co., Ltd." },
+  { symbol: "EQS", name: "Equus Total Return, Inc." },
+  { symbol: "MOGU", name: "MOGU Inc." },
+  { symbol: "MTR", name: "Mesa Royalty Trust" },
+  { symbol: "SOS", name: "SOS Limited" },
+];
 
-//   for (const company of NASDAQcompanies) {
-//     await prisma.company.upsert({
-//       where: { symbol: company.symbol },
-//       update: {},
-//       create: {
-//         symbol: company.symbol,
-//         name: company.name,
-//         exchange: "NASDAQ",
-//         // Note: marketCap, price, and revenue are set to null as they're not provided in the input data
-//         marketCap: null,
-//         price: null,
-//         revenue: null,
-//       },
-//     });
-//   }
+function findDuplicateCompanies(
+  nyseCompanies: CompanyInput[],
+  nasdaqCompanies: CompanyInput[]
+): string[] {
+  const duplicates: string[] = [];
 
-//   console.log("Seeding finished.");
-// }
+  // Create maps of both symbol and normalized company names
+  const nyseMap = new Map(
+    nyseCompanies.map((c) => [
+      c.symbol.replace(/[\.\-\_].*$/, ""), // Remove suffixes like .A, .B
+      c.name.toLowerCase().replace(/\s+/g, ""), // Normalize name
+    ])
+  );
 
-// main()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
+  nasdaqCompanies.forEach((nasdaqCompany) => {
+    const normalizedSymbol = nasdaqCompany.symbol.replace(/[\.\-\_].*$/, "");
+    const normalizedName = nasdaqCompany.name.toLowerCase().replace(/\s+/g, "");
+
+    // Check both symbol and name matches
+    if (
+      nyseMap.has(normalizedSymbol) ||
+      Array.from(nyseMap.values()).includes(normalizedName)
+    ) {
+      duplicates.push(nasdaqCompany.symbol);
+    }
+  });
+
+  return duplicates;
+}
+
+function processDuplicateCompanies(
+  nyseCompanies: CompanyInput[],
+  nasdaqCompanies: CompanyInput[]
+): {
+  dualListedCompanies: CompanyWithExchanges[];
+  uniqueNYSECompanies: CompanyWithExchanges[];
+  uniqueNASDAQCompanies: CompanyWithExchanges[];
+} {
+  const duplicateSymbols = findDuplicateCompanies(
+    nyseCompanies,
+    nasdaqCompanies
+  );
+
+  const dualListedCompanies: CompanyWithExchanges[] = [];
+  const uniqueNYSECompanies: CompanyWithExchanges[] = [];
+  const uniqueNASDAQCompanies: CompanyWithExchanges[] = [];
+
+  nyseCompanies.forEach((company) => {
+    if (duplicateSymbols.includes(company.symbol)) {
+      dualListedCompanies.push({
+        ...company,
+        exchanges: [ExchangeType.NYSE, ExchangeType.NASDAQ],
+      });
+    } else {
+      uniqueNYSECompanies.push({
+        ...company,
+        exchanges: [ExchangeType.NYSE],
+      });
+    }
+  });
+
+  nasdaqCompanies.forEach((company) => {
+    if (!duplicateSymbols.includes(company.symbol)) {
+      uniqueNASDAQCompanies.push({
+        ...company,
+        exchanges: [ExchangeType.NASDAQ],
+      });
+    }
+  });
+
+  return {
+    dualListedCompanies,
+    uniqueNYSECompanies,
+    uniqueNASDAQCompanies,
+  };
+}
+
+async function createCompanyWithExchanges(companyData: CompanyWithExchanges) {
+  // First try to find a matching logo
+  const matchingLogo = await prisma.logo.findFirst({
+    where: {
+      filename: {
+        startsWith: `${companyData.symbol}.`, // This will match "AAPL.png", "AAPL.jpg", etc.
+      },
+    },
+  });
+
+  const result = await prisma.company.upsert({
+    where: { symbol: companyData.symbol },
+    update: {
+      name: companyData.name,
+      exchanges: {
+        set: [], // Clear existing relationships
+        connect: companyData.exchanges.map((exchange) => ({
+          name: exchange,
+        })),
+      },
+      // Update logo relation if found
+      ...(matchingLogo && {
+        logo: {
+          connect: {
+            id: matchingLogo.id,
+          },
+        },
+      }),
+    },
+    create: {
+      symbol: companyData.symbol,
+      name: companyData.name,
+      marketCap: null,
+      price: null,
+      revenue: null,
+      exchanges: {
+        connect: companyData.exchanges.map((exchange) => ({
+          name: exchange,
+        })),
+      },
+      // Include logo relation in creation if found
+      ...(matchingLogo && {
+        logo: {
+          connect: {
+            id: matchingLogo.id,
+          },
+        },
+      }),
+    },
+    include: {
+      exchanges: true,
+      logo: true, // Include logo in the result
+    },
+  });
+
+  console.log(
+    `Created/Updated company: ${
+      result.symbol
+    } with exchanges: ${result.exchanges.map((e) => e.name).join(", ")}${
+      result.logo ? ` and logo: ${result.logo.filename}` : ""
+    }`
+  );
+  return result;
+}
+
+async function seedCompanies(): Promise<void> {
+  try {
+    console.log("Start seeding...");
+
+    // Pre-check logos
+    const allLogos = await prisma.logo.findMany();
+    console.log(
+      "\nFound logos for tickers:",
+      allLogos.map((logo) => logo.filename.split(".")[0]).join(", ")
+    );
+
+    const { dualListedCompanies, uniqueNYSECompanies, uniqueNASDAQCompanies } =
+      processDuplicateCompanies(NYSEcompanies, NASDAQcompanies);
+
+    console.log(
+      "\nDual-listed companies:",
+      dualListedCompanies.map((c) => c.symbol)
+    );
+    console.log(
+      "NYSE-only companies:",
+      uniqueNYSECompanies.map((c) => c.symbol)
+    );
+    console.log(
+      "NASDAQ-only companies:",
+      uniqueNASDAQCompanies.map((c) => c.symbol)
+    );
+
+    console.log("\nCreating exchanges...");
+    await prisma.exchange.upsert({
+      where: { name: ExchangeType.NYSE },
+      update: {},
+      create: { name: ExchangeType.NYSE },
+    });
+
+    await prisma.exchange.upsert({
+      where: { name: ExchangeType.NASDAQ },
+      update: {},
+      create: { name: ExchangeType.NASDAQ },
+    });
+
+    console.log("\nSeeding companies...");
+
+    for (const company of dualListedCompanies) {
+      await createCompanyWithExchanges(company);
+    }
+
+    for (const company of uniqueNYSECompanies) {
+      await createCompanyWithExchanges(company);
+    }
+
+    for (const company of uniqueNASDAQCompanies) {
+      await createCompanyWithExchanges(company);
+    }
+
+    console.log("\nSeeding finished.");
+  } catch (error) {
+    console.error("Error during seeding:", error);
+    throw error;
+  }
+}
+
+// Main execution
+seedCompanies()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
