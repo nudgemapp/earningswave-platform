@@ -1,6 +1,6 @@
 import NavBar from "@/components/NavBar";
 import EarningsClient from "./components/client";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
@@ -30,8 +30,16 @@ const EarningsPage = async ({
     page: string;
   };
 }) => {
-  let userInfo = null;
-  const user = await currentUser();
+  let userInfo: any = {
+    id: "",
+    firstName: null,
+    lastName: null,
+    email: "",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    subscription: null,
+  };
+  const { userId } = await auth();
 
   // Create start and end dates for the current month
   const startDate = new Date(`${searchParams.year}-${searchParams.month}-01`);
@@ -82,16 +90,28 @@ const EarningsPage = async ({
     };
   });
 
-  if (user) {
-    userInfo = await prisma.user.findUnique({
-      where: {
-        id: user.id,
-      },
-      include: {
-        subscription: true,
-      },
-    });
+  if (userId) {
+    try {
+      const fetchedUserInfo = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          subscription: true,
+        },
+      });
+      if (fetchedUserInfo) {
+        userInfo = fetchedUserInfo;
+      }
+      console.log("User info fetched:", userInfo);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  } else {
+    console.log("No userId found");
   }
+
+  console.log("Final userInfo:", userInfo);
 
   const getLimitedReportsForDate = async (
     date: Date

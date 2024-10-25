@@ -15,6 +15,7 @@ import {
 } from "@prisma/client";
 import { EarningsReportWithCompany } from "../page";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useUser } from "@clerk/nextjs";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
@@ -46,6 +47,7 @@ const EarningsClient: React.FC<{
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
+  const { user } = useUser();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -83,7 +85,7 @@ const EarningsClient: React.FC<{
   };
 
   const handleNavigateMonth = (direction: "prev" | "next") => {
-    if (!userInfo) {
+    if (!user) {
       openAuthModal();
     } else {
       navigateMonth(direction === "next" ? 1 : -1);
@@ -91,9 +93,9 @@ const EarningsClient: React.FC<{
   };
 
   const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
-    if (userInfo && userInfo.subscription?.status === "active") {
+    if (user && userInfo && userInfo.subscription?.status === "active") {
       setSelectedCompany({ id: transcriptInfo.id });
-    } else if (!userInfo) {
+    } else if (!user) {
       openAuthModal();
     } else {
       openSubscriptionModal();
@@ -102,7 +104,7 @@ const EarningsClient: React.FC<{
 
   const handleFutureEarningsClick = (report: EarningsReport) => {
     setSelectedCompany({ id: null });
-    if (!userInfo) {
+    if (!user) {
       openAuthModal();
     }
     setSelectedFutureEarnings(report);
