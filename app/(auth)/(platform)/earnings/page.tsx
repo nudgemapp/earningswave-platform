@@ -5,7 +5,13 @@ import prisma from "../../../../lib/prismadb";
 // import { getTranscripts } from "@/actions/get-transcripts";
 // import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 // import LoadingSpinner from "@/components/LoadingSpinner";
-import { EarningsReport, Company, Logo } from "@prisma/client";
+import {
+  EarningsReport,
+  Company,
+  Logo,
+  User,
+  Subscription,
+} from "@prisma/client";
 
 // const revalidate = 0;
 
@@ -21,6 +27,17 @@ export type EarningsReportWithCompany = Omit<EarningsReport, "company"> & {
   company: CompanyWithLogo | null;
 };
 
+// Define a type for UserInfo
+type UserInfo = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+  subscription: Subscription | null;
+};
+
 const EarningsPage = async ({
   searchParams,
 }: {
@@ -30,7 +47,7 @@ const EarningsPage = async ({
     page: string;
   };
 }) => {
-  let userInfo: any = {
+  let userInfo: UserInfo = {
     id: "",
     firstName: null,
     lastName: null,
@@ -101,7 +118,7 @@ const EarningsPage = async ({
         },
       });
       if (fetchedUserInfo) {
-        userInfo = fetchedUserInfo;
+        userInfo = fetchedUserInfo as UserInfo;
       }
       console.log("User info fetched:", userInfo);
     } catch (error) {
