@@ -127,73 +127,101 @@ const MonthView: React.FC<MonthViewProps> = ({
         {getDaysInMonth(currentDate).map((date, index) => {
           const dayContent = getLogosForDate(date, transcripts);
           const dayReports = getReportsForDate(date, futureEarningsReports);
+          const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+
           return (
             <div
               key={index}
-              className={`bg-white p-1 text-center flex flex-col ${
-                date.getMonth() !== currentDate.getMonth()
-                  ? "text-gray-400"
-                  : "text-gray-800"
+              className={`bg-white p-1 text-center flex flex-col min-h-[100px] ${
+                !isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'text-gray-800'
               } ${
                 date.toDateString() === new Date().toDateString()
-                  ? "bg-blue-100"
+                  ? "bg-blue-50"
                   : ""
               }`}
             >
-              <span className="text-xs">{date.getDate()}</span>
-              <div className="flex-grow flex flex-wrap justify-center items-center mt-1">
+              <span className="text-xs mb-1">{date.getDate()}</span>
+              <div className="flex-grow">
                 {dayContent.length === 0 && dayReports.length === 0 ? (
                   <div className="w-full h-full">
                     <NoEarnings />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1 w-full h-full">
+                  <div className="grid grid-cols-3 gap-1 w-full">
                     {dayContent.map((transcriptInfo, logoIndex) => (
                       <div
                         key={logoIndex}
-                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
-                        onClick={() => handleCompanyClick(transcriptInfo)}
+                        className="flex flex-col items-center"
                       >
-                        <Image
-                          src={
-                            (
-                              transcriptInfo.company_info as {
-                                logo_base64?: string;
-                              }
-                            )?.logo_base64 || ""
-                          }
-                          alt={`${
-                            (
-                              transcriptInfo.company_info as {
-                                company_name?: string;
-                              }
-                            )?.company_name || "Company"
-                          } logo`}
-                          layout="fill"
-                          objectFit="contain"
-                        />
-                      </div>
-                    ))}
-                    {dayReports.map((report, reportIndex) => (
-                      <div
-                        key={reportIndex}
-                        className="aspect-square sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
-                        title={`${report.name} (${report.symbol})`}
-                        onClick={() => handleFutureEarningsClick(report)}
-                      >
-                        {report.company?.logo?.dataBase64 ? (
+                        <div
+                          className="aspect-square w-6 h-6 sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
+                          onClick={() => handleCompanyClick(transcriptInfo)}
+                        >
                           <Image
-                            src={report.company.logo.dataBase64}
-                            alt={`${report.name} logo`}
+                            src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
+                            alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
                             layout="fill"
                             objectFit="contain"
                           />
-                        ) : (
-                          <span className="text-xs">{report.symbol}</span>
-                        )}
+                        </div>
+                        <span className="text-[10px] font-medium text-gray-800 mt-1">
+                          {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+                        </span>
                       </div>
                     ))}
-                  </div>
+                  {dayContent.map((transcriptInfo, logoIndex) => (
+  <div
+    key={logoIndex}
+    className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+    onClick={() => handleCompanyClick(transcriptInfo)}
+  >
+    <div className="flex-1 relative">
+      <Image
+        src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
+        alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
+        layout="fill"
+        objectFit="contain"
+        className="p-1"
+      />
+    </div>
+    <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
+      <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
+        {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+      </span>
+    </div>
+  </div>
+      ))}
+
+      {dayReports.map((report, reportIndex) => (
+        <div
+          key={reportIndex}
+          className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+          title={`${report.name} (${report.symbol})`}
+          onClick={() => handleFutureEarningsClick(report)}
+        >
+          <div className="flex-1 relative">
+            {report.company?.logo?.dataBase64 ? (
+              <Image
+                src={report.company.logo.dataBase64}
+                alt={`${report.name} logo`}
+                layout="fill"
+                objectFit="contain"
+                className="p-1"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-[10px] font-medium">{report.symbol}</span>
+              </div>
+            )}
+          </div>
+          <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
+            <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
+              {report.symbol}
+            </span>
+          </div>
+        </div>
+      ))}
+       </div>
                 )}
               </div>
             </div>
@@ -203,5 +231,4 @@ const MonthView: React.FC<MonthViewProps> = ({
     </div>
   );
 };
-
 export default MonthView;

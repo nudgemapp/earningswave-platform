@@ -74,8 +74,6 @@ const WeekView = ({
     </div>
   );
 
-  console.log(user);
-
   return (
     <div className="flex-1 flex flex-col sm:flex-row bg-white rounded-lg shadow-sm overflow-hidden h-full">
       {weekDays.map((day, index) => {
@@ -106,52 +104,76 @@ const WeekView = ({
                   {dayContent.map((transcriptInfo, logoIndex) => (
                     <div
                       key={`transcript-${logoIndex}`}
-                      className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-blue-300 cursor-pointer"
-                      onClick={() => handleCompanyClick(transcriptInfo)}
+                      className="flex flex-col items-center"
                     >
-                      <Image
-                        src={
-                          (
-                            transcriptInfo.company_info as {
-                              logo_base64?: string;
-                            }
-                          )?.logo_base64 || ""
-                        }
-                        alt={`${
-                          (
-                            transcriptInfo.company_info as {
-                              company_name?: string;
-                            }
-                          )?.company_name || "Company"
-                        } logo`}
-                        layout="fill"
-                        objectFit="contain"
-                        className="p-2"
-                      />
-                    </div>
-                  ))}
-                  {dayReports.map((report, reportIndex) => (
-                    <div
-                      key={`report-${reportIndex}`}
-                      className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-blue-300 cursor-pointer"
-                      title={`${report.name} (${report.symbol})`}
-                      onClick={() => handleFutureEarningsClick(report)}
-                    >
-                      {report.company?.logo?.dataBase64 ? (
+                      <div
+                        className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer w-full"
+                        onClick={() => handleCompanyClick(transcriptInfo)}
+                      >
                         <Image
-                          src={report.company.logo.dataBase64}
-                          alt={`${report.name} logo`}
+                          src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
+                          alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
                           layout="fill"
                           objectFit="contain"
                           className="p-2"
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-sm font-medium">
-                            {report.symbol}
-                          </span>
-                        </div>
-                      )}
+                      </div>
+                      <span className="text-xs font-medium text-gray-800 mt-1">
+                        {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+                      </span>
+                    </div>
+                  ))}
+
+                  {dayContent.map((transcriptInfo, logoIndex) => (
+                    <div
+                      key={`transcript-${logoIndex}`}
+                      className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer w-full flex flex-col"
+                      onClick={() => handleCompanyClick(transcriptInfo)}
+                    >
+                      <div className="flex-1 relative">
+                        <Image
+                          src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
+                          alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
+                          layout="fill"
+                          objectFit="contain"
+                          className="p-2"
+                        />
+                      </div>
+                      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
+                        <span className="text-xs font-medium text-gray-800 block text-center">
+                          {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {dayReports.map((report, reportIndex) => (
+                    <div
+                      key={`report-${reportIndex}`}
+                      className="aspect-square relative bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer w-full flex flex-col"
+                      title={`${report.name} (${report.symbol})`}
+                      onClick={() => handleFutureEarningsClick(report)}
+                    >
+                      <div className="flex-1 relative">
+                        {report.company?.logo?.dataBase64 ? (
+                          <Image
+                            src={report.company.logo.dataBase64}
+                            alt={`${report.name} logo`}
+                            layout="fill"
+                            objectFit="contain"
+                            className="p-2"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-sm font-medium">{report.symbol}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
+                        <span className="text-xs font-medium text-gray-800 block text-center">
+                          {report.symbol}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
