@@ -20,8 +20,6 @@ function PricingSection({
 }: PricingSectionProps) {
   const { user } = useUser();
 
-  console.log(user);
-
   const [isYearly, setIsYearly] = useState<boolean>(false);
 
   // Update this function to correctly set the isYearly state
@@ -39,11 +37,6 @@ function PricingSection({
   const apiClient = useApiClient();
 
   const handleCheckout = async (priceId: string, subscription: boolean) => {
-    console.log("user", user?.id);
-    console.log("email", user?.emailAddresses[0].emailAddress);
-    console.log("priceId", priceId);
-    console.log("subscription", subscription);
-
     try {
       interface CheckoutSessionResponse {
         sessionId: string;
@@ -59,8 +52,6 @@ function PricingSection({
         }
       );
 
-      console.log(data);
-
       if (data.sessionId) {
         const stripe = await stripePromise;
         console.log(stripe);
@@ -68,7 +59,6 @@ function PricingSection({
         const response = await stripe?.redirectToCheckout({
           sessionId: data.sessionId,
         });
-        console.log(response);
 
         return response;
       } else {

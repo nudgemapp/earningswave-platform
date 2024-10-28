@@ -4,7 +4,6 @@ import { Calendar } from "lucide-react";
 import { filter, pipe, equals, path } from "ramda";
 import { EarningsCallTranscript, EarningsReport } from "@prisma/client";
 import { EarningsReportWithCompany } from "@/app/(auth)/(platform)/earnings/page";
-import { useUser } from "@clerk/nextjs";
 
 const WeekView = ({
   weekDays,
@@ -21,8 +20,6 @@ const WeekView = ({
   futureEarningsReports: EarningsReportWithCompany[];
   handleFutureEarningsClick: (report: EarningsReport) => void;
 }) => {
-  const user = useUser();
-
   const getLogosForDate = (
     date: Date,
     transcripts: EarningsCallTranscript[]
@@ -111,15 +108,28 @@ const WeekView = ({
                         onClick={() => handleCompanyClick(transcriptInfo)}
                       >
                         <Image
-                          src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
-                          alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
+                          src={
+                            (
+                              transcriptInfo.company_info as {
+                                logo_base64?: string;
+                              }
+                            )?.logo_base64 || ""
+                          }
+                          alt={`${
+                            (
+                              transcriptInfo.company_info as {
+                                company_name?: string;
+                              }
+                            )?.company_name || "Company"
+                          } logo`}
                           layout="fill"
                           objectFit="contain"
                           className="p-2"
                         />
                       </div>
                       <span className="text-xs font-medium text-gray-800 mt-1">
-                        {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+                        {(transcriptInfo.company_info as { symbol?: string })
+                          ?.symbol || ""}
                       </span>
                     </div>
                   ))}
@@ -132,8 +142,20 @@ const WeekView = ({
                     >
                       <div className="flex-1 relative">
                         <Image
-                          src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
-                          alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
+                          src={
+                            (
+                              transcriptInfo.company_info as {
+                                logo_base64?: string;
+                              }
+                            )?.logo_base64 || ""
+                          }
+                          alt={`${
+                            (
+                              transcriptInfo.company_info as {
+                                company_name?: string;
+                              }
+                            )?.company_name || "Company"
+                          } logo`}
                           layout="fill"
                           objectFit="contain"
                           className="p-2"
@@ -141,7 +163,8 @@ const WeekView = ({
                       </div>
                       <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
                         <span className="text-xs font-medium text-gray-800 block text-center">
-                          {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
+                          {(transcriptInfo.company_info as { symbol?: string })
+                            ?.symbol || ""}
                         </span>
                       </div>
                     </div>
@@ -165,7 +188,9 @@ const WeekView = ({
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-sm font-medium">{report.symbol}</span>
+                            <span className="text-sm font-medium">
+                              {report.symbol}
+                            </span>
                           </div>
                         )}
                       </div>

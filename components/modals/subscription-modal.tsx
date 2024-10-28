@@ -33,11 +33,6 @@ export function SubscriptionModal() {
   };
 
   const handleCheckout = async (priceId: string, subscription: boolean) => {
-    console.log("user", user?.id);
-    console.log("email", user?.emailAddresses[0].emailAddress);
-    console.log("priceId", priceId);
-    console.log("subscription", subscription);
-
     try {
       interface CheckoutSessionResponse {
         sessionId: string;
@@ -53,7 +48,6 @@ export function SubscriptionModal() {
             subscription,
           }
         );
-      console.log(data);
 
       if (data.sessionId) {
         const stripe = await stripePromise;
@@ -63,7 +57,6 @@ export function SubscriptionModal() {
           const response = await stripe.redirectToCheckout({
             sessionId: data.sessionId,
           });
-          console.log(response);
 
           return response;
         }

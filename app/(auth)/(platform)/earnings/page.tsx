@@ -114,15 +114,12 @@ const EarningsPage = async ({
       if (fetchedUserInfo) {
         userInfo = fetchedUserInfo as UserInfo;
       }
-      console.log("User info fetched:", userInfo);
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
   } else {
     console.log("No userId found");
   }
-
-  console.log("Final userInfo:", userInfo);
 
   const getLimitedReportsForDate = async (
     date: Date
