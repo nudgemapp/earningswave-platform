@@ -2,17 +2,17 @@ import React from "react";
 import Image from "next/image";
 
 import { Calendar } from "lucide-react";
-import { equals, filter, path, pipe } from "ramda";
-import { EarningsCallTranscript, EarningsReport } from "@prisma/client";
-import { EarningsReportWithCompany } from "@/app/(auth)/(platform)/earnings/page";
-// import { companyNames } from "@/app/(auth)/(platform)/earnings/data";
+import {
+  ProcessedReport,
+  ProcessedTranscript,
+} from "@/app/(auth)/(platform)/earnings/types";
 
 interface MonthViewProps {
   currentDate: Date;
-  transcripts: EarningsCallTranscript[];
-  handleCompanyClick: (transcriptInfo: EarningsCallTranscript) => void;
-  futureEarningsReports: EarningsReportWithCompany[];
-  handleFutureEarningsClick: (report: EarningsReport) => void;
+  transcripts: ProcessedTranscript[];
+  handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
+  futureEarningsReports: ProcessedReport[];
+  handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -45,10 +45,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const getLogosForDate = (
-    date: Date,
-    transcripts: EarningsCallTranscript[]
-  ) => {
+  const getLogosForDate = (date: Date, transcripts: ProcessedTranscript[]) => {
     // Extract the date in the format "MMM DD YYYY"
     const formattedDate = date.toLocaleDateString("en-US", {
       month: "short",
@@ -57,24 +54,17 @@ const MonthView: React.FC<MonthViewProps> = ({
     });
 
     // Filter transcripts for the given date
-    const matchingTranscripts = filter(
-      pipe((transcript) => {
-        const transcriptDate = path(["company_info", "date"], transcript);
-        return equals(transcriptDate, formattedDate);
-      }),
-      transcripts
-    );
-
-    if (matchingTranscripts.length > 0) {
-      return matchingTranscripts;
-    }
-    return [];
+    return transcripts.filter((transcript) => {
+      const transcriptDate = transcript.date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+      return transcriptDate === formattedDate;
+    });
   };
 
-  const getReportsForDate = (
-    date: Date,
-    reports: EarningsReportWithCompany[]
-  ) => {
+  const getReportsForDate = (date: Date, reports: ProcessedReport[]) => {
     // Extract the date in the format "MMM DD YYYY"
     const formattedDate = date.toLocaleDateString("en-US", {
       month: "short",
@@ -83,22 +73,14 @@ const MonthView: React.FC<MonthViewProps> = ({
     });
 
     // Filter reports for the given date
-    const matchingReports = filter(
-      pipe((report) => {
-        const reportDate = report.reportDate.toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        });
-        return equals(reportDate, formattedDate);
-      }),
-      reports
-    );
-
-    if (matchingReports.length > 0) {
-      return matchingReports;
-    }
-    return [];
+    return reports.filter((report) => {
+      const reportDate = report.reportDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+      return reportDate === formattedDate;
+    });
   };
 
   const NoEarnings = () => (
@@ -133,7 +115,7 @@ const MonthView: React.FC<MonthViewProps> = ({
             <div
               key={index}
               className={`bg-white p-1 text-center flex flex-col min-h-[100px] ${
-                !isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'text-gray-800'
+                !isCurrentMonth ? "text-gray-400 bg-gray-50" : "text-gray-800"
               } ${
                 date.toDateString() === new Date().toDateString()
                   ? "bg-blue-50"
@@ -148,80 +130,69 @@ const MonthView: React.FC<MonthViewProps> = ({
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 gap-1 w-full">
-                    {dayContent.map((transcriptInfo, logoIndex) => (
+                    {dayContent.map((transcript, logoIndex) => (
                       <div
-                        key={logoIndex}
-                        className="flex flex-col items-center"
+                        key={`transcript-${logoIndex}`}
+                        className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+                        onClick={() => handleCompanyClick(transcript)}
                       >
-                        <div
-                          className="aspect-square w-6 h-6 sm:w-8 sm:h-8 relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer"
-                          onClick={() => handleCompanyClick(transcriptInfo)}
-                        >
-                          <Image
-                            src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
-                            alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
-                            layout="fill"
-                            objectFit="contain"
-                          />
+                        <div className="flex-1 relative">
+                          {transcript.company?.logo ? (
+                            <Image
+                              src={transcript.company.logo}
+                              alt={`${transcript.company.name} logo`}
+                              layout="fill"
+                              objectFit="contain"
+                              className="p-1"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-[10px] font-medium">
+                                {transcript.company?.symbol || ""}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <span className="text-[10px] font-medium text-gray-800 mt-1">
-                          {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
-                        </span>
+                        <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
+                          <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
+                            {transcript.company?.symbol || ""}
+                          </span>
+                        </div>
                       </div>
                     ))}
-                  {dayContent.map((transcriptInfo, logoIndex) => (
-  <div
-    key={logoIndex}
-    className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-    onClick={() => handleCompanyClick(transcriptInfo)}
-  >
-    <div className="flex-1 relative">
-      <Image
-        src={(transcriptInfo.company_info as { logo_base64?: string })?.logo_base64 || ""}
-        alt={`${(transcriptInfo.company_info as { company_name?: string })?.company_name || "Company"} logo`}
-        layout="fill"
-        objectFit="contain"
-        className="p-1"
-      />
-    </div>
-    <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
-      <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
-        {(transcriptInfo.company_info as { symbol?: string })?.symbol || ""}
-      </span>
-    </div>
-  </div>
-      ))}
 
-      {dayReports.map((report, reportIndex) => (
-        <div
-          key={reportIndex}
-          className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-          title={`${report.name} (${report.symbol})`}
-          onClick={() => handleFutureEarningsClick(report)}
-        >
-          <div className="flex-1 relative">
-            {report.company?.logo?.dataBase64 ? (
-              <Image
-                src={report.company.logo.dataBase64}
-                alt={`${report.name} logo`}
-                layout="fill"
-                objectFit="contain"
-                className="p-1"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-[10px] font-medium">{report.symbol}</span>
-              </div>
-            )}
-          </div>
-          <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
-            <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
-              {report.symbol}
-            </span>
-          </div>
-        </div>
-      ))}
-       </div>
+                    {dayReports.map((report, reportIndex) => (
+                      <div
+                        key={`report-${reportIndex}`}
+                        className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+                        title={`${report.name} (${report.symbol})`}
+                        onClick={() => handleFutureEarningsClick(report)}
+                      >
+                        <div className="flex-1 relative">
+                          {report.company?.logo ? (
+                            <Image
+                              src={report.company.logo}
+                              alt={`${report.name} logo`}
+                              layout="fill"
+                              objectFit="contain"
+                              className="p-1"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-[10px] font-medium">
+                                {report.symbol}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
+                          <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
+                            {report.symbol}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

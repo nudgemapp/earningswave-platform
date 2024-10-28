@@ -7,15 +7,10 @@ import { useEmailModal } from "@/store/EmailModalStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
-import {
-  User,
-  Subscription,
-  EarningsCallTranscript,
-  EarningsReport,
-} from "@prisma/client";
-import { EarningsReportWithCompany } from "../page";
+import { User, Subscription, MarketTiming, Logo } from "@prisma/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@clerk/nextjs";
+import { ProcessedReport, ProcessedTranscript } from "../types";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
@@ -35,11 +30,17 @@ export type UserWithSubscription =
     })
   | null;
 
-const EarningsClient: React.FC<{
+interface EarningsClientProps {
   userInfo: UserWithSubscription;
-  transcripts: EarningsCallTranscript[];
-  futureEarningsReports: EarningsReportWithCompany[];
-}> = React.memo(({ userInfo, transcripts, futureEarningsReports }) => {
+  transcripts: ProcessedTranscript[];
+  reports: ProcessedReport[];
+}
+
+const EarningsClient: React.FC<EarningsClientProps> = ({
+  userInfo,
+  transcripts,
+  reports,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
@@ -92,7 +93,7 @@ const EarningsClient: React.FC<{
     }
   };
 
-  const handleCompanyClick = (transcriptInfo: EarningsCallTranscript) => {
+  const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
     if (user && userInfo && userInfo.subscription?.status === "active") {
       setSelectedCompany({ id: transcriptInfo.id });
     } else if (!user) {
@@ -102,7 +103,7 @@ const EarningsClient: React.FC<{
     }
   };
 
-  const handleFutureEarningsClick = (report: EarningsReport) => {
+  const handleFutureEarningsClick = (report: ProcessedReport) => {
     setSelectedCompany({ id: null });
     if (!user) {
       openAuthModal();
@@ -113,6 +114,8 @@ const EarningsClient: React.FC<{
   if (isLoading) {
     return <LoadingSpinner />;
   }
+
+  console.log("transcripts", transcripts);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -132,7 +135,7 @@ const EarningsClient: React.FC<{
             weekDates={weekDates}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
-            futureEarningsReports={futureEarningsReports}
+            futureEarningsReports={reports}
             handleFutureEarningsClick={handleFutureEarningsClick}
           />
         ) : (
@@ -140,14 +143,14 @@ const EarningsClient: React.FC<{
             currentDate={currentDate}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
-            futureEarningsReports={futureEarningsReports}
+            futureEarningsReports={reports}
             handleFutureEarningsClick={handleFutureEarningsClick}
           />
         )}
       </div>
     </div>
   );
-});
+};
 
 EarningsClient.displayName = "EarningsClient";
 

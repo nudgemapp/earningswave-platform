@@ -88,8 +88,13 @@ model EarningsCallTranscript {
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
   logo_id           Int?     
+  companyId         Int?     // Make it optional with the ?
+  
+  company           Company? @relation(fields: [companyId], references: [id]) // Make relation optional too
+  logo              Logo?    @relation(fields: [logo_id], references: [id])
 
-  logo Logo? @relation(fields: [logo_id], references: [id]) // One-to-many relationship
+  @@index([date])
+  @@index([companyId, date])
 }
 
 model Logo {
@@ -128,6 +133,8 @@ model EarningsReport {
   updatedAt         DateTime    @updatedAt
 
   @@unique([symbol, companyId, reportDate, fiscalDateEnding])
+  @@index([reportDate])
+  @@index([companyId, reportDate])
 }
 
 model Company {
@@ -141,6 +148,7 @@ model Company {
   earningsReports EarningsReport[]
   logo            Logo?            @relation(fields: [logoId], references: [id])
   logoId          Int?
+  earningsCallTranscripts EarningsCallTranscript[]
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -159,52 +167,6 @@ model Exchange {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 }
-
-
-
-// model EarningsCallTranscript {
-//   id                Int      @id @default(autoincrement())
-//   href              String   @db.VarChar(255)
-//   date              DateTime
-//   title             String   @db.VarChar(255)
-//   company_id        Int
-//   company_info      Company @relation(fields: [company_id], references: [id])
-//   contents          String[]
-//   sections          Json
-//   call_participants String[]
-//   full_text         String   @db.Text
-
-//   logo_id           Int?     
-//   logo              Logo?    @relation(fields: [logo_id], references: [id]) // One-to-many relationship
-
-//   created_at        DateTime @default(now())
-//   updated_at        DateTime @updatedAt
-// }
-
-// model Company {
-//   id                Int      @id @default(autoincrement())
-//   date              String
-//   time              String
-//   company_name      String
-//   ticker_change     String
-//   ticker_symbol     String
-//   logo_base64       String
-//   earningsCallTranscripts EarningsCallTranscript[]
-
-//   created_at        DateTime @default(now())
-//   updated_at        DateTime @updatedAt
-// }
-
-// model Logo {
-//   id         Int      @id @default(autoincrement())
-//   filename   String
-//   data       Bytes
-
-//   created_at DateTime @default(now())
-
-//   // One logo can be associated with many transcripts
-//   earningsCallTranscripts EarningsCallTranscript[] 
-// }
 
 model Email {
   id        String   @id @default(uuid())
