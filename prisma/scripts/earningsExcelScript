@@ -1,0 +1,359 @@
+// import { NextResponse } from "next/server";
+// import prisma from "../../../../lib/prismadb";
+// import fs from "fs";
+// import path from "path";
+// import { parse } from "csv-parse/sync";
+// import { MarketTiming } from "@prisma/client";
+
+// interface EarningsRow {
+//   Time: string;
+//   Symbol: string;
+//   "Company Name": string;
+//   "Market Cap": string;
+//   "Fiscal Quarter Ending": string;
+//   "Consensus EPS* Forecast": string;
+//   "# of Ests": string;
+//   "Last Year's Report Date": string;
+//   "Last year's EPS*": string;
+//   ReportDate: string;
+// }
+
+// const parseMarketTiming = (timing: string): MarketTiming => {
+//   switch (timing.toLowerCase()) {
+//     case "time-pre-market":
+//       return MarketTiming.PRE_MARKET;
+//     case "time-after-hours":
+//       return MarketTiming.AFTER_HOURS;
+//     default:
+//       return MarketTiming.NOT_SUPPLIED;
+//   }
+// };
+
+// const parseEPS = (epsStr: string): number | null => {
+//   if (!epsStr || epsStr === "N/A") return null;
+//   return parseFloat(epsStr.replace("$", ""));
+// };
+
+// // function isDifferent(
+// //   existing: any,
+// //   newData: any
+// // ): {
+// //   hasChanges: boolean;
+// //   changes: Record<string, { from: any; to: any }>;
+// // } {
+// //   const changes: Record<string, { from: any; to: any }> = {};
+// //   let hasChanges = false;
+
+// //   // Only update marketTiming if we're adding it for the first time or changing it
+// //   if (existing.marketTiming === null && newData.marketTiming !== null) {
+// //     changes.marketTiming = {
+// //       from: existing.marketTiming,
+// //       to: newData.marketTiming,
+// //     };
+// //     hasChanges = true;
+// //   }
+
+// //   // Only update estimate if new value exists and is different
+// //   if (newData.estimate !== null && existing.estimate !== newData.estimate) {
+// //     changes.estimate = {
+// //       from: existing.estimate,
+// //       to: newData.estimate,
+// //     };
+// //     hasChanges = true;
+// //   }
+
+// //   // Check estimate
+// //   if (existing.estimate !== newData.estimate && newData.estimate !== null) {
+// //     changes.estimate = {
+// //       from: existing.estimate,
+// //       to: newData.estimate,
+// //     };
+// //     hasChanges = true;
+// //   }
+
+// //   // Check lastYearEPS
+// //   if (
+// //     existing.lastYearEPS !== newData.lastYearEPS &&
+// //     newData.lastYearEPS !== null
+// //   ) {
+// //     changes.lastYearEPS = {
+// //       from: existing.lastYearEPS,
+// //       to: newData.lastYearEPS,
+// //     };
+// //     hasChanges = true;
+// //   }
+
+// //   // Check lastYearReportDate
+// //   if (
+// //     existing.lastYearReportDate?.toISOString() !==
+// //       newData.lastYearReportDate?.toISOString() &&
+// //     newData.lastYearReportDate
+// //   ) {
+// //     changes.lastYearReportDate = {
+// //       from: existing.lastYearReportDate,
+// //       to: newData.lastYearReportDate,
+// //     };
+// //     hasChanges = true;
+// //   }
+
+// //   return { hasChanges, changes };
+// // }
+
+// function formatDate(date: Date): string {
+//   return date.toISOString().split("T")[0];
+// }
+
+// // function isSameFiscalPeriod(date1: Date, date2: Date): boolean {
+// //   return (
+// //     date1.getFullYear() === date2.getFullYear() &&
+// //     date1.getMonth() === date2.getMonth()
+// //   );
+// // }
+
+// const parseDate = (dateStr: string): Date | null => {
+//   if (!dateStr || dateStr === "N/A") return null;
+
+//   if (dateStr.includes("/")) {
+//     if (dateStr.split("/").length === 2) {
+//       const [month, year] = dateStr.split("/");
+//       const monthMap: { [key: string]: number } = {
+//         Jan: 0,
+//         Feb: 1,
+//         Mar: 2,
+//         Apr: 3,
+//         May: 4,
+//         Jun: 5,
+//         Jul: 6,
+//         Aug: 7,
+//         Sep: 8,
+//         Oct: 9,
+//         Nov: 10,
+//         Dec: 11,
+//       };
+//       // For fiscal dates, use the last day of the month
+//       const lastDayOfMonth = new Date(parseInt(year), monthMap[month] + 1, 0);
+//       return lastDayOfMonth;
+//     }
+//     const [month, day, year] = dateStr.split("/");
+//     return new Date(
+//       `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+//     );
+//   }
+//   return new Date(dateStr);
+// };
+
+// // ... (keep imports and basic helper functions)
+
+// async function processBatch(
+//   records: EarningsRow[],
+//   companyMap: Map<string, any>,
+//   tx: any
+// ) {
+//   const processedResults: any[] = [];
+
+//   for (const record of records) {
+//     try {
+//       const company = companyMap.get(record.Symbol);
+//       const reportDate = parseDate(record.ReportDate);
+//       const fiscalDateEnding = parseDate(record["Fiscal Quarter Ending"]);
+
+//       if (!reportDate || !fiscalDateEnding) {
+//         processedResults.push({
+//           symbol: record.Symbol,
+//           status: "skipped_invalid_dates",
+//         });
+//         continue;
+//       }
+
+//       // Prepare the new data
+//       const newData = {
+//         symbol: record.Symbol,
+//         name: record["Company Name"],
+//         reportDate,
+//         fiscalDateEnding,
+//         marketTiming: parseMarketTiming(record.Time),
+//         estimate: parseEPS(record["Consensus EPS* Forecast"]),
+//         lastYearEPS: parseEPS(record["Last year's EPS*"]),
+//         lastYearReportDate: parseDate(record["Last Year's Report Date"]),
+//         currency: "USD",
+//         companyId: company.id,
+//       };
+
+//       if (company) {
+//         // Find existing report with exact date matches
+//         const existingReport = company.earningsReports.find(
+//           (report: any) =>
+//             formatDate(report.reportDate) === formatDate(reportDate) &&
+//             formatDate(report.fiscalDateEnding) === formatDate(fiscalDateEnding)
+//         );
+
+//         if (existingReport) {
+//           // Check what needs to be updated
+//           const updates: any = {};
+
+//           // Only update marketTiming if it's currently null or different
+//           if (existingReport.marketTiming === null && newData.marketTiming) {
+//             updates.marketTiming = newData.marketTiming;
+//           }
+
+//           // Update estimate if new value exists and is different
+//           if (
+//             newData.estimate !== null &&
+//             existingReport.estimate !== newData.estimate
+//           ) {
+//             updates.estimate = newData.estimate;
+//           }
+
+//           // Update lastYearEPS if new value exists and is different
+//           if (
+//             newData.lastYearEPS !== null &&
+//             existingReport.lastYearEPS !== newData.lastYearEPS
+//           ) {
+//             updates.lastYearEPS = newData.lastYearEPS;
+//           }
+
+//           // Update lastYearReportDate if new value exists and is different
+//           if (
+//             newData.lastYearReportDate &&
+//             (!existingReport.lastYearReportDate ||
+//               formatDate(existingReport.lastYearReportDate) !==
+//                 formatDate(newData.lastYearReportDate))
+//           ) {
+//             updates.lastYearReportDate = newData.lastYearReportDate;
+//           }
+
+//           // Only update if there are changes
+//           if (Object.keys(updates).length > 0) {
+//             await tx.earningsReport.update({
+//               where: { id: existingReport.id },
+//               data: updates,
+//             });
+
+//             console.log(`Updated report for ${record.Symbol}:`, updates);
+//             processedResults.push({
+//               symbol: record.Symbol,
+//               status: "updated",
+//               updates,
+//             });
+//           } else {
+//             processedResults.push({
+//               symbol: record.Symbol,
+//               status: "no_changes_needed",
+//             });
+//           }
+//         } else {
+//           // Create new earnings report for existing company
+//           await tx.earningsReport.create({
+//             data: newData,
+//           });
+
+//           console.log(
+//             `Created new report for existing company ${record.Symbol}`
+//           );
+//           processedResults.push({
+//             symbol: record.Symbol,
+//             status: "report_created",
+//           });
+//         }
+//       } else {
+//         // Should not reach here as companies should already exist
+//         console.error(`Company ${record.Symbol} not found but should exist`);
+//         processedResults.push({
+//           symbol: record.Symbol,
+//           status: "error_company_missing",
+//         });
+//       }
+//     } catch (error) {
+//       console.error(`Error processing ${record.Symbol}:`, error);
+//       processedResults.push({
+//         symbol: record.Symbol,
+//         status: "error",
+//         error: error instanceof Error ? error.message : "Unknown error",
+//       });
+//     }
+//   }
+
+//   return processedResults;
+// }
+
+// export async function GET() {
+//   try {
+//     const filePath = path.join(process.cwd(), "public", "earnings.tsv");
+//     const fileContent = fs.readFileSync(filePath, "utf-8");
+
+//     const records: EarningsRow[] = parse(fileContent, {
+//       columns: true,
+//       skip_empty_lines: true,
+//       delimiter: "\t",
+//       trim: true,
+//     });
+
+//     console.log(`Parsed ${records.length} records from TSV`);
+
+//     // Get existing companies with their earnings reports
+//     const existingCompanies = await prisma.company.findMany({
+//       select: {
+//         id: true,
+//         symbol: true,
+//         earningsReports: {
+//           select: {
+//             id: true,
+//             symbol: true,
+//             reportDate: true,
+//             fiscalDateEnding: true,
+//             estimate: true,
+//             marketTiming: true,
+//             lastYearEPS: true,
+//             lastYearReportDate: true,
+//           },
+//         },
+//       },
+//     });
+
+//     console.log(`Found ${existingCompanies.length} companies in database`);
+
+//     const companyMap = new Map(existingCompanies.map((c) => [c.symbol, c]));
+//     let allResults: any[] = [];
+
+//     // Process in batches of 50
+//     const BATCH_SIZE = 50;
+//     for (let i = 0; i < records.length; i += BATCH_SIZE) {
+//       const batch = records.slice(i, i + BATCH_SIZE);
+//       console.log(
+//         `Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(
+//           records.length / BATCH_SIZE
+//         )}`
+//       );
+
+//       const batchResults = await prisma.$transaction(
+//         async (tx) => {
+//           return processBatch(batch, companyMap, tx);
+//         },
+//         {
+//           timeout: 15000, // 15 second timeout per batch
+//         }
+//       );
+
+//       allResults = allResults.concat(batchResults);
+//     }
+
+//     // Calculate stats
+//     const stats = allResults.reduce((acc, curr) => {
+//       acc[curr.status] = (acc[curr.status] || 0) + 1;
+//       return acc;
+//     }, {} as Record<string, number>);
+
+//     console.log("Final processing stats:", stats);
+
+//     return NextResponse.json({
+//       status: "success",
+//       stats,
+//       results: allResults.slice(0, 20),
+//       totalResults: allResults.length,
+//       message: "Database updated successfully",
+//     });
+//   } catch (error) {
+//     console.error("[EARNINGS_UPDATE]", error);
+//     return new NextResponse("Internal Server Error", { status: 500 });
+//   }
+// }

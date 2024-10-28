@@ -104,19 +104,28 @@ model Logo {
   earningsCallTranscripts EarningsCallTranscript[] 
 }
 
+enum MarketTiming {
+  PRE_MARKET
+  AFTER_HOURS
+  NOT_SUPPLIED
+}
+
 model EarningsReport {
-  id                String   @id @default(uuid())
+  id                String       @id @default(uuid())
   symbol            String
   name              String
   reportDate        DateTime
   fiscalDateEnding  DateTime
   estimate          Float?
   currency          String
+  marketTiming      MarketTiming?
+  lastYearEPS      Float?      
+  lastYearReportDate DateTime?   
   companyId         Int
-  company           Company  @relation(fields: [companyId], references: [id])
+  company           Company     @relation(fields: [companyId], references: [id])
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@unique([symbol, companyId, reportDate, fiscalDateEnding])
 }
