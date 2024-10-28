@@ -32,7 +32,7 @@ export const scrapeEarningsTask = schedules.task({
         if (!row[0]) continue;
 
         const [symbol, name, reportDate, fiscalDateEnding, estimate, currency] = row;
-
+        const formattedTitle = `${name.trim()} (${symbol.trim()})`;
         try {
           // Check for existing transcript
           const existingTranscript = await prisma.earningsCallTranscript.findFirst({
@@ -46,14 +46,14 @@ export const scrapeEarningsTask = schedules.task({
 
           if (existingTranscript) {
             stats.duplicates++;
-            logger.info("Duplicate found", { symbol, reportDate });
+            logger.info("Duplicate found", { symbol, reportDate, estimate, formattedTitle });
             continue;
           }
 
           // Create new transcript entry
           await prisma.earningsCallTranscript.create({
             data: {
-              title: `${name.trim()} (${symbol.trim()}) Earnings Call Transcript`,
+              title: formattedTitle,
               date: new Date(reportDate),
               href: `https://finance.yahoo.com/quote/${symbol.trim()}/earnings`,
               company_info: {
@@ -74,7 +74,7 @@ export const scrapeEarningsTask = schedules.task({
           });
 
           stats.stored++;
-          logger.info("Stored new transcript", { symbol, reportDate });
+          logger.info("Stored new transcript", { symbol, reportDate, formattedTitle, estimate, name, });
         } catch (error) {
           stats.errors++;
           logger.error("Error processing entry", {
