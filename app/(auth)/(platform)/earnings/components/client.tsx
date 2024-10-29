@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
@@ -32,16 +32,15 @@ export type UserWithSubscription =
 
 interface EarningsClientProps {
   userInfo: UserWithSubscription;
-  transcripts: ProcessedTranscript[];
-  reports: ProcessedReport[];
+  // transcripts: ProcessedTranscript[];
+  // reports: ProcessedReport[];
 }
 
 const EarningsClient: React.FC<EarningsClientProps> = ({
   userInfo,
-  transcripts,
-  reports,
+  // transcripts,
+  // reports,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const emailModal = useEmailModal();
@@ -49,11 +48,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
   const { user } = useUser();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
@@ -65,6 +59,19 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
       return () => clearTimeout(timer);
     }
   }, [emailModal]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const dateParam = url.searchParams.get("date");
+    const viewParam = url.searchParams.get("view") as "week" | "month" | null;
+
+    if (dateParam) {
+      setCurrentDate(new Date(dateParam));
+    }
+    if (viewParam) {
+      setView(viewParam);
+    }
+  }, []);
 
   const handleViewChange = (newView: "week" | "month") => setView(newView);
 
@@ -103,10 +110,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     setSelectedFutureEarnings(report);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
@@ -121,17 +124,13 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView
-            transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
-            futureEarningsReports={reports}
             handleFutureEarningsClick={handleFutureEarningsClick}
           />
         ) : (
           <MonthView
             currentDate={currentDate}
-            transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
-            futureEarningsReports={reports}
             handleFutureEarningsClick={handleFutureEarningsClick}
           />
         )}

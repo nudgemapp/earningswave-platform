@@ -1,4 +1,4 @@
-import { MarketTiming } from "@prisma/client";
+import { EarningsReport, MarketTiming } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export type ProcessedTranscript = {
@@ -39,4 +39,28 @@ export type ProcessedReport = {
     updatedAt: Date;
     logo: string | null;
   };
+};
+
+export type EarningsReportWithCompany = EarningsReport & {
+  company?: {
+    logo?: { data: Buffer } | null;
+    id: number;
+    symbol: string;
+    name: string;
+    marketCap?: Decimal;
+    price?: Decimal;
+    revenue?: Decimal;
+  } | null;
+};
+
+export type EarningsCallTranscriptWithCompany = ProcessedTranscript & {
+  company?: {
+    logo?: { data: Buffer } | null;
+    id: number;
+    symbol: string;
+    name: string;
+    marketCap?: Decimal;
+    price?: Decimal;
+    revenue?: Decimal;
+  } | null;
 };

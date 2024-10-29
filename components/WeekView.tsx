@@ -6,77 +6,87 @@ import {
   ProcessedTranscript,
   ProcessedReport,
 } from "@/app/(auth)/(platform)/earnings/types";
+import { useGetWeekView } from "@/app/hooks/use-get-week-view";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface WeekViewProps {
-  transcripts: ProcessedTranscript[];
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
-  futureEarningsReports: ProcessedReport[];
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
-  transcripts,
   handleCompanyClick,
-  futureEarningsReports,
   handleFutureEarningsClick,
 }) => {
   const currentDate = useCalendarStore((state) => state.currentDate);
 
-  console.log("transcripts", transcripts);
-  console.log("currentDate", currentDate);
-
-  // Get Monday to Friday dates for the current week
-  const weekDates = React.useMemo(() => {
+  const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
-    const monday = new Date(date.setDate(diff));
+    const mondayDate = new Date(date);
+    mondayDate.setDate(diff);
+    mondayDate.setHours(0, 0, 0, 0);
+
+    const fridayDate = new Date(mondayDate);
+    fridayDate.setDate(mondayDate.getDate() + 4);
+    fridayDate.setHours(23, 59, 59, 999);
+
     const dates = [];
-
     for (let i = 0; i < 5; i++) {
-      // Only 5 days (Mon-Fri)
-      dates.push(new Date(new Date(monday).setDate(monday.getDate() + i)));
+      const newDate = new Date(mondayDate);
+      newDate.setDate(mondayDate.getDate() + i);
+      dates.push(newDate);
     }
 
-    return dates;
+    return {
+      weekDates: dates,
+      monday: mondayDate,
+      friday: fridayDate,
+    };
   }, [currentDate]);
 
-  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  // Fetch data for the week
+  const { data, isLoading, error } = useGetWeekView();
 
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div>Error loading data</div>;
+  if (!data) return <div>No data available</div>;
+
+  const { transcripts, reports } = data;
+
+  // Pre-process data for each day
+  const getDateContent = weekDates.map((date) => {
+    // Create a date without time component for comparison
+    const currentDay = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() - 1
+    ).toDateString();
+
+    const dayTranscripts = transcripts.filter((transcript) => {
+      const transcriptDate = new Date(transcript.date).toDateString();
+      return transcriptDate === currentDay;
+    });
+
+    const dayReports = reports.filter((report) => {
+      const reportDate = new Date(report.reportDate).toDateString();
+      return reportDate === currentDay;
+    });
+
+    return {
+      dayTranscripts,
+      dayReports,
+      isEmpty: dayTranscripts.length === 0 && dayReports.length === 0,
+    };
+  });
+
+  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const headerDateFormat: Intl.DateTimeFormatOptions = {
     month: "short",
     day: "numeric",
   };
-
-  // Memoize the filtered content for each date
-  const getDateContent = React.useMemo(() => {
-    return weekDates.map((date) => {
-      // Start of the day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      // End of the day
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      const dayTranscripts = transcripts.filter((transcript) => {
-        const transcriptDate = new Date(transcript.date);
-        return transcriptDate >= startOfDay && transcriptDate <= endOfDay;
-      });
-
-      const dayReports = futureEarningsReports.filter((report) => {
-        const reportDate = new Date(report.reportDate);
-        return reportDate >= startOfDay && reportDate <= endOfDay;
-      });
-
-      return {
-        dayTranscripts,
-        dayReports,
-        isEmpty: dayTranscripts.length === 0 && dayReports.length === 0,
-      };
-    });
-  }, [weekDates, transcripts, futureEarningsReports]);
 
   const NoEarnings = () => (
     <div className="w-full min-h-[200px] flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
