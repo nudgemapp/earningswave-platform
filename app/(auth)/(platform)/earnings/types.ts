@@ -44,13 +44,23 @@ export type ProcessedReport = {
 export type EarningsReportWithCompany = EarningsReport & {
   company?: {
     logo?: { data: Buffer } | null;
-    [key: string]: any;
-  };
+    id: number;
+    symbol: string;
+    name: string;
+    marketCap?: Decimal;
+    price?: Decimal;
+    revenue?: Decimal;
+  } | null;
 };
 
 export type EarningsCallTranscriptWithCompany = ProcessedTranscript & {
   company?: {
     logo?: { data: Buffer } | null;
-    [key: string]: any;
-  };
+    id: number;
+    symbol: string;
+    name: string;
+    marketCap?: Decimal;
+    price?: Decimal;
+    revenue?: Decimal;
+  } | null;
 };
