@@ -44,13 +44,6 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-  // Memoize the date formatting options
-  const dateFormatOptions: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  };
-
   const headerDateFormat: Intl.DateTimeFormatOptions = {
     month: "short",
     day: "numeric",
