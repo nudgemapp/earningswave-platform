@@ -58,20 +58,21 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   // Pre-process data for each day
   const getDateContent = weekDates.map((date) => {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Create a date without time component for comparison
+    const currentDay = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() - 1
+    ).toDateString();
 
     const dayTranscripts = transcripts.filter((transcript) => {
-      const transcriptDate = new Date(transcript.date);
-      return transcriptDate >= startOfDay && transcriptDate <= endOfDay;
+      const transcriptDate = new Date(transcript.date).toDateString();
+      return transcriptDate === currentDay;
     });
 
     const dayReports = reports.filter((report) => {
-      const reportDate = new Date(report.reportDate);
-      return reportDate >= startOfDay && reportDate <= endOfDay;
+      const reportDate = new Date(report.reportDate).toDateString();
+      return reportDate === currentDay;
     });
 
     return {
