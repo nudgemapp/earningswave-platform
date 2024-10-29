@@ -20,11 +20,10 @@ const WeekView: React.FC<WeekViewProps> = ({
 }) => {
   const currentDate = useCalendarStore((state) => state.currentDate);
 
-  // Calculate Monday to Friday dates first
-  const { weekDates, monday, friday } = React.useMemo(() => {
+  const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
     const mondayDate = new Date(date);
     mondayDate.setDate(diff);
@@ -50,6 +49,8 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   // Fetch data for the week
   const { data, isLoading, error } = useGetWeekView();
+
+  console.log("data", data);
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;

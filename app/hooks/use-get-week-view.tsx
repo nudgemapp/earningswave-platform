@@ -14,7 +14,6 @@ interface WeekViewResponse {
 export const useGetWeekView = () => {
   const { currentDate } = useCalendarStore();
 
-  // Calculate Monday and Friday dates
   const { monday, friday } = React.useMemo(() => {
     const date = new Date(currentDate);
     const day = date.getDay();
@@ -22,11 +21,11 @@ export const useGetWeekView = () => {
 
     const mondayDate = new Date(date);
     mondayDate.setDate(diff);
-    mondayDate.setHours(0, 0, 0, 0);
+    mondayDate.setUTCHours(0, 0, 0, 0);
 
     const fridayDate = new Date(mondayDate);
     fridayDate.setDate(mondayDate.getDate() + 4);
-    fridayDate.setHours(23, 59, 59, 999);
+    fridayDate.setUTCHours(23, 59, 59, 999);
 
     return { monday: mondayDate, friday: fridayDate };
   }, [currentDate]);
@@ -44,16 +43,36 @@ export const useGetWeekView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map((t: ProcessedTranscript) => ({
+        transcripts: data.transcripts.map((t: any) => ({
           ...t,
           date: new Date(t.date),
+          company: t.company
+            ? {
+                ...t.company,
+                logo: t.company.logo?.data
+                  ? `data:image/png;base64,${Buffer.from(
+                      t.company.logo.data
+                    ).toString("base64")}`
+                  : null,
+              }
+            : null,
         })),
-        reports: data.reports.map((r: ProcessedReport) => ({
+        reports: data.reports.map((r: any) => ({
           ...r,
           reportDate: new Date(r.reportDate),
           fiscalDateEnding: new Date(r.fiscalDateEnding),
           lastYearReportDate: r.lastYearReportDate
             ? new Date(r.lastYearReportDate)
+            : null,
+          company: r.company
+            ? {
+                ...r.company,
+                logo: r.company.logo?.data
+                  ? `data:image/png;base64,${Buffer.from(
+                      r.company.logo.data
+                    ).toString("base64")}`
+                  : null,
+              }
             : null,
         })),
       };
