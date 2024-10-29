@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 
@@ -6,22 +8,28 @@ import {
   ProcessedReport,
   ProcessedTranscript,
 } from "@/app/(auth)/(platform)/earnings/types";
+import { useGetMonthView } from "@/app/hooks/use-get-month-view";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface MonthViewProps {
   currentDate: Date;
-  transcripts: ProcessedTranscript[];
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
-  futureEarningsReports: ProcessedReport[];
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
-  transcripts,
   handleCompanyClick,
-  futureEarningsReports,
   handleFutureEarningsClick,
 }) => {
+  const { data, isLoading, error } = useGetMonthView();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div>Error loading data</div>;
+  if (!data) return <div>No data available</div>;
+
+  const { transcripts, reports } = data;
+
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -92,7 +100,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     </div>
   );
 
-  console.log("futureEarningsReports", futureEarningsReports);
+  console.log("futureEarningsReports", reports);
 
   const MarketTimingGroup = ({
     title,
@@ -172,7 +180,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
         {getDaysInMonth(currentDate).map((date, index) => {
           const dayContent = getLogosForDate(date, transcripts);
-          const dayReports = getReportsForDate(date, futureEarningsReports);
+          const dayReports = getReportsForDate(date, reports);
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
           return (
