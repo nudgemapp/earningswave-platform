@@ -56,11 +56,6 @@ const WeekView: React.FC<WeekViewProps> = ({
     day: "numeric",
   };
 
-  // Helper function to format dates consistently
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", dateFormatOptions);
-  };
-
   // Memoize the filtered content for each date
   const getDateContent = React.useMemo(() => {
     return weekDates.map((date) => {
@@ -89,12 +84,6 @@ const WeekView: React.FC<WeekViewProps> = ({
       };
     });
   }, [weekDates, transcripts, futureEarningsReports]);
-
-  console.log("getDateContent", getDateContent);
-
-  console.log("Week dates:", weekDates);
-  console.log("Sample transcript date:", transcripts[0]?.date);
-  console.log("Sample report date:", futureEarningsReports[0]?.reportDate);
 
   const NoEarnings = () => (
     <div className="w-full min-h-[200px] flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
