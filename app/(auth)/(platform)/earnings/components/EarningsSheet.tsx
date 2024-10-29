@@ -56,6 +56,9 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   );
 
   const renderContent = () => {
+    console.log("transcriptData", transcriptData);
+    console.log("selectedFutureEarnings", selectedFutureEarnings);
+
     if (isLoading) {
       return <CustomLoadingSpinner />;
     }

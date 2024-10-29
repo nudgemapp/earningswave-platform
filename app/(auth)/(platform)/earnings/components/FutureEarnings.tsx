@@ -11,6 +11,8 @@ interface FutureEarningsProps {
 }
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
+  console.log("report", report);
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-2xl shadow-lg">

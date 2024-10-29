@@ -16,6 +16,8 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
   // onBack,
 }) => {
+  console.log("transcriptData", transcriptData);
+
   return (
     <div className="p-4 bg-white overflow-y-auto">
       <div className="flex flex-col items-start mb-4">

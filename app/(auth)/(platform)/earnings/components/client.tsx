@@ -7,7 +7,7 @@ import { useEmailModal } from "@/store/EmailModalStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
-import { User, Subscription, MarketTiming, Logo } from "@prisma/client";
+import { User, Subscription } from "@prisma/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useUser } from "@clerk/nextjs";
 import { ProcessedReport, ProcessedTranscript } from "../types";
@@ -66,15 +66,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     }
   }, [emailModal]);
 
-  const weekDays = useMemo(() => ["Mon", "Tue", "Wed", "Thu", "Fri"], []);
-  const weekDates = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(currentDate);
-      date.setDate(currentDate.getDate() - currentDate.getDay() + i);
-      return date;
-    });
-  }, [currentDate]);
-
   const handleViewChange = (newView: "week" | "month") => setView(newView);
 
   const handleDateChange = (newDate: Date) => {
@@ -95,6 +86,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
     if (user && userInfo && userInfo.subscription?.status === "active") {
+      console.log("transcriptInfo", transcriptInfo);
       setSelectedCompany({ id: transcriptInfo.id });
     } else if (!user) {
       openAuthModal();
@@ -115,8 +107,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     return <LoadingSpinner />;
   }
 
-  console.log("transcripts", transcripts);
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
@@ -131,8 +121,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView
-            weekDays={weekDays}
-            weekDates={weekDates}
             transcripts={transcripts}
             handleCompanyClick={handleCompanyClick}
             futureEarningsReports={reports}

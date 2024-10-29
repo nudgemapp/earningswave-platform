@@ -1,14 +1,13 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar } from "lucide-react";
+import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
+import { useCalendarStore } from "@/store/CalendarStore";
 import {
   ProcessedTranscript,
   ProcessedReport,
 } from "@/app/(auth)/(platform)/earnings/types";
 
 interface WeekViewProps {
-  weekDays: string[];
-  weekDates: Date[];
   transcripts: ProcessedTranscript[];
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
   futureEarningsReports: ProcessedReport[];
@@ -16,152 +15,264 @@ interface WeekViewProps {
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
-  weekDays,
-  weekDates,
   transcripts,
   handleCompanyClick,
   futureEarningsReports,
   handleFutureEarningsClick,
 }) => {
-  const getLogosForDate = (date: Date, transcripts: ProcessedTranscript[]) => {
-    const formattedDate = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
+  const currentDate = useCalendarStore((state) => state.currentDate);
 
-    return transcripts.filter((transcript) => {
-      const transcriptDate = transcript.date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      });
-      return transcriptDate === formattedDate;
-    });
+  console.log("transcripts", transcripts);
+  console.log("currentDate", currentDate);
+
+  // Get Monday to Friday dates for the current week
+  const weekDates = React.useMemo(() => {
+    const date = new Date(currentDate);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+
+    const monday = new Date(date.setDate(diff));
+    const dates = [];
+
+    for (let i = 0; i < 5; i++) {
+      // Only 5 days (Mon-Fri)
+      dates.push(new Date(new Date(monday).setDate(monday.getDate() + i)));
+    }
+
+    return dates;
+  }, [currentDate]);
+
+  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+  // Memoize the date formatting options
+  const dateFormatOptions: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
   };
 
-  const getReportsForDate = (date: Date, reports: ProcessedReport[]) => {
-    const formattedDate = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-
-    return reports.filter((report) => {
-      const reportDate = report.reportDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      });
-      return reportDate === formattedDate;
-    });
+  const headerDateFormat: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
   };
+
+  // Helper function to format dates consistently
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", dateFormatOptions);
+  };
+
+  // Memoize the filtered content for each date
+  const getDateContent = React.useMemo(() => {
+    return weekDates.map((date) => {
+      // Start of the day
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      // End of the day
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const dayTranscripts = transcripts.filter((transcript) => {
+        const transcriptDate = new Date(transcript.date);
+        return transcriptDate >= startOfDay && transcriptDate <= endOfDay;
+      });
+
+      const dayReports = futureEarningsReports.filter((report) => {
+        const reportDate = new Date(report.reportDate);
+        return reportDate >= startOfDay && reportDate <= endOfDay;
+      });
+
+      return {
+        dayTranscripts,
+        dayReports,
+        isEmpty: dayTranscripts.length === 0 && dayReports.length === 0,
+      };
+    });
+  }, [weekDates, transcripts, futureEarningsReports]);
+
+  console.log("getDateContent", getDateContent);
+
+  console.log("Week dates:", weekDates);
+  console.log("Sample transcript date:", transcripts[0]?.date);
+  console.log("Sample report date:", futureEarningsReports[0]?.reportDate);
 
   const NoEarnings = () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
-      <div className="flex flex-row items-center space-y-1 gap-2">
-        <Calendar className="w-6 h-6 text-gray-400" />
+    <div className="w-full min-h-[200px] flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
+      <div className="flex flex-row items-center gap-2">
+        <Calendar className="w-5 h-5 text-gray-400" />
         <span className="text-xs font-medium text-gray-500">No earnings</span>
       </div>
     </div>
   );
 
-  return (
-    <div className="flex-1 flex flex-col sm:flex-row bg-white rounded-lg shadow-sm overflow-hidden h-full">
-      {weekDays.map((day, index) => {
-        const dayContent = getLogosForDate(weekDates[index], transcripts);
-        const dayReports = getReportsForDate(
-          weekDates[index],
-          futureEarningsReports
-        );
+  const CompanyCard = ({
+    symbol,
+    name,
+    logo,
+    onClick,
+  }: {
+    symbol: string;
+    name: string;
+    logo: string | null;
+    onClick: () => void;
+  }) => (
+    <div
+      className="aspect-square relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer flex flex-col"
+      onClick={onClick}
+      title={`${name} (${symbol})`}
+    >
+      <div className="flex-1 relative">
+        {logo ? (
+          <Image
+            src={logo}
+            alt={`${name} logo`}
+            layout="fill"
+            objectFit="contain"
+            className="p-2"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-sm font-medium">{symbol}</span>
+          </div>
+        )}
+      </div>
+      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
+        <span className="text-xs font-medium text-gray-800 block text-center truncate">
+          {symbol}
+        </span>
+      </div>
+    </div>
+  );
 
-        return (
+  const MarketTimingGroup = ({
+    title,
+    icon: Icon,
+    reports,
+    bgColor,
+    handleClick,
+  }: {
+    title: string;
+    icon: LucideIcon;
+    reports: (ProcessedReport | ProcessedTranscript)[];
+    bgColor: string;
+    handleClick: (report: ProcessedReport | ProcessedTranscript) => void;
+  }) => {
+    if (reports.length === 0) return null;
+
+    return (
+      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
+        <div className="flex items-center gap-1 mb-1">
+          <Icon className="w-3 h-3 text-gray-600" />
+          <span className="text-[10px] font-medium text-gray-600">{title}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {reports.map((report, index) => (
+            <CompanyCard
+              key={`report-${index}`}
+              symbol={
+                "symbol" in report
+                  ? report.symbol
+                  : report.company?.symbol || ""
+              }
+              name={"name" in report ? report.name : report.company?.name || ""}
+              logo={"company" in report ? report?.company?.logo || null : null}
+              onClick={() => handleClick(report)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden h-full">
+      <div className="flex flex-row">
+        {weekDays.map((day, index) => (
           <div
             key={day}
-            className="flex-1 flex flex-col border-b sm:border-b-0 sm:border-r last:border-r-0 border-gray-200"
+            className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200"
           >
-            <div className="p-3 text-center bg-gray-50 border-b border-gray-200">
+            <div className="p-2 text-center border-b border-gray-200">
               <h2 className="text-sm font-semibold text-gray-700">{day}</h2>
               <p className="text-xs text-gray-500">
-                {weekDates[index].toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {weekDates[index].toLocaleDateString("en-US", headerDateFormat)}
               </p>
             </div>
-            <div className="flex-1 p-3 bg-white">
-              {dayContent.length === 0 && dayReports.length === 0 ? (
-                <NoEarnings />
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {dayContent.map((transcript, logoIndex) => (
-                    <div
-                      key={`transcript-${logoIndex}`}
-                      className="aspect-square relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer flex flex-col"
-                      onClick={() => handleCompanyClick(transcript)}
-                    >
-                      <div className="flex-1 relative">
-                        {transcript.company?.logo ? (
-                          <Image
-                            src={transcript.company.logo}
-                            alt={`${transcript.company.name} logo`}
-                            layout="fill"
-                            objectFit="contain"
-                            className="p-2"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-sm font-medium">
-                              {transcript.company?.symbol || ""}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
-                        <span className="text-xs font-medium text-gray-800 block text-center">
-                          {transcript.company?.symbol || ""}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {dayReports.map((report, reportIndex) => (
-                    <div
-                      key={`report-${reportIndex}`}
-                      className="aspect-square relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer flex flex-col"
-                      title={`${report.name} (${report.symbol})`}
-                      onClick={() => handleFutureEarningsClick(report)}
-                    >
-                      <div className="flex-1 relative">
-                        {report.company?.logo ? (
-                          <Image
-                            src={report.company.logo}
-                            alt={`${report.name} logo`}
-                            layout="fill"
-                            objectFit="contain"
-                            className="p-2"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-sm font-medium">
-                              {report.symbol}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
-                        <span className="text-xs font-medium text-gray-800 block text-center">
-                          {report.symbol}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
+      <div className="flex-1 flex flex-row overflow-y-auto">
+        {weekDays.map((day, index) => {
+          const { dayTranscripts, dayReports, isEmpty } = getDateContent[index];
+
+          return (
+            <div
+              key={day}
+              className="flex-1 border-r last:border-r-0 border-gray-200"
+            >
+              <div className="p-2 bg-white overflow-y-auto">
+                {isEmpty ? (
+                  <NoEarnings />
+                ) : (
+                  <div className="flex flex-col space-y-2">
+                    {/* Past Transcripts */}
+                    {dayTranscripts.length > 0 && (
+                      <MarketTimingGroup
+                        title="Past Earnings"
+                        icon={Calendar}
+                        reports={dayTranscripts}
+                        bgColor="bg-gray-50"
+                        handleClick={(report) =>
+                          handleCompanyClick(report as ProcessedTranscript)
+                        }
+                      />
+                    )}
+
+                    {/* Pre-market reports */}
+                    <MarketTimingGroup
+                      title="Pre-Market"
+                      icon={Sun}
+                      reports={dayReports.filter(
+                        (r) => r.marketTiming === "PRE_MARKET"
+                      )}
+                      bgColor="bg-blue-50"
+                      handleClick={(report) =>
+                        handleFutureEarningsClick(report as ProcessedReport)
+                      }
+                    />
+
+                    {/* After-hours reports */}
+                    <MarketTimingGroup
+                      title="After Hours"
+                      icon={Moon}
+                      reports={dayReports.filter(
+                        (r) => r.marketTiming === "AFTER_HOURS"
+                      )}
+                      bgColor="bg-orange-50"
+                      handleClick={(report) =>
+                        handleFutureEarningsClick(report as ProcessedReport)
+                      }
+                    />
+
+                    {/* Not supplied timing reports */}
+                    <MarketTimingGroup
+                      title="Not Specified"
+                      icon={Calendar}
+                      reports={dayReports.filter(
+                        (r) => r.marketTiming === "NOT_SUPPLIED"
+                      )}
+                      bgColor="bg-gray-50"
+                      handleClick={(report) =>
+                        handleFutureEarningsClick(report as ProcessedReport)
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
