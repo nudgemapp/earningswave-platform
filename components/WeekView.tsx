@@ -50,8 +50,6 @@ const WeekView: React.FC<WeekViewProps> = ({
   // Fetch data for the week
   const { data, isLoading, error } = useGetWeekView();
 
-  console.log("data", data);
-
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;

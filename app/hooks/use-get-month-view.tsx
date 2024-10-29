@@ -14,27 +14,33 @@ interface MonthViewResponse {
 export const useGetMonthView = () => {
   const { currentDate } = useCalendarStore();
 
-  // Calculate visible date range for the month view
+  // Calculate first and last day of the month including visible dates
   const { startDate, endDate } = React.useMemo(() => {
-    const date = new Date(currentDate);
-    const year = date.getFullYear();
-    const month = date.getMonth();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-    // Get first day of the month
-    const start = new Date(year, month, 1);
-    // Adjust to include previous month days that are visible
-    const startDay = start.getDay();
-    start.setDate(start.getDate() - (startDay === 0 ? 6 : startDay - 1));
-    start.setHours(0, 0, 0, 0);
+    // First day of the month
+    const firstDay = new Date(year, month, 1);
+    const firstDayWeekday = firstDay.getDay();
 
-    // Get last day of the month
-    const end = new Date(year, month + 1, 0);
-    // Adjust to include next month days that are visible
-    const endDay = end.getDay();
-    end.setDate(end.getDate() + (endDay === 0 ? 0 : 7 - endDay));
-    end.setHours(23, 59, 59, 999);
+    // Last day of the month
+    const lastDay = new Date(year, month + 1, 0);
+    const lastDayWeekday = lastDay.getDay();
 
-    return { startDate: start, endDate: end };
+    // Adjust start date to include visible days from previous month
+    const start = new Date(firstDay);
+    start.setDate(1 - firstDayWeekday);
+    start.setUTCHours(0, 0, 0, 0);
+
+    // Adjust end date to include visible days from next month
+    const end = new Date(lastDay);
+    end.setDate(lastDay.getDate() + (6 - lastDayWeekday));
+    end.setUTCHours(23, 59, 59, 999);
+
+    return {
+      startDate: start,
+      endDate: end,
+    };
   }, [currentDate]);
 
   return useQuery<MonthViewResponse>({
@@ -49,21 +55,42 @@ export const useGetMonthView = () => {
       if (!response.ok) throw new Error("Failed to fetch month view data");
 
       const data = await response.json();
+
       return {
-        transcripts: data.transcripts.map((t: ProcessedTranscript) => ({
+        transcripts: data.transcripts.map((t: any) => ({
           ...t,
           date: new Date(t.date),
+          company: t.company
+            ? {
+                ...t.company,
+                logo: t.company.logo?.data
+                  ? `data:image/png;base64,${Buffer.from(
+                      t.company.logo.data
+                    ).toString("base64")}`
+                  : null,
+              }
+            : null,
         })),
-        reports: data.reports.map((r: ProcessedReport) => ({
+        reports: data.reports.map((r: any) => ({
           ...r,
           reportDate: new Date(r.reportDate),
           fiscalDateEnding: new Date(r.fiscalDateEnding),
           lastYearReportDate: r.lastYearReportDate
             ? new Date(r.lastYearReportDate)
             : null,
+          company: r.company
+            ? {
+                ...r.company,
+                logo: r.company.logo?.data
+                  ? `data:image/png;base64,${Buffer.from(
+                      r.company.logo.data
+                    ).toString("base64")}`
+                  : null,
+              }
+            : null,
         })),
       };
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

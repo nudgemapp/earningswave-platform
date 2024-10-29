@@ -24,6 +24,8 @@ const MonthView: React.FC<MonthViewProps> = ({
 }) => {
   const { data, isLoading, error } = useGetMonthView();
 
+  console.log("data", data);
+
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
@@ -99,8 +101,6 @@ const MonthView: React.FC<MonthViewProps> = ({
       </div>
     </div>
   );
-
-  console.log("futureEarningsReports", reports);
 
   const MarketTimingGroup = ({
     title,
