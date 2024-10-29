@@ -15,11 +15,6 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Month Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
     const data = await prisma.$transaction(async (tx) => {
       const [transcripts, reports] = await Promise.all([
@@ -88,15 +83,6 @@ export async function GET(request: Request) {
           },
         }),
       ]);
-
-      console.log("Found Month Records:", {
-        transcriptsCount: transcripts.length,
-        reportsCount: reports.length,
-        firstTranscriptDate: transcripts[0]?.date,
-        lastTranscriptDate: transcripts[transcripts.length - 1]?.date,
-        firstReportDate: reports[0]?.reportDate,
-        lastReportDate: reports[reports.length - 1]?.reportDate,
-      });
 
       return {
         transcripts,

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
 import {
+  EarningsCallTranscriptWithCompany,
+  EarningsReportWithCompany,
   ProcessedReport,
   ProcessedTranscript,
 } from "@/app/(auth)/(platform)/earnings/types";
@@ -43,21 +45,23 @@ export const useGetWeekView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map((t: any) => ({
-          ...t,
-          date: new Date(t.date),
-          company: t.company
-            ? {
-                ...t.company,
-                logo: t.company.logo?.data
-                  ? `data:image/png;base64,${Buffer.from(
-                      t.company.logo.data
-                    ).toString("base64")}`
-                  : null,
-              }
-            : null,
-        })),
-        reports: data.reports.map((r: any) => ({
+        transcripts: data.transcripts.map(
+          (t: EarningsCallTranscriptWithCompany) => ({
+            ...t,
+            date: new Date(t.date),
+            company: t.company
+              ? {
+                  ...t.company,
+                  logo: t.company.logo?.data
+                    ? `data:image/png;base64,${Buffer.from(
+                        t.company.logo.data
+                      ).toString("base64")}`
+                    : null,
+                }
+              : null,
+          })
+        ),
+        reports: data.reports.map((r: EarningsReportWithCompany) => ({
           ...r,
           reportDate: new Date(r.reportDate),
           fiscalDateEnding: new Date(r.fiscalDateEnding),
