@@ -1,14 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, Sun, Moon, LucideIcon, File } from "lucide-react";
+import { Calendar, Sun, Moon, LucideIcon, File, Clock } from "lucide-react";
 import {
   ProcessedReport,
   ProcessedTranscript,
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
 import Spinner from "@/components/ui/Spinner";
+
+type FilterType = "ALL" | "PRE_MARKET" | "AFTER_HOURS";
 
 interface DayViewProps {
   date: Date;
@@ -21,7 +23,46 @@ const DayView: React.FC<DayViewProps> = ({
   onTranscriptClick,
   onReportClick,
 }) => {
+  const [activeFilter, setActiveFilter] = useState<FilterType>("ALL");
   const { data, isLoading, error } = useGetDayView(date);
+
+  const FilterButton = ({
+    filter,
+    label,
+    icon: Icon,
+  }: {
+    filter: FilterType;
+    label: string;
+    icon: LucideIcon;
+  }) => (
+    <button
+      onClick={() => setActiveFilter(filter)}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+        activeFilter === filter
+          ? "bg-blue-100 text-blue-700 font-medium"
+          : "hover:bg-gray-100 text-gray-600"
+      }`}
+    >
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </button>
+  );
+
+  const filteredData = React.useMemo(() => {
+    if (!data || activeFilter === "ALL") return data;
+
+    return {
+      ...data,
+      reports: data.reports.filter((report) => {
+        if (activeFilter === "PRE_MARKET")
+          return report.marketTiming === "PRE_MARKET";
+        if (activeFilter === "AFTER_HOURS")
+          return report.marketTiming === "AFTER_HOURS";
+        return true;
+      }),
+      transcripts: data.transcripts, // Always show transcripts
+    };
+  }, [data, activeFilter]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
@@ -117,7 +158,7 @@ const DayView: React.FC<DayViewProps> = ({
 
   // Group reports by marketTiming
   const groupedReports =
-    data?.reports.reduce((acc, report) => {
+    filteredData?.reports.reduce((acc, report) => {
       const timing = report.marketTiming || "NOT_SUPPLIED";
       if (!acc[timing]) acc[timing] = [];
       acc[timing].push(report);
@@ -126,9 +167,20 @@ const DayView: React.FC<DayViewProps> = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-900">
-        {formatDate(date)}
-      </h2>
+      <div className="flex flex-col space-y-4">
+        <div className="flex justify-center">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            {formatDate(date)}
+          </h2>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-lg w-fit mx-auto">
+          <FilterButton filter="ALL" label="All" icon={Clock} />
+          <FilterButton filter="PRE_MARKET" label="Pre-Market" icon={Sun} />
+          <FilterButton filter="AFTER_HOURS" label="After Hours" icon={Moon} />
+        </div>
+      </div>
 
       {/* Loading and Error States */}
       {isLoading && (
@@ -144,16 +196,10 @@ const DayView: React.FC<DayViewProps> = ({
         </div>
       )}
 
-      {!isLoading && !error && !data && (
-        <div className="flex justify-center items-center min-h-[200px] text-gray-600">
-          No data available
-        </div>
-      )}
-
-      {/* Content */}
-      {data && (
+      {!isLoading && !error && filteredData && (
         <>
-          {data.reports.length === 0 && data.transcripts.length === 0 ? (
+          {filteredData.reports.length === 0 &&
+          filteredData.transcripts.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500">
               <Calendar className="w-12 h-12 mb-4 text-gray-400" />
               <p className="text-lg font-medium">
@@ -163,31 +209,8 @@ const DayView: React.FC<DayViewProps> = ({
             </div>
           ) : (
             <>
-              {/* Transcripts */}
-              {data.transcripts.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Earnings Transcripts
-                  </h3>
-                  <div className="grid gap-3">
-                    {data.transcripts.map((transcript) => (
-                      <CompanyCard
-                        key={transcript.id}
-                        company={{
-                          name: transcript.company?.name || "",
-                          symbol: transcript.company?.symbol || "",
-                          logo: transcript.company?.logo || null,
-                        }}
-                        onClick={() => onTranscriptClick(transcript)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Reports */}
-              {data.reports.length > 0 && (
+              {filteredData.reports.length > 0 && (
                 <div className="space-y-3">
                   <MarketTimingGroup
                     title="Pre-Market"
@@ -210,14 +233,14 @@ const DayView: React.FC<DayViewProps> = ({
                     className="bg-gray-50 p-4 rounded-md"
                   />
 
-                  {data.transcripts.length > 0 && (
+                  {filteredData.transcripts.length > 0 && (
                     <div className="space-y-3 mt-6">
                       <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
                         <File className="w-5 h-5" />
                         Earnings Transcripts
                       </h3>
                       <div className="grid gap-3">
-                        {data.transcripts.map((transcript) => (
+                        {filteredData.transcripts.map((transcript) => (
                           <CompanyCard
                             key={transcript.id}
                             company={{
