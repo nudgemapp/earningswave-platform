@@ -153,57 +153,21 @@ const DayView: React.FC<DayViewProps> = ({
       {/* Content */}
       {data && (
         <>
-          {/* Transcripts */}
-          {data.transcripts.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Earnings Transcripts
-              </h3>
-              <div className="grid gap-3">
-                {data.transcripts.map((transcript) => (
-                  <CompanyCard
-                    key={transcript.id}
-                    company={{
-                      name: transcript.company?.name || "",
-                      symbol: transcript.company?.symbol || "",
-                      logo: transcript.company?.logo || null,
-                    }}
-                    onClick={() => onTranscriptClick(transcript)}
-                  />
-                ))}
-              </div>
+          {data.reports.length === 0 && data.transcripts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500">
+              <Calendar className="w-12 h-12 mb-4 text-gray-400" />
+              <p className="text-lg font-medium">
+                No earnings data for this date
+              </p>
+              <p className="text-sm">Check back later or try another date</p>
             </div>
-          )}
-
-          {/* Reports */}
-          {data.reports.length > 0 && (
-            <div className="space-y-3">
-              <MarketTimingGroup
-                title="Pre-Market"
-                icon={Sun}
-                reports={groupedReports["PRE_MARKET"] || []}
-                className="bg-blue-50 p-4 rounded-md"
-              />
-
-              <MarketTimingGroup
-                title="After Hours"
-                icon={Moon}
-                reports={groupedReports["AFTER_HOURS"] || []}
-                className="bg-orange-50 p-4 rounded-md"
-              />
-
-              <MarketTimingGroup
-                title="Not Specified"
-                icon={Calendar}
-                reports={groupedReports["NOT_SUPPLIED"] || []}
-                className="bg-gray-50 p-4 rounded-md"
-              />
-
+          ) : (
+            <>
+              {/* Transcripts */}
               {data.transcripts.length > 0 && (
-                <div className="space-y-3 mt-6">
+                <div className="space-y-3">
                   <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                    <File className="w-5 h-5" />
+                    <Calendar className="w-5 h-5" />
                     Earnings Transcripts
                   </h3>
                   <div className="grid gap-3">
@@ -221,7 +185,55 @@ const DayView: React.FC<DayViewProps> = ({
                   </div>
                 </div>
               )}
-            </div>
+
+              {/* Reports */}
+              {data.reports.length > 0 && (
+                <div className="space-y-3">
+                  <MarketTimingGroup
+                    title="Pre-Market"
+                    icon={Sun}
+                    reports={groupedReports["PRE_MARKET"] || []}
+                    className="bg-blue-50 p-4 rounded-md"
+                  />
+
+                  <MarketTimingGroup
+                    title="After Hours"
+                    icon={Moon}
+                    reports={groupedReports["AFTER_HOURS"] || []}
+                    className="bg-orange-50 p-4 rounded-md"
+                  />
+
+                  <MarketTimingGroup
+                    title="Not Specified"
+                    icon={Calendar}
+                    reports={groupedReports["NOT_SUPPLIED"] || []}
+                    className="bg-gray-50 p-4 rounded-md"
+                  />
+
+                  {data.transcripts.length > 0 && (
+                    <div className="space-y-3 mt-6">
+                      <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                        <File className="w-5 h-5" />
+                        Earnings Transcripts
+                      </h3>
+                      <div className="grid gap-3">
+                        {data.transcripts.map((transcript) => (
+                          <CompanyCard
+                            key={transcript.id}
+                            company={{
+                              name: transcript.company?.name || "",
+                              symbol: transcript.company?.symbol || "",
+                              logo: transcript.company?.logo || null,
+                            }}
+                            onClick={() => onTranscriptClick(transcript)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </>
       )}
