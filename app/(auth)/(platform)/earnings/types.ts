@@ -1,4 +1,4 @@
-import { EarningsReport, MarketTiming } from "@prisma/client";
+import { MarketTiming } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export type ProcessedTranscript = {
@@ -14,6 +14,7 @@ export type ProcessedTranscript = {
 };
 
 export type ProcessedReport = {
+  fiscalQuarter: string;
   id: string;
   symbol: string;
   name: string;
@@ -24,6 +25,7 @@ export type ProcessedReport = {
   marketTiming: MarketTiming | null;
   lastYearEPS: number | null;
   lastYearReportDate: Date | null;
+  lastYearRevenue: number | null;
   companyId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -41,26 +43,57 @@ export type ProcessedReport = {
   };
 };
 
-export type EarningsReportWithCompany = EarningsReport & {
-  company?: {
-    logo?: { data: Buffer } | null;
+export type HistoricalEarnings = {
+  quarter: string;
+  date: string;
+  revenueBeat: number;
+  epsBeat: number;
+  revenue: number;
+  eps: number;
+};
+
+export type EnhancedReport = {
+  quarter: string;
+  year: number;
+  date: string;
+  revenue: number;
+  eps: number;
+  revenueBeat: number;
+  epsBeat: number;
+};
+
+export type EarningsCallTranscriptWithCompany = {
+  id: number;
+  date: Date;
+  title: string;
+  company: {
     id: number;
     symbol: string;
     name: string;
-    marketCap?: Decimal;
-    price?: Decimal;
-    revenue?: Decimal;
+    logo: {
+      data: Buffer | null;
+    } | null;
   } | null;
 };
 
-export type EarningsCallTranscriptWithCompany = ProcessedTranscript & {
-  company?: {
-    logo?: { data: Buffer } | null;
+export type EarningsReportWithCompany = {
+  id: string;
+  symbol: string;
+  name: string;
+  reportDate: Date;
+  fiscalDateEnding: Date;
+  estimate: number | null;
+  currency: string;
+  marketTiming: MarketTiming | null;
+  lastYearEPS: number | null;
+  lastYearReportDate: Date | null;
+  companyId: number;
+  company: {
     id: number;
     symbol: string;
     name: string;
-    marketCap?: Decimal;
-    price?: Decimal;
-    revenue?: Decimal;
+    logo: {
+      data: Buffer | null;
+    } | null;
   } | null;
 };

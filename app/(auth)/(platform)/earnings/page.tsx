@@ -54,23 +54,19 @@ const EarningsPage = async ({
       : null,
   ]);
 
-  const mcdEarningsReports = await prisma.earningsReport.findMany({
-    where: {
-      symbol: "MCD",
-    },
-    include: {
-      company: {
-        include: {
-          logo: true,
-        },
-      },
-    },
-    orderBy: {
-      reportDate: "desc",
-    },
-  });
+  // const mcdEarningsReports = await prisma.earningsReport.findMany({
+  //   where: {
+  //     symbol: "MCD",
+  //   },
+  //   include: {
+  //     company: true
+  //   },
+  //   orderBy: {
+  //     fiscalDateEnding: 'desc'
+  //   }
+  // });
 
-  console.log(mcdEarningsReports);
+  // console.log(mcdEarningsReports);
 
   return (
     <div className="h-screen flex flex-col">

@@ -93,7 +93,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
     if (user && userInfo && userInfo.subscription?.status === "active") {
-      console.log("transcriptInfo", transcriptInfo);
       setSelectedCompany({ id: transcriptInfo.id });
     } else if (!user) {
       openAuthModal();
@@ -107,7 +106,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     if (!user) {
       openAuthModal();
     }
-    setSelectedFutureEarnings(report);
+    setSelectedFutureEarnings(report as any);
   };
 
   return (

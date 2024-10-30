@@ -87,9 +87,9 @@ model EarningsCallTranscript {
   full_text         String   @db.Text
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
-  logo_id           Int?     
+  logo_id           Int?
   companyId         Int?     // Make it optional with the ?
-  
+
   company           Company? @relation(fields: [companyId], references: [id]) // Make relation optional too
   logo              Logo?    @relation(fields: [logo_id], references: [id])
 
@@ -106,7 +106,7 @@ model Logo {
   created_at DateTime  @default(now())
 
   // One logo can be associated with many transcripts
-  earningsCallTranscripts EarningsCallTranscript[] 
+  earningsCallTranscripts EarningsCallTranscript[]
 }
 
 enum MarketTiming {
@@ -124,8 +124,9 @@ model EarningsReport {
   estimate          Float?
   currency          String
   marketTiming      MarketTiming?
-  lastYearEPS      Float?      
-  lastYearReportDate DateTime?   
+  lastYearEPS      Float?
+  lastYearReportDate DateTime?
+  lastYearRevenue   Float?
   companyId         Int
   company           Company     @relation(fields: [companyId], references: [id])
 
@@ -171,6 +172,6 @@ model Exchange {
 model Email {
   id        String   @id @default(uuid())
   address   String   @unique
-  
+
   createdAt DateTime @default(now())
 }

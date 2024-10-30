@@ -8,6 +8,7 @@ import {
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface WeekViewProps {
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
@@ -19,6 +20,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   handleFutureEarningsClick,
 }) => {
   const currentDate = useCalendarStore((state) => state.currentDate);
+  const setSelectedDate = useEarningsStore((state) => state.setSelectedDate);
 
   const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);
@@ -110,7 +112,10 @@ const WeekView: React.FC<WeekViewProps> = ({
   }) => (
     <div
       className="aspect-square relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer flex flex-col"
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       title={`${name} (${symbol})`}
     >
       <div className="flex-1 relative">
@@ -152,12 +157,18 @@ const WeekView: React.FC<WeekViewProps> = ({
     if (reports.length === 0) return null;
 
     return (
-      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
+      <div
+        className={`p-1 rounded-md mb-1 ${bgColor}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-1 mb-1">
           <Icon className="w-3 h-3 text-gray-600" />
           <span className="text-[10px] font-medium text-gray-600">{title}</span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div
+          className="grid grid-cols-2 gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           {reports.map((report, index) => (
             <CompanyCard
               key={`report-${index}`}
@@ -182,11 +193,22 @@ const WeekView: React.FC<WeekViewProps> = ({
         {weekDays.map((day, index) => (
           <div
             key={day}
-            className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200"
+            className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200 cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100 hover:shadow-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              const newDate = new Date(weekDates[index]);
+              useEarningsStore.setState({
+                selectedDate: newDate,
+                selectedCompany: null,
+                selectedFutureEarnings: null,
+              });
+            }}
           >
-            <div className="p-2 text-center border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-700">{day}</h2>
-              <p className="text-xs text-gray-500">
+            <div className="p-2 text-center border-b border-gray-200 transition-all duration-300 ease-in-out hover:border-gray-300 group">
+              <h2 className="text-sm font-semibold text-gray-700 transform transition-all duration-300 ease-in-out group-hover:text-gray-900 group-hover:scale-105">
+                {day}
+              </h2>
+              <p className="text-xs text-gray-500 transform transition-all duration-300 ease-in-out group-hover:text-gray-600 group-hover:scale-105">
                 {weekDates[index].toLocaleDateString("en-US", headerDateFormat)}
               </p>
             </div>
@@ -200,13 +222,25 @@ const WeekView: React.FC<WeekViewProps> = ({
           return (
             <div
               key={day}
-              className="flex-1 border-r last:border-r-0 border-gray-200"
+              className="flex-1 border-r last:border-r-0 border-gray-200 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                const newDate = new Date(weekDates[index]);
+                useEarningsStore.setState({
+                  selectedDate: newDate,
+                  selectedCompany: null,
+                  selectedFutureEarnings: null,
+                });
+              }}
             >
               <div className="p-2 bg-white overflow-y-auto">
                 {isEmpty ? (
                   <NoEarnings />
                 ) : (
-                  <div className="flex flex-col space-y-2">
+                  <div
+                    className="flex flex-col space-y-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {/* Past Transcripts */}
                     {dayTranscripts.length > 0 && (
                       <MarketTimingGroup

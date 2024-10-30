@@ -10,6 +10,8 @@ interface EarningsState {
   setSelectedCompany: (company: SelectedCompany | null) => void;
   selectedFutureEarnings: EarningsReport | null;
   setSelectedFutureEarnings: (report: EarningsReport | null) => void;
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date | null) => void;
 }
 
 export const useEarningsStore = create<EarningsState>((set) => ({
@@ -25,4 +27,6 @@ export const useEarningsStore = create<EarningsState>((set) => ({
       selectedFutureEarnings: report,
       selectedCompany: null, // Clear selected company when selecting future earnings
     }),
+  selectedDate: null,
+  setSelectedDate: (date) => set({ selectedDate: date }),
 }));
