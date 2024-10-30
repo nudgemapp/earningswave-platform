@@ -41,6 +41,7 @@ export type ProcessedReport = {
   };
 };
 
+<<<<<<< Updated upstream
 export type EarningsReportWithCompany = EarningsReport & {
   company?: {
     logo?: { data: Buffer } | null;
@@ -64,3 +65,24 @@ export type EarningsCallTranscriptWithCompany = ProcessedTranscript & {
     revenue?: Decimal;
   } | null;
 };
+=======
+
+export type HistoricalEarnings = {
+  quarter: string;
+  date: string;
+  revenueBeat: number;
+  epsBeat: number;
+  revenue: number;
+  eps: number;
+}
+
+export type EnhancedReport = {
+  quarter: string;
+  year: number;
+  date: string;
+  revenue: number;
+  eps: number;
+  revenueBeat: number;
+  epsBeat: number;
+}
+>>>>>>> Stashed changes

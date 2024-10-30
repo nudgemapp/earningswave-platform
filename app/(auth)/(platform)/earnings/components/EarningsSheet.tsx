@@ -6,6 +6,7 @@ import FutureEarnings from "./FutureEarnings";
 import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import { ProcessedReport } from "../types";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -15,8 +16,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
   const { selectedCompany, selectedFutureEarnings } = useEarningsStore();
-  const [transcriptData, setTranscriptData] =
-    useState<EarningsCallTranscript | null>(null);
+  const [transcriptData, setTranscriptData] = useState<EarningsCallTranscript | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +56,6 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   );
 
   const renderContent = () => {
-    console.log("transcriptData", transcriptData);
-    console.log("selectedFutureEarnings", selectedFutureEarnings);
-
     if (isLoading) {
       return <CustomLoadingSpinner />;
     }
@@ -69,7 +66,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       return <EarningsTranscript transcriptData={transcriptData} />;
     }
     if (selectedFutureEarnings) {
-      return <FutureEarnings report={selectedFutureEarnings} />;
+      return <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />;
     }
     return <WelcomeMessage />;
   };
