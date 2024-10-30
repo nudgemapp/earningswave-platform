@@ -20,7 +20,6 @@ const WeekView: React.FC<WeekViewProps> = ({
   handleFutureEarningsClick,
 }) => {
   const currentDate = useCalendarStore((state) => state.currentDate);
-  const setSelectedDate = useEarningsStore((state) => state.setSelectedDate);
 
   const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);

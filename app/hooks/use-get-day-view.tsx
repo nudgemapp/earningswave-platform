@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEarningsStore } from "@/store/EarningsStore";
 import {
   EarningsCallTranscriptWithCompany,
   EarningsReportWithCompany,

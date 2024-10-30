@@ -19,10 +19,15 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  TooltipProps,
 } from "recharts";
 import { ProcessedReport } from "../types";
 import EnhancedEarnings from "./EnhancedEarnings";
 import { useEarningsStore } from "@/store/EarningsStore";
+import {
+  ValueType,
+  NameType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -35,6 +40,16 @@ interface HistoricalEarnings {
   epsBeat: number;
   revenue: number;
   eps: number;
+}
+
+interface TooltipData {
+  date: string;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  volume: number;
+  gain: boolean;
 }
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
@@ -115,9 +130,12 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const data = generateMockData();
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as TooltipData;
       return (
         <div className="bg-white shadow-lg rounded-lg p-3 border">
           <p className="text-gray-600">

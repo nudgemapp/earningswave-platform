@@ -86,7 +86,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       acc[date].items.push(transcript);
       return acc;
     }, {} as Record<string, GroupedTranscript>)
-  ).map(([_, group]) => group);
+  ).map(([, group]) => group);
 
   const reports: GroupedReport[] = Object.entries(
     rawReports.reduce((acc, report) => {
@@ -102,7 +102,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       acc[date].items.push(report);
       return acc;
     }, {} as Record<string, GroupedReport>)
-  ).map(([_, group]) => group);
+  ).map(([, group]) => group);
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -247,16 +247,10 @@ const MonthView: React.FC<MonthViewProps> = ({
 
       <div className="grid grid-cols-5 gap-px bg-gray-200 flex-grow">
         {getDaysInMonth(currentDate).map((date, index) => {
-          const {
-            items: dayContent,
-            totalCount: transcriptCount,
-            remainingCount: transcriptRemaining,
-          } = getLogosForDate(date, transcripts);
-          const {
-            items: dayReports,
-            totalCount: reportCount,
-            remainingCount: reportRemaining,
-          } = getReportsForDate(date, reports);
+          const { items: dayContent, remainingCount: transcriptRemaining } =
+            getLogosForDate(date, transcripts);
+          const { items: dayReports, remainingCount: reportRemaining } =
+            getReportsForDate(date, reports);
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
           return (

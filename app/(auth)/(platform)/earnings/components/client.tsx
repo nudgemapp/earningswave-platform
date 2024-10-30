@@ -106,7 +106,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     if (!user) {
       openAuthModal();
     }
-    setSelectedFutureEarnings(report as any);
+    setSelectedFutureEarnings(report);
   };
 
   return (

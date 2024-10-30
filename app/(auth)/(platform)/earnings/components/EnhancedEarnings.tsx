@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { HistoricalEarnings, ProcessedReport } from "../types";
+import { HistoricalEarnings } from "../types";
 
 interface CurrentReport {
   quarter: string;
@@ -21,10 +21,7 @@ interface EnhancedEarningsProps {
 
 const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({
   currentReport,
-  historicalData,
 }) => {
-  const [expandedQuarter, setExpandedQuarter] = useState<string | null>(null);
-
   const formatBeat = (value: number) => {
     return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
   };
