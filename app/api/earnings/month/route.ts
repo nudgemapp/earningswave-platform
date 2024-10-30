@@ -1,6 +1,39 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+// Add these interfaces before the GET function
+interface RawTranscript {
+  id: number;
+  date: Date;
+  title: string;
+  total_count: string | number;
+  remaining_count: string | number;
+  "company.id": number;
+  "company.symbol": string;
+  "company.name": string;
+  "company.logo.data": Buffer | null;
+}
+
+interface RawReport {
+  id: string;
+  symbol: string;
+  name: string;
+  reportDate: Date;
+  fiscalDateEnding: Date;
+  estimate: number | null;
+  currency: string;
+  marketTiming: string | null;
+  lastYearEPS: number | null;
+  lastYearReportDate: Date | null;
+  companyId: number;
+  "company.id": number;
+  "company.symbol": string;
+  "company.name": string;
+  "company.logo.data": Buffer | null;
+  total_count: string | number;
+  remaining_count: string | number;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startDate = new Date(searchParams.get("startDate") || "");
@@ -18,19 +51,7 @@ export async function GET(request: Request) {
   try {
     const data = await prisma.$transaction(async (tx) => {
       const [transcripts, reports] = await Promise.all([
-        tx.$queryRaw<
-          Array<{
-            id: string;
-            date: Date;
-            title: string;
-            total_count: number;
-            remaining_count: number;
-            "company.id": string;
-            "company.symbol": string;
-            "company.name": string;
-            "company.logo.data": string | null;
-          }>
-        >`
+        tx.$queryRaw`
           WITH DailyCounts AS (
             SELECT DATE(date) as day, COUNT(*) as total_count
             FROM "EarningsCallTranscript"
@@ -57,27 +78,7 @@ export async function GET(request: Request) {
           WHERE rn <= 11
           ORDER BY date ASC
         `,
-        tx.$queryRaw<
-          Array<{
-            id: string;
-            symbol: string;
-            name: string;
-            reportDate: Date;
-            fiscalDateEnding: string;
-            estimate: number;
-            currency: string;
-            marketTiming: string;
-            lastYearEPS: number;
-            lastYearReportDate: Date;
-            companyId: string;
-            total_count: number;
-            remaining_count: number;
-            "company.id": string;
-            "company.symbol": string;
-            "company.name": string;
-            "company.logo.data": string | null;
-          }>
-        >`
+        tx.$queryRaw`
           WITH DailyCounts AS (
             SELECT DATE("reportDate") as day, COUNT(*) as total_count
             FROM "EarningsReport"
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
                  c.name as "company.name",
                  l.data as "company.logo.data",
                  dc.total_count,
-                 GREATEST(dc.total_count - 11, 0) as remaining_count
+                 (dc.total_count - COUNT(*) OVER (PARTITION BY DATE(r."reportDate"))) as remaining_count
           FROM RankedReports r
           LEFT JOIN "Company" c ON r."companyId" = c.id
           LEFT JOIN "Logo" l ON c."logoId" = l.id
@@ -106,122 +107,54 @@ export async function GET(request: Request) {
         `,
       ]);
 
-      interface TranscriptsByDate {
-        [date: string]: {
-          date: string;
-          totalCount: number;
-          remainingCount: number;
-          items: Array<{
-            id: string;
-            date: Date;
-            title: string;
-            company: {
-              id: string;
-              symbol: string;
-              name: string;
-              logo: { data: string } | null;
-            };
-          }>;
-        };
-      }
-
-      const transcriptsByDate = transcripts.reduce(
-        (acc: TranscriptsByDate, t) => {
-          const date = t.date.toISOString().split("T")[0];
-          if (!acc[date]) {
-            acc[date] = {
-              date,
-              totalCount: Number(t.total_count),
-              remainingCount: Number(t.remaining_count),
-              items: [],
-            };
-          }
-          acc[date].items.push({
-            id: t.id,
-            date: t.date,
-            title: t.title,
-            company: {
-              id: t["company.id"],
-              symbol: t["company.symbol"],
-              name: t["company.name"],
-              logo: t["company.logo.data"]
-                ? {
-                    data: t["company.logo.data"],
-                  }
-                : null,
-            },
-          });
-          return acc;
-        },
-        {}
-      );
-
-      interface ReportsByDate {
-        [date: string]: {
-          date: string;
-          totalCount: number;
-          remainingCount: number;
-          items: Array<{
-            id: string;
-            symbol: string;
-            name: string;
-            reportDate: Date;
-            fiscalDateEnding: string;
-            estimate: number;
-            currency: string;
-            marketTiming: string;
-            lastYearEPS: number;
-            lastYearReportDate: Date;
-            companyId: string;
-            company: {
-              id: string;
-              symbol: string;
-              name: string;
-              logo: { data: string } | null;
-            };
-          }>;
-        };
-      }
-
-      const reportsByDate = reports.reduce((acc: ReportsByDate, r) => {
-        const date = r.reportDate.toISOString().split("T")[0];
-        if (!acc[date]) {
-          acc[date] = {
-            date,
-            totalCount: Number(r.total_count),
-            remainingCount: Number(r.remaining_count),
-            items: [],
-          };
-        }
-        acc[date].items.push({
-          id: r.id,
-          symbol: r.symbol,
-          name: r.name,
-          reportDate: r.reportDate,
-          fiscalDateEnding: r.fiscalDateEnding,
-          estimate: r.estimate,
-          currency: r.currency,
-          marketTiming: r.marketTiming,
-          lastYearEPS: r.lastYearEPS,
-          lastYearReportDate: r.lastYearReportDate,
-          companyId: r.companyId,
+      // Transform the raw SQL results to match the expected structure
+      const formattedTranscripts = (transcripts as RawTranscript[]).map(
+        (t) => ({
+          id: t.id,
+          date: t.date,
+          title: t.title,
+          totalCount: Number(t.total_count),
+          remainingCount: Number(t.remaining_count),
           company: {
-            id: r["company.id"],
-            symbol: r["company.symbol"],
-            name: r["company.name"],
-            logo: r["company.logo.data"]
+            id: t["company.id"],
+            symbol: t["company.symbol"],
+            name: t["company.name"],
+            logo: t["company.logo.data"]
               ? {
-                  data: r["company.logo.data"],
+                  data: t["company.logo.data"],
                 }
               : null,
           },
-        });
-        return acc;
-      }, {});
+        })
+      );
+
+      const formattedReports = (reports as RawReport[]).map((r) => ({
+        id: r.id,
+        symbol: r.symbol,
+        name: r.name,
+        reportDate: r.reportDate,
+        fiscalDateEnding: r.fiscalDateEnding,
+        estimate: r.estimate,
+        currency: r.currency,
+        marketTiming: r.marketTiming,
+        lastYearEPS: r.lastYearEPS,
+        lastYearReportDate: r.lastYearReportDate,
+        companyId: r.companyId,
+        company: {
+          id: r["company.id"],
+          symbol: r["company.symbol"],
+          name: r["company.name"],
+          logo: r["company.logo.data"]
+            ? {
+                data: r["company.logo.data"],
+              }
+            : null,
+        },
+      }));
 
       return {
-        transcripts: Object.values(transcriptsByDate),
-        reports: Object.values(reportsByDate),
+        transcripts: formattedTranscripts,
+        reports: formattedReports,
       };
     });
 
