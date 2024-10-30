@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
+import { Calendar, Sun, Moon, LucideIcon, File } from "lucide-react";
 import {
   ProcessedReport,
   ProcessedTranscript,
@@ -22,8 +22,6 @@ const DayView: React.FC<DayViewProps> = ({
   onReportClick,
 }) => {
   const { data, isLoading, error } = useGetDayView(date);
-
-  console.log("data", data);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
@@ -201,6 +199,28 @@ const DayView: React.FC<DayViewProps> = ({
                 reports={groupedReports["NOT_SUPPLIED"] || []}
                 className="bg-gray-50 p-4 rounded-md"
               />
+
+              {data.transcripts.length > 0 && (
+                <div className="space-y-3 mt-6">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <File className="w-5 h-5" />
+                    Earnings Transcripts
+                  </h3>
+                  <div className="grid gap-3">
+                    {data.transcripts.map((transcript) => (
+                      <CompanyCard
+                        key={transcript.id}
+                        company={{
+                          name: transcript.company?.name || "",
+                          symbol: transcript.company?.symbol || "",
+                          logo: transcript.company?.logo || null,
+                        }}
+                        onClick={() => onTranscriptClick(transcript)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </>

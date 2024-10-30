@@ -6,6 +6,9 @@ export async function GET(request: Request) {
   const startDate = new Date(searchParams.get("startDate") || "");
   const endDate = new Date(searchParams.get("endDate") || "");
 
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(23, 59, 59, 999);
+
   if (
     !startDate ||
     !endDate ||
@@ -89,12 +92,15 @@ export async function GET(request: Request) {
         }),
       ]);
 
-      console.log("Found Records:", {
-        transcriptsCount: transcripts.length,
-        reportsCount: reports.length,
-        date: startDate.toISOString(),
-        transcriptDates: transcripts.map((t) => t.date),
-        reportDates: reports.map((r) => r.reportDate),
+      console.log("Date Range Details:", {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        startDateTimestamp: startDate.getTime(),
+        endDateTimestamp: endDate.getTime(),
+        transcriptsFound: transcripts.map((t) => ({
+          date: t.date,
+          title: t.title,
+        })),
       });
 
       return {
