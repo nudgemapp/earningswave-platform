@@ -25,8 +25,6 @@ const MonthView: React.FC<MonthViewProps> = ({
 }) => {
   const { data, isLoading, error } = useGetMonthView();
 
-  console.log("data", data);
-
   if (isLoading) return <LoadingSpinner />;
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
@@ -118,21 +116,39 @@ const MonthView: React.FC<MonthViewProps> = ({
   }) => {
     if (reports.length === 0) return null;
 
+    // Determine if this is a special market timing group
+    const isMarketTimingGroup =
+      bgColor === "bg-blue-50" || bgColor === "bg-orange-50";
+
     return (
-      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
+      <div
+        className={`p-1 rounded-md mb-1 ${bgColor} transition-all duration-300 ease-in-out`}
+        onClick={(e) => {
+          // Stop propagation only for pre-market and after-hours sections
+          if (isMarketTimingGroup) {
+            e.stopPropagation();
+          }
+        }}
+      >
         <div className="flex items-center gap-1 mb-1">
           <Icon className="w-3 h-3 text-gray-600" />
           <span className="text-[10px] font-medium text-gray-600">{title}</span>
         </div>
-        <div className="grid grid-cols-3 gap-1">
+        <div
+          className="grid grid-cols-3 gap-1"
+          onClick={(e) => e.stopPropagation()} // Prevent day click when clicking company cards
+        >
           {reports.map((report, reportIndex) => (
             <div
               key={`report-${reportIndex}`}
               className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFutureEarningsClick(report);
+              }}
               title={`${report.name} (${
                 report.symbol
               }) - ${report.marketTiming?.replace("_", " ")}`}
-              onClick={() => handleFutureEarningsClick(report)}
             >
               <div className="flex-1 relative">
                 {report.company?.logo ? (
@@ -187,15 +203,14 @@ const MonthView: React.FC<MonthViewProps> = ({
           return (
             <div
               key={index}
-              className={`bg-white p-1 text-center flex flex-col min-h-[100px] ${
+              className={`bg-white p-1 text-center flex flex-col min-h-[100px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 ${
                 !isCurrentMonth ? "text-gray-400 bg-gray-50" : "text-gray-800"
               } ${
                 date.toDateString() === new Date().toDateString()
-                  ? "bg-blue-50"
+                  ? "bg-blue-50 hover:bg-blue-100"
                   : ""
               }`}
               onClick={(e) => {
-                console.log(date);
                 e.stopPropagation();
                 const newDate = new Date(date);
                 useEarningsStore.setState({
@@ -205,17 +220,20 @@ const MonthView: React.FC<MonthViewProps> = ({
                 });
               }}
             >
-              <span className="text-xs mb-1">{date.getDate()}</span>
+              <span className="text-xs mb-1 font-medium transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:text-gray-900">
+                {date.getDate()}
+              </span>
               <div className="flex-grow">
                 {dayContent.length === 0 && dayReports.length === 0 ? (
-                  <div className="w-full h-full">
-                    <NoEarnings />
-                  </div>
+                  <NoEarnings />
                 ) : (
                   <div className="flex flex-col h-full">
                     {/* Regular transcripts */}
                     {dayContent.length > 0 && (
-                      <div className="grid grid-cols-3 gap-1 mb-1">
+                      <div
+                        className="grid grid-cols-3 gap-1 mb-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {dayContent.map((transcript, logoIndex) => (
                           <div
                             key={`transcript-${logoIndex}`}
