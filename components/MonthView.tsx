@@ -12,11 +12,37 @@ import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
 
+// First, let's define proper interfaces for our data structure
+interface GroupedTranscript {
+  date: string;
+  totalCount: number;
+  remainingCount: number;
+  items: ProcessedTranscript[];
+}
+
+interface GroupedReport {
+  date: string;
+  totalCount: number;
+  remainingCount: number;
+  items: ProcessedReport[];
+}
+
 interface MonthViewProps {
   currentDate: Date;
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
+
+const bufferToImageUrl = (logoData: {
+  data: { type: "Buffer"; data: number[] };
+}) => {
+  if (!logoData?.data?.data) return "";
+
+  const uint8Array = new Uint8Array(logoData.data.data);
+  let binary = "";
+  uint8Array.forEach((byte) => (binary += String.fromCharCode(byte)));
+  return `data:image/png;base64,${btoa(binary)}`;
+};
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
@@ -38,60 +64,62 @@ const MonthView: React.FC<MonthViewProps> = ({
     const firstDayOfMonth = new Date(year, month, 1).getDay();
     const days: Date[] = [];
 
+    // Adjust first day to start from Monday (1) instead of Sunday (0)
+    const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
     // Add padding days from previous month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(new Date(year, month, -firstDayOfMonth + i + 1));
+    for (let i = 0; i < adjustedFirstDay; i++) {
+      days.push(new Date(year, month, -adjustedFirstDay + i + 1));
     }
 
-    // Add days of current month
+    // Add days of current month, excluding weekends
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
+      const currentDay = new Date(year, month, i);
+      const dayOfWeek = currentDay.getDay();
+      // Only add if it's not Saturday (6) or Sunday (0)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        days.push(currentDay);
+      }
     }
 
-    // Remove padding days from next month
-    return days.slice(0, firstDayOfMonth + daysInMonth);
+    return days;
   };
 
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
-  const getLogosForDate = (date: Date, transcripts: ProcessedTranscript[]) => {
-    // Extract the date in the format "MMM DD YYYY"
-    const formattedDate = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
+  const getLogosForDate = (date: Date, transcriptData: GroupedTranscript[]) => {
+    // Extract the date in the format "YYYY-MM-DD"
+    const formattedDate = date.toISOString().split("T")[0];
 
-    // Filter transcripts for the given date
-    return transcripts.filter((transcript) => {
-      const transcriptDate = transcript.date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      });
-      return transcriptDate === formattedDate;
-    });
+    // Find the matching date entry
+    const dateEntry = transcriptData.find(
+      (entry) =>
+        new Date(entry.date).toISOString().split("T")[0] === formattedDate
+    );
+
+    return {
+      items: dateEntry?.items || [],
+      totalCount: dateEntry?.totalCount || 0,
+      remainingCount: dateEntry?.remainingCount || 0,
+    };
   };
 
-  const getReportsForDate = (date: Date, reports: ProcessedReport[]) => {
-    // Extract the date in the format "MMM DD YYYY"
-    const formattedDate = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
+  const getReportsForDate = (date: Date, reportData: GroupedReport[]) => {
+    // Extract the date in the format "YYYY-MM-DD"
+    const formattedDate = date.toISOString().split("T")[0];
 
-    // Filter reports for the given date
-    return reports.filter((report) => {
-      const reportDate = report.reportDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      });
-      return reportDate === formattedDate;
-    });
+    // Find the matching date entry
+    const dateEntry = reportData.find(
+      (entry) =>
+        new Date(entry.date).toISOString().split("T")[0] === formattedDate
+    );
+
+    return {
+      items: dateEntry?.items || [],
+      totalCount: dateEntry?.totalCount || 0,
+      remainingCount: dateEntry?.remainingCount || 0,
+    };
   };
-
   const NoEarnings = () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
       <div className="flex flex-row items-center space-y-1 gap-2">
@@ -116,36 +144,18 @@ const MonthView: React.FC<MonthViewProps> = ({
   }) => {
     if (reports.length === 0) return null;
 
-    // Determine if this is a special market timing group
-    const isMarketTimingGroup =
-      bgColor === "bg-blue-50" || bgColor === "bg-orange-50";
-
     return (
-      <div
-        className={`p-1 rounded-md mb-1 ${bgColor} transition-all duration-300 ease-in-out`}
-        onClick={(e) => {
-          // Stop propagation only for pre-market and after-hours sections
-          if (isMarketTimingGroup) {
-            e.stopPropagation();
-          }
-        }}
-      >
+      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
         <div className="flex items-center gap-1 mb-1">
           <Icon className="w-3 h-3 text-gray-600" />
           <span className="text-[10px] font-medium text-gray-600">{title}</span>
         </div>
-        <div
-          className="grid grid-cols-3 gap-1"
-          onClick={(e) => e.stopPropagation()} // Prevent day click when clicking company cards
-        >
+        <div className="grid grid-cols-3 gap-1">
           {reports.map((report, reportIndex) => (
             <div
               key={`report-${reportIndex}`}
               className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleFutureEarningsClick(report);
-              }}
+              onClick={() => handleFutureEarningsClick(report)}
               title={`${report.name} (${
                 report.symbol
               }) - ${report.marketTiming?.replace("_", " ")}`}
@@ -153,10 +163,10 @@ const MonthView: React.FC<MonthViewProps> = ({
               <div className="flex-1 relative">
                 {report.company?.logo ? (
                   <Image
-                    src={report.company.logo}
+                    src={bufferToImageUrl(report.company.logo)}
                     alt={`${report.name} logo`}
-                    layout="fill"
-                    objectFit="contain"
+                    fill
+                    style={{ objectFit: "contain" }}
                     className="p-1"
                   />
                 ) : (
@@ -183,7 +193,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-white relative">
-      <div className="grid grid-cols-7 py-2 bg-gray-100">
+      <div className="grid grid-cols-5 py-2 bg-gray-100">
         {weekDays.map((day) => (
           <div
             key={day}
@@ -194,10 +204,18 @@ const MonthView: React.FC<MonthViewProps> = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-gray-200 flex-grow">
+      <div className="grid grid-cols-5 gap-px bg-gray-200 flex-grow">
         {getDaysInMonth(currentDate).map((date, index) => {
-          const dayContent = getLogosForDate(date, transcripts);
-          const dayReports = getReportsForDate(date, reports);
+          const {
+            items: dayContent,
+            totalCount: transcriptCount,
+            remainingCount: transcriptRemaining,
+          } = getLogosForDate(date, transcripts);
+          const {
+            items: dayReports,
+            totalCount: reportCount,
+            remainingCount: reportRemaining,
+          } = getReportsForDate(date, reports);
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
           return (
@@ -222,6 +240,11 @@ const MonthView: React.FC<MonthViewProps> = ({
             >
               <span className="text-xs mb-1 font-medium transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:text-gray-900">
                 {date.getDate()}
+                {(transcriptRemaining > 0 || reportRemaining > 0) && (
+                  <span className="ml-1 text-gray-500 text-[10px]">
+                    +{transcriptRemaining + reportRemaining} more
+                  </span>
+                )}
               </span>
               <div className="flex-grow">
                 {dayContent.length === 0 && dayReports.length === 0 ? (
@@ -234,36 +257,46 @@ const MonthView: React.FC<MonthViewProps> = ({
                         className="grid grid-cols-3 gap-1 mb-1"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {dayContent.map((transcript, logoIndex) => (
-                          <div
-                            key={`transcript-${logoIndex}`}
-                            className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-                            onClick={() => handleCompanyClick(transcript)}
-                          >
-                            <div className="flex-1 relative">
-                              {transcript.company?.logo ? (
-                                <Image
-                                  src={transcript.company.logo}
-                                  alt={`${transcript.company.name} logo`}
-                                  layout="fill"
-                                  objectFit="contain"
-                                  className="p-1"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-[10px] font-medium">
-                                    {transcript.company?.symbol || ""}
-                                  </span>
-                                </div>
-                              )}
+                        {dayContent.map((transcript, logoIndex) => {
+                          console.log(
+                            "Logo data for",
+                            transcript.company?.symbol,
+                            ":",
+                            transcript.company?.logo
+                          );
+                          return (
+                            <div
+                              key={`transcript-${logoIndex}`}
+                              className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+                              onClick={() => handleCompanyClick(transcript)}
+                            >
+                              <div className="flex-1 relative">
+                                {transcript.company?.logo ? (
+                                  <Image
+                                    src={bufferToImageUrl(
+                                      transcript.company.logo
+                                    )}
+                                    alt={`${transcript.company.name} logo`}
+                                    fill
+                                    style={{ objectFit: "contain" }}
+                                    className="p-1"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-[10px] font-medium">
+                                      {transcript.company?.symbol || ""}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
+                                <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
+                                  {transcript.company?.symbol || ""}
+                                </span>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
-                              <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
-                                {transcript.company?.symbol || ""}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 
