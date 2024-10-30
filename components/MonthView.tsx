@@ -33,9 +33,10 @@ interface MonthViewProps {
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
-const bufferToImageUrl = (logoData: {
-  data: { type: "Buffer"; data: number[] };
-}) => {
+const bufferToImageUrl = (
+  logoData: { data: { type: "Buffer"; data: number[] } } | string
+) => {
+  if (typeof logoData === "string") return logoData;
   if (!logoData?.data?.data) return "";
 
   const uint8Array = new Uint8Array(logoData.data.data);
@@ -55,7 +56,31 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts, reports } = data;
+  const { transcripts: rawTranscripts, reports: rawReports } = data;
+
+  const transcripts: GroupedTranscript[] = Object.entries(
+    rawTranscripts.reduce((acc, transcript) => {
+      const date = transcript.date.toISOString().split("T")[0];
+      if (!acc[date]) {
+        acc[date] = { date, totalCount: 0, remainingCount: 0, items: [] };
+      }
+      acc[date].items.push(transcript);
+      acc[date].totalCount++;
+      return acc;
+    }, {} as Record<string, GroupedTranscript>)
+  ).map(([_, group]) => group);
+
+  const reports: GroupedReport[] = Object.entries(
+    rawReports.reduce((acc, report) => {
+      const date = report.reportDate.toISOString().split("T")[0];
+      if (!acc[date]) {
+        acc[date] = { date, totalCount: 0, remainingCount: 0, items: [] };
+      }
+      acc[date].items.push(report);
+      acc[date].totalCount++;
+      return acc;
+    }, {} as Record<string, GroupedReport>)
+  ).map(([_, group]) => group);
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();

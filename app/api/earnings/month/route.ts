@@ -18,7 +18,19 @@ export async function GET(request: Request) {
   try {
     const data = await prisma.$transaction(async (tx) => {
       const [transcripts, reports] = await Promise.all([
-        tx.$queryRaw`
+        tx.$queryRaw<
+          Array<{
+            id: string;
+            date: Date;
+            title: string;
+            total_count: number;
+            remaining_count: number;
+            "company.id": string;
+            "company.symbol": string;
+            "company.name": string;
+            "company.logo.data": string | null;
+          }>
+        >`
           WITH DailyCounts AS (
             SELECT DATE(date) as day, COUNT(*) as total_count
             FROM "EarningsCallTranscript"
@@ -45,7 +57,27 @@ export async function GET(request: Request) {
           WHERE rn <= 11
           ORDER BY date ASC
         `,
-        tx.$queryRaw`
+        tx.$queryRaw<
+          Array<{
+            id: string;
+            symbol: string;
+            name: string;
+            reportDate: Date;
+            fiscalDateEnding: string;
+            estimate: number;
+            currency: string;
+            marketTiming: string;
+            lastYearEPS: number;
+            lastYearReportDate: Date;
+            companyId: string;
+            total_count: number;
+            remaining_count: number;
+            "company.id": string;
+            "company.symbol": string;
+            "company.name": string;
+            "company.logo.data": string | null;
+          }>
+        >`
           WITH DailyCounts AS (
             SELECT DATE("reportDate") as day, COUNT(*) as total_count
             FROM "EarningsReport"
@@ -74,37 +106,84 @@ export async function GET(request: Request) {
         `,
       ]);
 
-      // Group transcripts by date and include the counts
-      const transcriptsByDate = transcripts.reduce((acc: any, t: any) => {
-        const date = t.date.toISOString().split("T")[0];
-        if (!acc[date]) {
-          acc[date] = {
-            date,
-            totalCount: Number(t.total_count),
-            remainingCount: Number(t.remaining_count),
-            items: [],
-          };
-        }
-        acc[date].items.push({
-          id: t.id,
-          date: t.date,
-          title: t.title,
-          company: {
-            id: t["company.id"],
-            symbol: t["company.symbol"],
-            name: t["company.name"],
-            logo: t["company.logo.data"]
-              ? {
-                  data: t["company.logo.data"],
-                }
-              : null,
-          },
-        });
-        return acc;
-      }, {});
+      interface TranscriptsByDate {
+        [date: string]: {
+          date: string;
+          totalCount: number;
+          remainingCount: number;
+          items: Array<{
+            id: string;
+            date: Date;
+            title: string;
+            company: {
+              id: string;
+              symbol: string;
+              name: string;
+              logo: { data: string } | null;
+            };
+          }>;
+        };
+      }
 
-      // Group reports by date and include the counts
-      const reportsByDate = reports.reduce((acc: any, r: any) => {
+      const transcriptsByDate = transcripts.reduce(
+        (acc: TranscriptsByDate, t) => {
+          const date = t.date.toISOString().split("T")[0];
+          if (!acc[date]) {
+            acc[date] = {
+              date,
+              totalCount: Number(t.total_count),
+              remainingCount: Number(t.remaining_count),
+              items: [],
+            };
+          }
+          acc[date].items.push({
+            id: t.id,
+            date: t.date,
+            title: t.title,
+            company: {
+              id: t["company.id"],
+              symbol: t["company.symbol"],
+              name: t["company.name"],
+              logo: t["company.logo.data"]
+                ? {
+                    data: t["company.logo.data"],
+                  }
+                : null,
+            },
+          });
+          return acc;
+        },
+        {}
+      );
+
+      interface ReportsByDate {
+        [date: string]: {
+          date: string;
+          totalCount: number;
+          remainingCount: number;
+          items: Array<{
+            id: string;
+            symbol: string;
+            name: string;
+            reportDate: Date;
+            fiscalDateEnding: string;
+            estimate: number;
+            currency: string;
+            marketTiming: string;
+            lastYearEPS: number;
+            lastYearReportDate: Date;
+            companyId: string;
+            company: {
+              id: string;
+              symbol: string;
+              name: string;
+              logo: { data: string } | null;
+            };
+          }>;
+        };
+      }
+
+      const reportsByDate = reports.reduce((acc: ReportsByDate, r) => {
         const date = r.reportDate.toISOString().split("T")[0];
         if (!acc[date]) {
           acc[date] = {
