@@ -97,7 +97,7 @@ export async function GET(request: Request) {
                  c.name as "company.name",
                  l.data as "company.logo.data",
                  dc.total_count,
-                 (dc.total_count - COUNT(*) OVER (PARTITION BY DATE(r."reportDate"))) as remaining_count
+                 GREATEST(dc.total_count - 11, 0) as remaining_count
           FROM RankedReports r
           LEFT JOIN "Company" c ON r."companyId" = c.id
           LEFT JOIN "Logo" l ON c."logoId" = l.id
@@ -140,6 +140,8 @@ export async function GET(request: Request) {
         lastYearEPS: r.lastYearEPS,
         lastYearReportDate: r.lastYearReportDate,
         companyId: r.companyId,
+        totalCount: Number(r.total_count),
+        remainingCount: Number(r.remaining_count),
         company: {
           id: r["company.id"],
           symbol: r["company.symbol"],

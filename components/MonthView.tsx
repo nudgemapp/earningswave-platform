@@ -5,12 +5,23 @@ import Image from "next/image";
 
 import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
 import {
-  ProcessedReport,
-  ProcessedTranscript,
+  ProcessedReport as BaseProcessedReport,
+  ProcessedTranscript as BaseProcessedTranscript,
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
+
+// Extend the base interfaces to include the count properties
+interface ProcessedReport extends BaseProcessedReport {
+  totalCount: number;
+  remainingCount: number;
+}
+
+interface ProcessedTranscript extends BaseProcessedTranscript {
+  totalCount: number;
+  remainingCount: number;
+}
 
 // First, let's define proper interfaces for our data structure
 interface GroupedTranscript {
@@ -56,18 +67,23 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  console.log(data);
-
-  const { transcripts: rawTranscripts, reports: rawReports } = data;
+  const { transcripts: rawTranscripts, reports: rawReports } = data as {
+    transcripts: ProcessedTranscript[];
+    reports: ProcessedReport[];
+  };
 
   const transcripts: GroupedTranscript[] = Object.entries(
     rawTranscripts.reduce((acc, transcript) => {
       const date = transcript.date.toISOString().split("T")[0];
       if (!acc[date]) {
-        acc[date] = { date, totalCount: 0, remainingCount: 0, items: [] };
+        acc[date] = {
+          date,
+          totalCount: transcript.totalCount || 0,
+          remainingCount: transcript.remainingCount || 0,
+          items: [],
+        };
       }
       acc[date].items.push(transcript);
-      acc[date].totalCount++;
       return acc;
     }, {} as Record<string, GroupedTranscript>)
   ).map(([_, group]) => group);
@@ -76,10 +92,14 @@ const MonthView: React.FC<MonthViewProps> = ({
     rawReports.reduce((acc, report) => {
       const date = report.reportDate.toISOString().split("T")[0];
       if (!acc[date]) {
-        acc[date] = { date, totalCount: 0, remainingCount: 0, items: [] };
+        acc[date] = {
+          date,
+          totalCount: report.totalCount || 0,
+          remainingCount: report.remainingCount || 0,
+          items: [],
+        };
       }
       acc[date].items.push(report);
-      acc[date].totalCount++;
       return acc;
     }, {} as Record<string, GroupedReport>)
   ).map(([_, group]) => group);
@@ -115,10 +135,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
   const getLogosForDate = (date: Date, transcriptData: GroupedTranscript[]) => {
-    // Extract the date in the format "YYYY-MM-DD"
     const formattedDate = date.toISOString().split("T")[0];
-
-    // Find the matching date entry
     const dateEntry = transcriptData.find(
       (entry) =>
         new Date(entry.date).toISOString().split("T")[0] === formattedDate
@@ -132,10 +149,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const getReportsForDate = (date: Date, reportData: GroupedReport[]) => {
-    // Extract the date in the format "YYYY-MM-DD"
     const formattedDate = date.toISOString().split("T")[0];
-
-    // Find the matching date entry
     const dateEntry = reportData.find(
       (entry) =>
         new Date(entry.date).toISOString().split("T")[0] === formattedDate
