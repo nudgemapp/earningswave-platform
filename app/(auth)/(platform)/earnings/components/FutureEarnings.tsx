@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { FileText, FileDown } from "lucide-react";
+import { FileText, FileDown, ChevronLeft } from "lucide-react";
 import {
   ComposedChart,
   Bar,
@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import { ProcessedReport } from "../types";
 import EnhancedEarnings from "./EnhancedEarnings";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -37,6 +38,7 @@ interface HistoricalEarnings {
 }
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
+  const selectedDate = useEarningsStore((state) => state.selectedDate);
   const [timeframe, setTimeframe] = useState("1M");
   const [isLoading, setIsLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
@@ -140,12 +142,24 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
       100
     : 0;
 
+  const handleBack = () => {
+    useEarningsStore.setState({ selectedFutureEarnings: null });
+  };
+
   return (
     <div className="space-y-6">
       <Card className="w-full shadow-lg bg-white">
         <CardHeader className="space-y-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
+              {selectedDate && (
+                <button
+                  onClick={handleBack}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
               {report.company?.logo && (
                 <div className="w-12 h-12 relative">
                   <Image

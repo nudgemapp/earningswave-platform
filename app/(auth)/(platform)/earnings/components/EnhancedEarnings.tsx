@@ -1,30 +1,32 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { HistoricalEarnings, ProcessedReport } from "../types";
 
-
 interface CurrentReport {
-    quarter: string;
-    year: number;
-    date: string;
-    revenue: number;
-    eps: number;
-    revenueBeat: number;
-    epsBeat: number;
-  }
+  quarter: string;
+  year: number;
+  date: string;
+  revenue: number;
+  eps: number;
+  revenueBeat: number;
+  epsBeat: number;
+}
 
-  interface EnhancedEarningsProps {
-    currentReport: CurrentReport;
-    historicalData: HistoricalEarnings[];
-  }
+interface EnhancedEarningsProps {
+  currentReport: CurrentReport;
+  historicalData: HistoricalEarnings[];
+}
 
-const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({ currentReport, historicalData }) => {
+const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({
+  currentReport,
+  historicalData,
+}) => {
   const [expandedQuarter, setExpandedQuarter] = useState<string | null>(null);
 
   const formatBeat = (value: number) => {
-    return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
+    return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
   };
 
   const formatRevenue = (value: number) => {
@@ -51,15 +53,29 @@ const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({ currentReport, hist
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <p className="text-sm text-gray-500">Revenue</p>
-              <p className="text-lg font-bold">{formatRevenue(currentReport.revenue)}</p>
-              <p className={`text-sm ${currentReport.revenueBeat >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-lg font-bold">
+                {formatRevenue(currentReport.revenue)}
+              </p>
+              <p
+                className={`text-sm ${
+                  currentReport.revenueBeat >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
                 {formatBeat(currentReport.revenueBeat)}
               </p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-gray-500">EPS</p>
-              <p className="text-lg font-bold">${currentReport.eps.toFixed(2)}</p>
-              <p className={`text-sm ${currentReport.epsBeat >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-lg font-bold">
+                ${currentReport.eps.toFixed(2)}
+              </p>
+              <p
+                className={`text-sm ${
+                  currentReport.epsBeat >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {formatBeat(currentReport.epsBeat)}
               </p>
             </div>
