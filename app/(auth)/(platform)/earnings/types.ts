@@ -1,4 +1,4 @@
-import { EarningsReport, MarketTiming } from "@prisma/client";
+import { MarketTiming } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export type ProcessedTranscript = {
@@ -14,6 +14,7 @@ export type ProcessedTranscript = {
 };
 
 export type ProcessedReport = {
+  fiscalQuarter: string;
   id: string;
   symbol: string;
   name: string;
@@ -41,31 +42,6 @@ export type ProcessedReport = {
   };
 };
 
-<<<<<<< Updated upstream
-export type EarningsReportWithCompany = EarningsReport & {
-  company?: {
-    logo?: { data: Buffer } | null;
-    id: number;
-    symbol: string;
-    name: string;
-    marketCap?: Decimal;
-    price?: Decimal;
-    revenue?: Decimal;
-  } | null;
-};
-
-export type EarningsCallTranscriptWithCompany = ProcessedTranscript & {
-  company?: {
-    logo?: { data: Buffer } | null;
-    id: number;
-    symbol: string;
-    name: string;
-    marketCap?: Decimal;
-    price?: Decimal;
-    revenue?: Decimal;
-  } | null;
-};
-=======
 
 export type HistoricalEarnings = {
   quarter: string;
@@ -85,4 +61,3 @@ export type EnhancedReport = {
   revenueBeat: number;
   epsBeat: number;
 }
->>>>>>> Stashed changes

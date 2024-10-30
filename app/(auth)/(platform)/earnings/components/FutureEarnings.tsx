@@ -268,7 +268,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
           date: new Date(report.reportDate).toLocaleDateString(),
           revenue: Number(report.estimate) || 0, // Ensure it's a number
           eps: Number(report.estimate) || 0,     // Ensure it's a number
-          revenueBeat: 0, // Will need lastYearRevenue for this
+          revenueBeat: 0,
           epsBeat: epsBeat,
         }}
         historicalData={historicalData}

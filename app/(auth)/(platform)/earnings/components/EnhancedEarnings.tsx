@@ -68,7 +68,7 @@ const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({ currentReport, hist
       </Card>
 
       {/* Historical Earnings */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-lg">Previous Earnings</CardTitle>
         </CardHeader>
@@ -108,7 +108,7 @@ const EnhancedEarnings: React.FC<EnhancedEarningsProps> = ({ currentReport, hist
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };
