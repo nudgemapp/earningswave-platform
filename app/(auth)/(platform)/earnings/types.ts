@@ -25,6 +25,7 @@ export type ProcessedReport = {
   marketTiming: MarketTiming | null;
   lastYearEPS: number | null;
   lastYearReportDate: Date | null;
+  lastYearRevenue: number | null;
   companyId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -42,7 +43,6 @@ export type ProcessedReport = {
   };
 };
 
-
 export type HistoricalEarnings = {
   quarter: string;
   date: string;
@@ -50,7 +50,7 @@ export type HistoricalEarnings = {
   epsBeat: number;
   revenue: number;
   eps: number;
-}
+};
 
 export type EnhancedReport = {
   quarter: string;
@@ -60,4 +60,40 @@ export type EnhancedReport = {
   eps: number;
   revenueBeat: number;
   epsBeat: number;
-}
+};
+
+export type EarningsCallTranscriptWithCompany = {
+  id: number;
+  date: Date;
+  title: string;
+  company: {
+    id: number;
+    symbol: string;
+    name: string;
+    logo: {
+      data: Buffer | null;
+    } | null;
+  } | null;
+};
+
+export type EarningsReportWithCompany = {
+  id: string;
+  symbol: string;
+  name: string;
+  reportDate: Date;
+  fiscalDateEnding: Date;
+  estimate: number | null;
+  currency: string;
+  marketTiming: MarketTiming | null;
+  lastYearEPS: number | null;
+  lastYearReportDate: Date | null;
+  companyId: number;
+  company: {
+    id: number;
+    symbol: string;
+    name: string;
+    logo: {
+      data: Buffer | null;
+    } | null;
+  } | null;
+};

@@ -8,6 +8,7 @@ import {
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface WeekViewProps {
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
@@ -19,6 +20,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   handleFutureEarningsClick,
 }) => {
   const currentDate = useCalendarStore((state) => state.currentDate);
+  const setSelectedDate = useEarningsStore((state) => state.setSelectedDate);
 
   const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);
@@ -183,6 +185,15 @@ const WeekView: React.FC<WeekViewProps> = ({
           <div
             key={day}
             className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              const newDate = new Date(weekDates[index]);
+              useEarningsStore.setState({
+                selectedDate: newDate,
+                selectedCompany: null,
+                selectedFutureEarnings: null,
+              });
+            }}
           >
             <div className="p-2 text-center border-b border-gray-200">
               <h2 className="text-sm font-semibold text-gray-700">{day}</h2>

@@ -10,6 +10,7 @@ import {
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -193,6 +194,16 @@ const MonthView: React.FC<MonthViewProps> = ({
                   ? "bg-blue-50"
                   : ""
               }`}
+              onClick={(e) => {
+                console.log(date);
+                e.stopPropagation();
+                const newDate = new Date(date);
+                useEarningsStore.setState({
+                  selectedDate: newDate,
+                  selectedCompany: null,
+                  selectedFutureEarnings: null,
+                });
+              }}
             >
               <span className="text-xs mb-1">{date.getDate()}</span>
               <div className="flex-grow">

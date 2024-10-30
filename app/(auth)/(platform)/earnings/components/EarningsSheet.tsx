@@ -7,6 +7,7 @@ import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import { ProcessedReport } from "../types";
+import DayView from "./DayView";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -15,8 +16,10 @@ interface EarningsTranscriptSheetProps {
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
-  const { selectedCompany, selectedFutureEarnings } = useEarningsStore();
-  const [transcriptData, setTranscriptData] = useState<EarningsCallTranscript | null>(null);
+  const { selectedCompany, selectedFutureEarnings, selectedDate } =
+    useEarningsStore();
+  const [transcriptData, setTranscriptData] =
+    useState<EarningsCallTranscript | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,16 +60,35 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 
   const renderContent = () => {
     if (isLoading) {
+      console.log("isLoading");
       return <CustomLoadingSpinner />;
     }
     if (error) {
+      console.log("error");
       return <div className="p-4 text-red-500">Error: {error}</div>;
     }
     if (transcriptData) {
+      console.log("transcriptData");
       return <EarningsTranscript transcriptData={transcriptData} />;
     }
     if (selectedFutureEarnings) {
-      return <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />;
+      console.log("selectedFutureEarnings");
+      return (
+        <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />
+      );
+    }
+    if (selectedDate) {
+      return (
+        <DayView
+          date={selectedDate}
+          onTranscriptClick={(transcript) => {
+            useEarningsStore.setState({ selectedCompany: transcript });
+          }}
+          onReportClick={(report) => {
+            useEarningsStore.setState({ selectedFutureEarnings: report });
+          }}
+        />
+      );
     }
     return <WelcomeMessage />;
   };
