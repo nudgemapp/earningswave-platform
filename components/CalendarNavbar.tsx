@@ -70,7 +70,13 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     newDate.setMonth(newDate.getMonth() + direction);
     updateURL(newDate);
     navigateMonth(direction);
-    setView("month");
+  };
+
+  const handleWeekNavigation = (direction: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + direction * 7);
+    updateURL(newDate);
+    setCurrentDate(newDate);
   };
 
   const updateURL = (date: Date) => {
@@ -80,12 +86,43 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     router.push(`?${params.toString()}`);
   };
 
+  // Add this function to get weeks in the current month
+  const getWeeksInMonth = () => {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const weeks = [];
+
+    // Get to the first Monday of the month
+    while (date.getDay() !== 1) {
+      date.setDate(date.getDate() - 1);
+    }
+
+    // Get all weeks that contain days in the current month
+    while (date.getMonth() === currentDate.getMonth() || date.getDate() <= 7) {
+      weeks.push(new Date(date));
+      date.setDate(date.getDate() + 7);
+    }
+
+    return weeks;
+  };
+
+  // Add this function to format the week display
+  const formatWeekDisplay = (weekStart: Date) => {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    return `${weekStart.getDate()} - ${weekEnd.getDate()}`;
+  };
+
   return (
     <div className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button
-            onClick={() => handleMonthNavigation(-1)}
+            onClick={() =>
+              view === "week"
+                ? handleWeekNavigation(-1)
+                : handleMonthNavigation(-1)
+            }
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"
@@ -127,7 +164,11 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             </select>
           </div>
           <Button
-            onClick={() => handleMonthNavigation(1)}
+            onClick={() =>
+              view === "week"
+                ? handleWeekNavigation(1)
+                : handleMonthNavigation(1)
+            }
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"
