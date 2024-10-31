@@ -23,29 +23,36 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   return (
     <div className="p-4 bg-white overflow-y-auto">
       <div className="flex flex-col items-start mb-4">
-        <div className="text-2xl font-bold mb-4">EarningsWave coming soon</div>
-        <Separator className="mb-4" />
-        <div className="flex items-center mt-4">
-          {selectedDate && (
-            <button
-              onClick={handleBack}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors mx-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          <div className="w-12 h-12 mr-4 relative flex-shrink-0">
-            <Image
-              src={transcriptData.company_info.logo_base64}
-              alt={`${transcriptData.company_info.company_name} logo`}
-              layout="fill"
-              objectFit="contain"
-            />
+        <div className="flex justify-between items-center w-full">
+          <div className="flex items-center gap-4">
+            {selectedDate && (
+              <button
+                onClick={handleBack}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            <div className="w-12 h-12 relative">
+              <Image
+                src={transcriptData.company_info.logo_base64}
+                alt={`${transcriptData.company_info.company_name} logo`}
+                layout="fill"
+                objectFit="contain"
+                className="rounded"
+              />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">
+                {transcriptData.company_info.company_name}
+              </h2>
+              <div className="text-sm text-gray-500">
+                {transcriptData.company_info.ticker_symbol}
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl font-semibold">
-            {transcriptData.company_info.company_name}
-          </h2>
         </div>
+        <Separator className="my-4" />
       </div>
 
       <h2 className="text-xl font-semibold mb-4">{transcriptData.title}</h2>
