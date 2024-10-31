@@ -2,13 +2,23 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Calendar, Sun, Moon, LucideIcon, File, Clock } from "lucide-react";
+import {
+  Calendar,
+  Sun,
+  Moon,
+  LucideIcon,
+  File,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   ProcessedReport,
   ProcessedTranscript,
 } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
 import Spinner from "@/components/ui/Spinner";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 type FilterType = "ALL" | "PRE_MARKET" | "AFTER_HOURS";
 
@@ -25,6 +35,12 @@ const DayView: React.FC<DayViewProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("ALL");
   const { data, isLoading, error } = useGetDayView(date);
+
+  const changeDate = (days: number) => {
+    const newDate = new Date(date);
+    newDate.setDate(date.getDate() + days);
+    useEarningsStore.setState({ selectedDate: newDate });
+  };
 
   const FilterButton = ({
     filter,
@@ -60,7 +76,7 @@ const DayView: React.FC<DayViewProps> = ({
           return report.marketTiming === "AFTER_HOURS";
         return true;
       }),
-      transcripts: data.transcripts, // Always show transcripts
+      transcripts: data.transcripts,
     };
   }, [data, activeFilter]);
 
@@ -168,10 +184,24 @@ const DayView: React.FC<DayViewProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
-        <div className="flex justify-center">
+        <div className="flex items-center justify-between md:justify-center">
+          <button
+            onClick={() => changeDate(-1)}
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
           <h2 className="text-2xl font-semibold text-gray-900">
             {formatDate(date)}
           </h2>
+          <button
+            onClick={() => changeDate(1)}
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+            aria-label="Next day"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Filter Bar */}
@@ -208,7 +238,7 @@ const DayView: React.FC<DayViewProps> = ({
               <p className="text-sm">Check back later or try another date</p>
             </div>
           ) : (
-            <>
+            <div className="space-y-6">
               {/* Reports */}
               {filteredData.reports.length > 0 && (
                 <div className="space-y-3">
@@ -232,31 +262,32 @@ const DayView: React.FC<DayViewProps> = ({
                     reports={groupedReports["NOT_SUPPLIED"] || []}
                     className="bg-gray-50 p-4 rounded-md"
                   />
-
-                  {filteredData.transcripts.length > 0 && (
-                    <div className="space-y-3 mt-6">
-                      <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <File className="w-5 h-5" />
-                        Earnings Transcripts
-                      </h3>
-                      <div className="grid gap-3">
-                        {filteredData.transcripts.map((transcript) => (
-                          <CompanyCard
-                            key={transcript.id}
-                            company={{
-                              name: transcript.company?.name || "",
-                              symbol: transcript.company?.symbol || "",
-                              logo: transcript.company?.logo || null,
-                            }}
-                            onClick={() => onTranscriptClick(transcript)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
-            </>
+
+              {/* Transcripts - Moved outside the reports conditional */}
+              {filteredData.transcripts.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <File className="w-5 h-5" />
+                    Earnings Transcripts
+                  </h3>
+                  <div className="grid gap-3">
+                    {filteredData.transcripts.map((transcript) => (
+                      <CompanyCard
+                        key={transcript.id}
+                        company={{
+                          name: transcript.company?.name || "",
+                          symbol: transcript.company?.symbol || "",
+                          logo: transcript.company?.logo || null,
+                        }}
+                        onClick={() => onTranscriptClick(transcript)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </>
       )}
@@ -264,4 +295,52 @@ const DayView: React.FC<DayViewProps> = ({
   );
 };
 
-export default DayView;
+const DayViewWithSwipe: React.FC<DayViewProps> = (props) => {
+  const [touchStart, setTouchStart] = React.useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = React.useState<number | null>(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      // Navigate to next day
+      const newDate = new Date(props.date);
+      newDate.setDate(props.date.getDate() + 1);
+      useEarningsStore.setState({ selectedDate: newDate });
+    }
+    if (isRightSwipe) {
+      // Navigate to previous day
+      const newDate = new Date(props.date);
+      newDate.setDate(props.date.getDate() - 1);
+      useEarningsStore.setState({ selectedDate: newDate });
+    }
+  };
+
+  return (
+    <div
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <DayView {...props} />
+    </div>
+  );
+};
+
+export default DayViewWithSwipe;

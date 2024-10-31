@@ -1,42 +1,60 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
+import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-// import { X } from "lucide-react";
-
 interface EarningsTranscriptProps {
   transcriptData: EarningsCallTranscript;
-  // onBack: () => void;
 }
 
 const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
-  // onBack,
 }) => {
-  console.log("transcriptData", transcriptData);
+  const selectedDate = useEarningsStore((state) => state.selectedDate);
+
+  const handleBack = () => {
+    useEarningsStore.setState({ selectedCompany: null });
+  };
 
   return (
     <div className="p-4 bg-white overflow-y-auto">
       <div className="flex flex-col items-start mb-4">
-        <div className="text-2xl font-bold mb-4">EarningsWave coming soon</div>
-        <Separator className="mb-4" />
-        <div className="flex items-center mt-4">
-          <div className="w-12 h-12 mr-4 relative flex-shrink-0">
-            <Image
-              src={transcriptData.company_info.logo_base64}
-              alt={`${transcriptData.company_info.company_name} logo`}
-              layout="fill"
-              objectFit="contain"
-            />
+        <div className="flex justify-between items-center w-full">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className={`p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden ${
+                selectedDate ? "md:block" : ""
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="w-12 h-12 relative">
+              <Image
+                src={transcriptData.company_info.logo_base64}
+                alt={`${transcriptData.company_info.company_name} logo`}
+                layout="fill"
+                objectFit="contain"
+                className="rounded"
+              />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">
+                {transcriptData.company_info.company_name}
+              </h2>
+              <div className="text-sm text-gray-500">
+                {transcriptData.company_info.ticker_symbol}
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl font-semibold">
-            {transcriptData.company_info.company_name}
-          </h2>
         </div>
+        <Separator className="my-4" />
       </div>
+
       <h2 className="text-xl font-semibold mb-4">{transcriptData.title}</h2>
 
       <div className="mb-4">

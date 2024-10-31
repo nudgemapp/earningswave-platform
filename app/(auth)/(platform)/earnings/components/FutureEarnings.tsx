@@ -170,10 +170,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         <CardHeader className="space-y-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              {selectedDate && (
+              {(selectedDate || window.innerWidth < 768) && (
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden md:[&:has(~[data-selected-date])]:block"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
