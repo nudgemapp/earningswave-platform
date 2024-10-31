@@ -60,27 +60,23 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 
   const renderContent = () => {
     if (isLoading) {
-      console.log("isLoading");
       return <CustomLoadingSpinner />;
     }
     if (error) {
-      console.log("error");
       return <div className="p-4 text-red-500">Error: {error}</div>;
     }
     if (transcriptData) {
-      console.log("transcriptData");
       return <EarningsTranscript transcriptData={transcriptData} />;
     }
     if (selectedFutureEarnings) {
-      console.log("selectedFutureEarnings");
       return (
         <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />
       );
     }
-    if (selectedDate) {
+    if (selectedDate || window.innerWidth < 768) {
       return (
         <DayView
-          date={selectedDate}
+          date={selectedDate || new Date()}
           onTranscriptClick={(transcript) => {
             useEarningsStore.setState({ selectedCompany: transcript });
           }}

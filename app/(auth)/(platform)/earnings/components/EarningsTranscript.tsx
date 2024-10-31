@@ -25,14 +25,14 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
       <div className="flex flex-col items-start mb-4">
         <div className="flex justify-between items-center w-full">
           <div className="flex items-center gap-4">
-            {selectedDate && (
-              <button
-                onClick={handleBack}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={handleBack}
+              className={`p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden ${
+                selectedDate ? "md:block" : ""
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
             <div className="w-12 h-12 relative">
               <Image
                 src={transcriptData.company_info.logo_base64}
