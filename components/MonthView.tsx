@@ -67,6 +67,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
+  console.log("Raw data:", data);
+
   const { transcripts: rawTranscripts, reports: rawReports } = data as {
     transcripts: ProcessedTranscript[];
     reports: ProcessedReport[];
@@ -90,6 +92,12 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   const reports: GroupedReport[] = Object.entries(
     rawReports.reduce((acc, report) => {
+      console.log("Processing report:", {
+        symbol: report.symbol,
+        date: report.reportDate,
+        isoString: report.reportDate.toISOString(),
+      });
+
       const date = report.reportDate.toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = {
@@ -103,6 +111,8 @@ const MonthView: React.FC<MonthViewProps> = ({
       return acc;
     }, {} as Record<string, GroupedReport>)
   ).map(([, group]) => group);
+
+  console.log("Processed reports:", reports);
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -150,6 +160,16 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   const getReportsForDate = (date: Date, reportData: GroupedReport[]) => {
     const formattedDate = date.toISOString().split("T")[0];
+
+    console.log("Checking reports for date:", {
+      formattedDate,
+      availableDates: reportData.map((r) => r.date),
+      matchingEntry: reportData.find(
+        (entry) =>
+          new Date(entry.date).toISOString().split("T")[0] === formattedDate
+      ),
+    });
+
     const dateEntry = reportData.find(
       (entry) =>
         new Date(entry.date).toISOString().split("T")[0] === formattedDate
@@ -362,7 +382,9 @@ const MonthView: React.FC<MonthViewProps> = ({
                       title="Not Specified"
                       icon={Calendar}
                       reports={dayReports.filter(
-                        (r) => r.marketTiming === "NOT_SUPPLIED"
+                        (r) =>
+                          r.marketTiming === "NOT_SUPPLIED" ||
+                          r.marketTiming === null
                       )}
                       bgColor="bg-gray-50"
                       handleFutureEarningsClick={handleFutureEarningsClick}
