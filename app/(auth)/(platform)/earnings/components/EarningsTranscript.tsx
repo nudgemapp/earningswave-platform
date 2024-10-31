@@ -1,22 +1,24 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
+import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-// import { X } from "lucide-react";
-
 interface EarningsTranscriptProps {
   transcriptData: EarningsCallTranscript;
-  // onBack: () => void;
 }
 
 const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
-  // onBack,
 }) => {
-  console.log("transcriptData", transcriptData);
+  const selectedDate = useEarningsStore((state) => state.selectedDate);
+
+  const handleBack = () => {
+    useEarningsStore.setState({ selectedCompany: null });
+  };
 
   return (
     <div className="p-4 bg-white overflow-y-auto">
@@ -24,6 +26,14 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
         <div className="text-2xl font-bold mb-4">EarningsWave coming soon</div>
         <Separator className="mb-4" />
         <div className="flex items-center mt-4">
+          {selectedDate && (
+            <button
+              onClick={handleBack}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors mx-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
           <div className="w-12 h-12 mr-4 relative flex-shrink-0">
             <Image
               src={transcriptData.company_info.logo_base64}
@@ -37,6 +47,7 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
           </h2>
         </div>
       </div>
+
       <h2 className="text-xl font-semibold mb-4">{transcriptData.title}</h2>
 
       <div className="mb-4">

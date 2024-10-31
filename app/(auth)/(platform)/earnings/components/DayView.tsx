@@ -60,9 +60,12 @@ const DayView: React.FC<DayViewProps> = ({
           return report.marketTiming === "AFTER_HOURS";
         return true;
       }),
-      transcripts: data.transcripts, // Always show transcripts
+      transcripts: data.transcripts,
     };
   }, [data, activeFilter]);
+
+  console.log("Transcripts:", data?.transcripts);
+  console.log("Filtered Data:", filteredData);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
@@ -208,7 +211,7 @@ const DayView: React.FC<DayViewProps> = ({
               <p className="text-sm">Check back later or try another date</p>
             </div>
           ) : (
-            <>
+            <div className="space-y-6">
               {/* Reports */}
               {filteredData.reports.length > 0 && (
                 <div className="space-y-3">
@@ -232,31 +235,32 @@ const DayView: React.FC<DayViewProps> = ({
                     reports={groupedReports["NOT_SUPPLIED"] || []}
                     className="bg-gray-50 p-4 rounded-md"
                   />
-
-                  {filteredData.transcripts.length > 0 && (
-                    <div className="space-y-3 mt-6">
-                      <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                        <File className="w-5 h-5" />
-                        Earnings Transcripts
-                      </h3>
-                      <div className="grid gap-3">
-                        {filteredData.transcripts.map((transcript) => (
-                          <CompanyCard
-                            key={transcript.id}
-                            company={{
-                              name: transcript.company?.name || "",
-                              symbol: transcript.company?.symbol || "",
-                              logo: transcript.company?.logo || null,
-                            }}
-                            onClick={() => onTranscriptClick(transcript)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
-            </>
+
+              {/* Transcripts - Moved outside the reports conditional */}
+              {filteredData.transcripts.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <File className="w-5 h-5" />
+                    Earnings Transcripts
+                  </h3>
+                  <div className="grid gap-3">
+                    {filteredData.transcripts.map((transcript) => (
+                      <CompanyCard
+                        key={transcript.id}
+                        company={{
+                          name: transcript.company?.name || "",
+                          symbol: transcript.company?.symbol || "",
+                          logo: transcript.company?.logo || null,
+                        }}
+                        onClick={() => onTranscriptClick(transcript)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </>
       )}
