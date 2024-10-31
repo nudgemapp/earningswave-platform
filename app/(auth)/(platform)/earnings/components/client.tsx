@@ -47,7 +47,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openSubscriptionModal } = useSubscriptionModal();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
-  const { user } = useUser();
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
@@ -84,7 +83,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   };
 
   const handleNavigateMonth = (direction: "prev" | "next") => {
-    if (!user) {
+    if (!userInfo) {
       openAuthModal();
     } else {
       navigateMonth(direction === "next" ? 1 : -1);
@@ -92,9 +91,9 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   };
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
-    if (user && userInfo && userInfo.subscription?.status === "active") {
+    if (userInfo && userInfo.subscription?.status === "active") {
       setSelectedCompany({ id: transcriptInfo.id });
-    } else if (!user) {
+    } else if (!userInfo) {
       openAuthModal();
     } else {
       openSubscriptionModal();
@@ -103,7 +102,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
 
   const handleFutureEarningsClick = (report: ProcessedReport) => {
     setSelectedCompany({ id: null });
-    if (!user) {
+    if (!userInfo) {
       openAuthModal();
     }
     setSelectedFutureEarnings(report);
