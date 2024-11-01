@@ -10,6 +10,8 @@ import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import { useEarningsStore } from "@/store/EarningsStore";
+import TickerSearch from "./tickerSearch";
+import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
@@ -64,6 +66,14 @@ function NavBar() {
     if (menu) {
       setMenu(false);
     }
+  };
+
+  const handleFutureEarningsClick = (report: ProcessedReport) => {
+    useEarningsStore.setState({
+      selectedDate: null,
+      selectedCompany: null,
+      selectedFutureEarnings: report
+    });
   };
 
   const handleAuthAction = () => {
@@ -165,6 +175,7 @@ function NavBar() {
 
               {/* Button - Right */}
               <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
+              <TickerSearch handleFutureEarningsClick={handleFutureEarningsClick} />
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -196,6 +207,7 @@ function NavBar() {
                   className="relative right-16 w-48 h-14 z-0"
                   onClick={() => handleNavigation("/")}
                 >
+                   <TickerSearch handleFutureEarningsClick={handleFutureEarningsClick} />
                   <Image
                     src={lightImg}
                     alt="logo"
@@ -213,6 +225,8 @@ function NavBar() {
                 >
                   {!isLoaded ? "Loading..." : user ? "Logout" : "Sign up"}
                 </Button>
+
+
               )}
             </div>
             {menu && (
