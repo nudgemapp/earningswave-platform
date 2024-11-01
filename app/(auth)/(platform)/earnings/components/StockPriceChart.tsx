@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import {
   AreaChart,
@@ -17,52 +19,71 @@ import {
 
 interface StockChartProps {
   symbol: string;
+  timeframe: string;
+  onTimeframeChange: (tf: string) => void;
 }
 
 interface StockData {
   date: string;
-  price: number;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
   volume: number;
+  gain: boolean;
 }
 
-const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
+const StockPriceChart: React.FC<StockChartProps> = ({
+  symbol,
+  timeframe,
+  onTimeframeChange
+}) => {
   const [data, setData] = useState<StockData[]>([]);
-  const [timeframe, setTimeframe] = useState("1M");
   const [isLoading, setIsLoading] = useState(true);
 
-  const generateMockData = () => {
-    const mockData: StockData[] = [];
-    const basePrice = 150;
-    const baseVolume = 1000000;
-
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-
-      mockData.push({
-        date: date.toISOString().split("T")[0],
-        price: basePrice + Math.random() * 20 - 10,
-        volume: baseVolume + Math.random() * 500000,
-      });
-    }
-
-    return mockData;
-  };
-
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchStockData = async () => {
+      if (!symbol) return;
+
       try {
-        const mockData = generateMockData();
-        setData(mockData);
+        setIsLoading(true);
+        const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY;
+        const response = await fetch(
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`
+        );
+
+        if (!response.ok) throw new Error('Failed to fetch stock data');
+        const result = await response.json();
+
+        if (result['Time Series (Daily)']) {
+          const transformedData = Object.entries(result['Time Series (Daily)'])
+            .map(([date, values]: [string, any]) => {
+              const open = parseFloat(values['1. open']);
+              const close = parseFloat(values['4. close']);
+              return {
+                date,
+                open,
+                close,
+                high: parseFloat(values['2. high']),
+                low: parseFloat(values['3. low']),
+                volume: parseFloat(values['5. volume']),
+                gain: close > open
+              };
+            })
+            .reverse();
+
+          setData(transformedData);
+        }
       } catch (error) {
         console.error("Error fetching stock data:", error);
+        // Fallback to empty dataset or handle error
+        setData([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchStockData();
   }, [symbol, timeframe]);
 
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
@@ -78,89 +99,96 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
           <p className="text-gray-600">
             {new Date(data.date).toLocaleDateString()}
           </p>
-          <p className="font-semibold text-blue-600">
-            ${typeof data.price === "number" ? data.price.toFixed(2) : "N/A"}
-          </p>
+          <div className={data.gain ? "text-green-600" : "text-red-600"}>
+            <p className="font-medium">Open: ${data.open.toFixed(2)}</p>
+            <p className="font-medium">Close: ${data.close.toFixed(2)}</p>
+            <p className="font-medium">High: ${data.high.toFixed(2)}</p>
+            <p className="font-medium">Low: ${data.low.toFixed(2)}</p>
+            <p className="font-medium mt-1">
+              Volume: {(data.volume / 1e6).toFixed(2)}M
+            </p>
+          </div>
         </div>
       );
     }
     return null;
   };
 
-  return (
-    <Card className="mt-4">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-sm text-gray-500">Price History</div>
-          <div className="flex gap-2">
-            {timeframeButtons.map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 rounded-md text-sm ${
-                  timeframe === tf
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
-          </div>
-        </div>
+  const getTimeframeData = () => {
+    // Implement timeframe filtering here if needed
+    return data;
+  };
 
-        <div className="h-[300px] w-full">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={data}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1d4ed8" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString()
-                  }
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fill: "#6B7280", fontSize: 12 }}
-                />
-                <YAxis
-                  domain={["auto", "auto"]}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fill: "#6B7280", fontSize: 12 }}
-                  tickFormatter={(value) => `$${value.toFixed(2)}`}
-                />
-                <CartesianGrid
-                  vertical={false}
-                  strokeDasharray="3 3"
-                  opacity={0.1}
-                />
-                <Tooltip content={CustomTooltip} />
-                <Area
-                  type="monotone"
-                  dataKey="price"
-                  stroke="#1d4ed8"
-                  strokeWidth={2}
-                  fill="url(#colorPrice)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
+  const filteredData = getTimeframeData();
+
+  return (
+    <div className="h-[300px] w-full">
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm text-gray-500">Price History</div>
+        <div className="flex gap-2">
+          {timeframeButtons.map((tf) => (
+            <button
+              key={tf}
+              onClick={() => onTimeframeChange(tf)}
+              className={`px-3 py-1 rounded-md text-sm ${
+                timeframe === tf
+                  ? "bg-blue-100 text-blue-600"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {tf}
+            </button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={filteredData}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="colorUpGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorDownGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+          <XAxis
+            dataKey="date"
+            tickFormatter={(value) => new Date(value).toLocaleDateString()}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `$${value.toFixed(2)}`}
+          />
+          <Tooltip content={CustomTooltip} />
+          {filteredData.length > 0 &&
+            <Area
+              type="monotone"
+              dataKey="close"
+              stroke={filteredData[filteredData.length - 1].close > filteredData[0].close ? "#22c55e" : "#ef4444"}
+              fill={`url(#${filteredData[filteredData.length - 1].close > filteredData[0].close ? 'colorUpGradient' : 'colorDownGradient'})`}
+              strokeWidth={2}
+            />
+          }
+        </AreaChart>
+      </ResponsiveContainer>
+      )}
+    </div>
   );
 };
 

@@ -28,6 +28,7 @@ import {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
+import StockPriceChart from "./StockPriceChart";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -272,57 +273,13 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
 
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={data}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    opacity={0.1}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString()
-                    }
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    yAxisId="price"
-                    domain={["auto", "auto"]}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `$${value.toFixed(0)}`}
-                  />
-                  <YAxis
-                    yAxisId="volume"
-                    orientation="right"
-                    tickFormatter={(value) =>
-                      `${(value / 1000000).toFixed(1)}M`
-                    }
-                    tickLine={false}
-                    axisLine={false}
-                    hide
-                  />
-                  <Tooltip content={CustomTooltip} />
-                  <Bar
-                    dataKey="volume"
-                    yAxisId="volume"
-                    fill="#E5ECF6"
-                    opacity={0.5}
-                    barSize={20}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="close"
-                    yAxisId="price"
-                    stroke="#2563EB"
-                    dot={false}
-                    strokeWidth={2}
-                  />
-                </ComposedChart>
+              <div className="space-y-4">
+                <StockPriceChart
+                  symbol={report.symbol}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
+              </div>
               </ResponsiveContainer>
             </div>
           </div>
