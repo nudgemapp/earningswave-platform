@@ -41,9 +41,15 @@ const Watchlist = () => {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Your Watchlist</h2>
       {!data?.entries || data.entries.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 mt-60">
           <StarIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No companies in your watchlist yet.</p>
+          <p className="text-gray-500 font-medium mb-2">
+            Your watchlist is empty
+          </p>
+          <p className="text-gray-400 text-sm max-w-md mx-auto">
+            Add companies to your watchlist to stay up to date with their
+            earnings announcements and financial performance.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
