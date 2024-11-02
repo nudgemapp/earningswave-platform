@@ -1,11 +1,14 @@
 "use client";
 
+import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
+import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { Separator } from "@/components/ui/separator";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, StarIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { toast } from "sonner";
 
 interface EarningsTranscriptProps {
   transcriptData: EarningsCallTranscript;
@@ -15,9 +18,27 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
 }) => {
   const selectedDate = useEarningsStore((state) => state.selectedDate);
+  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+
+  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
+    useWatchlistCheck(transcriptData.companyId);
 
   const handleBack = () => {
     useEarningsStore.setState({ selectedCompany: null });
+  };
+
+  const handleWatchlistClick = async () => {
+    try {
+      if (isWatchlisted) {
+        await removeFromWatchlist.mutateAsync(transcriptData.companyId);
+        toast.success("Removed from watchlist");
+      } else {
+        await addToWatchlist.mutateAsync(transcriptData.companyId);
+        toast.success("Added to watchlist");
+      }
+    } catch (error) {
+      toast.error("Failed to update watchlist");
+    }
   };
 
   return (
@@ -50,6 +71,30 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
                 {transcriptData.company_info.ticker_symbol}
               </div>
             </div>
+            <button
+              onClick={handleWatchlistClick}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+              disabled={
+                isCheckingWatchlist ||
+                addToWatchlist.isPending ||
+                removeFromWatchlist.isPending
+              }
+            >
+              <StarIcon
+                className={`w-4 h-4 ${
+                  isCheckingWatchlist ||
+                  addToWatchlist.isPending ||
+                  removeFromWatchlist.isPending
+                    ? "text-gray-300"
+                    : isWatchlisted
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-400"
+                }`}
+                fill={isWatchlisted ? "currentColor" : "none"}
+                strokeWidth={2}
+              />
+              <span className="font-medium">Follow</span>
+            </button>
           </div>
         </div>
         <Separator className="my-4" />

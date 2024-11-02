@@ -9,26 +9,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { FileText, FileDown, ChevronLeft } from "lucide-react";
 import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  TooltipProps,
-} from "recharts";
+  FileText,
+  FileDown,
+  ChevronLeft,
+  Star as StarIcon,
+} from "lucide-react";
+import { ResponsiveContainer } from "recharts";
 import { ProcessedReport } from "../types";
 import EnhancedEarnings from "./EnhancedEarnings";
 import { useEarningsStore } from "@/store/EarningsStore";
-import {
-  ValueType,
-  NameType,
-} from "recharts/types/component/DefaultTooltipContent";
 import StockPriceChart from "./StockPriceChart";
+import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
+import { toast } from "sonner";
+import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -61,6 +55,25 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const [historicalData, setHistoricalData] = useState<HistoricalEarnings[]>(
     []
   );
+  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+
+  // Add this query to check if company is in watchlist
+  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
+    useWatchlistCheck(report.companyId);
+
+  const handleWatchlistClick = async () => {
+    try {
+      if (isWatchlisted) {
+        await removeFromWatchlist.mutateAsync(report.companyId);
+        toast.success("Removed from watchlist");
+      } else {
+        await addToWatchlist.mutateAsync(report.companyId);
+        toast.success("Added to watchlist");
+      }
+    } catch (error) {
+      toast.error("Failed to update watchlist");
+    }
+  };
 
   //change to use useQuery
   useEffect(() => {
@@ -128,30 +141,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     return mockData;
   };
 
-  const data = generateMockData();
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
-
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: TooltipProps<ValueType, NameType>) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload as TooltipData;
-      return (
-        <div className="bg-white shadow-lg rounded-lg p-3 border">
-          <p className="text-gray-600">
-            {new Date(data.date).toLocaleDateString()}
-          </p>
-          <p className="font-semibold">Open: ${data.open.toFixed(2)}</p>
-          <p className="font-semibold">Close: ${data.close.toFixed(2)}</p>
-          <p className="font-semibold">High: ${data.high.toFixed(2)}</p>
-          <p className="font-semibold">Low: ${data.low.toFixed(2)}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   // Get current quarter number
   const quarterNum =
     Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;
@@ -197,6 +187,30 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                 <div className="text-sm text-gray-500">{report.symbol}</div>
               </div>
             </div>
+            <button
+              onClick={handleWatchlistClick}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+              disabled={
+                isCheckingWatchlist ||
+                addToWatchlist.isPending ||
+                removeFromWatchlist.isPending
+              }
+            >
+              <StarIcon
+                className={`w-4 h-4 ${
+                  isCheckingWatchlist ||
+                  addToWatchlist.isPending ||
+                  removeFromWatchlist.isPending
+                    ? "text-gray-300"
+                    : isWatchlisted
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-400"
+                }`}
+                fill={isWatchlisted ? "currentColor" : "none"}
+                strokeWidth={2}
+              />
+              <span className="font-medium">Follow</span>
+            </button>
           </div>
         </CardHeader>
 
@@ -273,13 +287,13 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
 
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-              <div className="space-y-4">
-                <StockPriceChart
-                  symbol={report.symbol}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                />
-              </div>
+                <div className="space-y-4">
+                  <StockPriceChart
+                    symbol={report.symbol}
+                    timeframe={timeframe}
+                    onTimeframeChange={setTimeframe}
+                  />
+                </div>
               </ResponsiveContainer>
             </div>
           </div>

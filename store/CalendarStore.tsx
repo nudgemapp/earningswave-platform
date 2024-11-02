@@ -5,6 +5,7 @@ interface CalendarState {
   view: "week" | "month";
   setCurrentDate: (date: Date) => void;
   setView: (view: "week" | "month") => void;
+  navigateWeek: (direction: number) => void;
   navigateMonth: (direction: number) => void;
 }
 
@@ -19,13 +20,17 @@ export const useCalendarStore = create<CalendarState>((set) => ({
     set({ view });
     updateURL(undefined, view);
   },
+  navigateWeek: (direction) =>
+    set((state) => {
+      const newDate = new Date(state.currentDate);
+      newDate.setDate(newDate.getDate() + direction * 7);
+      updateURL(newDate);
+      return { currentDate: newDate };
+    }),
   navigateMonth: (direction) =>
     set((state) => {
-      const newDate = new Date(
-        state.currentDate.getFullYear(),
-        state.currentDate.getMonth() + direction,
-        1
-      );
+      const newDate = new Date(state.currentDate);
+      newDate.setMonth(newDate.getMonth() + direction);
       updateURL(newDate);
       return { currentDate: newDate };
     }),

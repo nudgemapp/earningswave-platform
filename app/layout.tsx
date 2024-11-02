@@ -6,6 +6,7 @@ import { ModalProvider } from "@/providers/modal-provider";
 import GoogleAnalytics from "./googleAnalytics";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
+import { Toaster } from "sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -76,6 +77,7 @@ export default function RootLayout({
             <ModalProvider />
             {children}
           </Providers>
+          <Toaster position="bottom-left" />
         </body>
       </html>
     </ClerkProvider>

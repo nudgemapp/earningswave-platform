@@ -23,28 +23,24 @@ const WeekView: React.FC<WeekViewProps> = ({
 
   const { weekDates } = React.useMemo(() => {
     const date = new Date(currentDate);
+
+    // Adjust to Monday of the current week
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-
-    const mondayDate = new Date(date);
-    mondayDate.setDate(diff);
+    const mondayDate = new Date(date.setDate(diff));
     mondayDate.setHours(0, 0, 0, 0);
 
-    const fridayDate = new Date(mondayDate);
-    fridayDate.setDate(mondayDate.getDate() + 4);
-    fridayDate.setHours(23, 59, 59, 999);
-
-    const dates = [];
-    for (let i = 0; i < 5; i++) {
+    // Generate array of dates for the week (Mon-Fri)
+    const dates = Array.from({ length: 5 }, (_, i) => {
       const newDate = new Date(mondayDate);
       newDate.setDate(mondayDate.getDate() + i);
-      dates.push(newDate);
-    }
+      return newDate;
+    });
 
     return {
       weekDates: dates,
       monday: mondayDate,
-      friday: fridayDate,
+      friday: dates[dates.length - 1],
     };
   }, [currentDate]);
 
