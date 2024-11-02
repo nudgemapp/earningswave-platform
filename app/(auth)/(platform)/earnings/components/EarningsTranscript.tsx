@@ -71,31 +71,31 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
                 {transcriptData.company_info.ticker_symbol}
               </div>
             </div>
-            <button
-              onClick={handleWatchlistClick}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
-              disabled={
+          </div>
+          <button
+            onClick={handleWatchlistClick}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+            disabled={
+              isCheckingWatchlist ||
+              addToWatchlist.isPending ||
+              removeFromWatchlist.isPending
+            }
+          >
+            <StarIcon
+              className={`w-4 h-4 ${
                 isCheckingWatchlist ||
                 addToWatchlist.isPending ||
                 removeFromWatchlist.isPending
-              }
-            >
-              <StarIcon
-                className={`w-4 h-4 ${
-                  isCheckingWatchlist ||
-                  addToWatchlist.isPending ||
-                  removeFromWatchlist.isPending
-                    ? "text-gray-300"
-                    : isWatchlisted
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "text-gray-400"
-                }`}
-                fill={isWatchlisted ? "currentColor" : "none"}
-                strokeWidth={2}
-              />
-              <span className="font-medium">Follow</span>
-            </button>
-          </div>
+                  ? "text-gray-300"
+                  : isWatchlisted
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-gray-400"
+              }`}
+              fill={isWatchlisted ? "currentColor" : "none"}
+              strokeWidth={2}
+            />
+            <span className="font-medium">Follow</span>
+          </button>
         </div>
         <Separator className="my-4" />
       </div>

@@ -187,20 +187,30 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                 <div className="text-sm text-gray-500">{report.symbol}</div>
               </div>
             </div>
-            <StarIcon
+            <button
               onClick={handleWatchlistClick}
-              className={`w-4 h-4 cursor-pointer transition-colors ${
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+              disabled={
                 isCheckingWatchlist ||
                 addToWatchlist.isPending ||
                 removeFromWatchlist.isPending
-                  ? "text-gray-300"
-                  : isWatchlisted
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-              fill={isWatchlisted ? "currentColor" : "none"}
-              strokeWidth={2}
-            />
+              }
+            >
+              <StarIcon
+                className={`w-4 h-4 ${
+                  isCheckingWatchlist ||
+                  addToWatchlist.isPending ||
+                  removeFromWatchlist.isPending
+                    ? "text-gray-300"
+                    : isWatchlisted
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-400"
+                }`}
+                fill={isWatchlisted ? "currentColor" : "none"}
+                strokeWidth={2}
+              />
+              <span className="font-medium">Follow</span>
+            </button>
           </div>
         </CardHeader>
 
