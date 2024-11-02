@@ -10,7 +10,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { Card, CardContent } from "@/components/ui/card";
 import { TooltipProps } from "recharts";
 import {
   ValueType,
@@ -33,10 +32,24 @@ interface StockData {
   gain: boolean;
 }
 
+interface AlphaVantageDaily {
+  "1. open": string;
+  "2. high": string;
+  "3. low": string;
+  "4. close": string;
+  "5. volume": string;
+}
+
+interface AlphaVantageResponse {
+  "Time Series (Daily)": {
+    [key: string]: AlphaVantageDaily;
+  };
+}
+
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
   timeframe,
-  onTimeframeChange
+  onTimeframeChange,
 }) => {
   const [data, setData] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,22 +65,23 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`
         );
 
-        if (!response.ok) throw new Error('Failed to fetch stock data');
+        if (!response.ok) throw new Error("Failed to fetch stock data");
         const result = await response.json();
 
-        if (result['Time Series (Daily)']) {
-          const transformedData = Object.entries(result['Time Series (Daily)'])
-            .map(([date, values]: [string, any]) => {
-              const open = parseFloat(values['1. open']);
-              const close = parseFloat(values['4. close']);
+        if (result["Time Series (Daily)"]) {
+          const transformedData = Object.entries(result["Time Series (Daily)"])
+            .map(([date, values]) => {
+              const typedValues = values as AlphaVantageDaily;
+              const open = parseFloat(typedValues["1. open"]);
+              const close = parseFloat(typedValues["4. close"]);
               return {
                 date,
                 open,
                 close,
-                high: parseFloat(values['2. high']),
-                low: parseFloat(values['3. low']),
-                volume: parseFloat(values['5. volume']),
-                gain: close > open
+                high: parseFloat(typedValues["2. high"]),
+                low: parseFloat(typedValues["3. low"]),
+                volume: parseFloat(typedValues["5. volume"]),
+                gain: close > open,
               };
             })
             .reverse();
@@ -148,45 +162,65 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         </div>
       ) : (
         <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={filteredData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="colorUpGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorDownGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
-          <XAxis
-            dataKey="date"
-            tickFormatter={(value) => new Date(value).toLocaleDateString()}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis
-            domain={["auto", "auto"]}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `$${value.toFixed(2)}`}
-          />
-          <Tooltip content={CustomTooltip} />
-          {filteredData.length > 0 &&
-            <Area
-              type="monotone"
-              dataKey="close"
-              stroke={filteredData[filteredData.length - 1].close > filteredData[0].close ? "#22c55e" : "#ef4444"}
-              fill={`url(#${filteredData[filteredData.length - 1].close > filteredData[0].close ? 'colorUpGradient' : 'colorDownGradient'})`}
-              strokeWidth={2}
+          <AreaChart
+            data={filteredData}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="colorUpGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient
+                id="colorDownGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              opacity={0.1}
             />
-          }
-        </AreaChart>
-      </ResponsiveContainer>
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) => new Date(value).toLocaleDateString()}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              domain={["auto", "auto"]}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `$${value.toFixed(2)}`}
+            />
+            <Tooltip content={CustomTooltip} />
+            {filteredData.length > 0 && (
+              <Area
+                type="monotone"
+                dataKey="close"
+                stroke={
+                  filteredData[filteredData.length - 1].close >
+                  filteredData[0].close
+                    ? "#22c55e"
+                    : "#ef4444"
+                }
+                fill={`url(#${
+                  filteredData[filteredData.length - 1].close >
+                  filteredData[0].close
+                    ? "colorUpGradient"
+                    : "colorDownGradient"
+                })`}
+                strokeWidth={2}
+              />
+            )}
+          </AreaChart>
+        </ResponsiveContainer>
       )}
     </div>
   );

@@ -20,8 +20,13 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(watchlistEntry);
-  } catch (error: any) {
-    if (error.code === "P2002") {
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return new NextResponse("Already in watchlist", { status: 400 });
     }
     console.error("[WATCHLIST_ADD]", error);

@@ -37,16 +37,6 @@ interface HistoricalEarnings {
   eps: number;
 }
 
-interface TooltipData {
-  date: string;
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  volume: number;
-  gain: boolean;
-}
-
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const selectedDate = useEarningsStore((state) => state.selectedDate);
   const [timeframe, setTimeframe] = useState("1M");
@@ -113,32 +103,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     if (absValue >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
     if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
     return `$${value.toFixed(2)}`;
-  };
-
-  const generateMockData = () => {
-    const mockData = [];
-    const basePrice = 150;
-
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const open = basePrice + Math.random() * 10 - 5;
-      const close = basePrice + Math.random() * 10 - 5;
-      const high = Math.max(open, close) + Math.random() * 3;
-      const low = Math.min(open, close) - Math.random() * 3;
-      const volume = Math.random() * 1000000;
-
-      mockData.push({
-        date: date.toISOString().split("T")[0],
-        open,
-        close,
-        high,
-        low,
-        volume,
-        gain: close > open,
-      });
-    }
-    return mockData;
   };
 
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];

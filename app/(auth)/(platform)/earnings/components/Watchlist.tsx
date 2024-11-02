@@ -69,8 +69,7 @@ const Watchlist = () => {
                 <div className="relative h-12 w-12">
                   {entry.company.logo ? (
                     <Image
-                      // @ts-ignore
-                      src={entry.company.logo.data as string}
+                      src={entry.company.logo.data as unknown as string}
                       alt={entry.company.name}
                       layout="fill"
                       objectFit="contain"
@@ -96,7 +95,8 @@ const Watchlist = () => {
                   variant="outline"
                   onClick={() => {
                     useEarningsStore.setState({
-                      selectedFutureEarnings: entry.company as any,
+                      // @ts-expect-error
+                      selectedFutureEarnings: entry.company.earningsReports,
                       selectedCompany: null,
                       showWatchlist: false,
                     });
