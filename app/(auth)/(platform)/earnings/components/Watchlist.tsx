@@ -50,7 +50,14 @@ const Watchlist = () => {
           {data.entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
+              onClick={() => {
+                useEarningsStore.setState({
+                  //   selectedFutureEarnings: entry.company.earnings,
+                  selectedCompany: entry.company,
+                  showWatchlist: false,
+                });
+              }}
             >
               <div className="flex items-center space-x-4">
                 <div className="relative h-12 w-12">
@@ -83,7 +90,8 @@ const Watchlist = () => {
                   variant="outline"
                   onClick={() => {
                     useEarningsStore.setState({
-                      selectedCompany: { id: entry.company.id },
+                      selectedFutureEarnings: entry.company as any,
+                      selectedCompany: null,
                       showWatchlist: false,
                     });
                   }}
@@ -91,8 +99,11 @@ const Watchlist = () => {
                   View Details
                 </Button>
                 <button
-                  onClick={() => handleRemoveFromWatchlist(entry.company.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click when clicking star
+                    handleRemoveFromWatchlist(entry.company.id);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
                   disabled={removeFromWatchlist.isPending}
                 >
                   <StarIcon
