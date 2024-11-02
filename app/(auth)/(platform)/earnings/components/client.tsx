@@ -76,19 +76,19 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   const handleViewChange = (newView: "week" | "month") => setView(newView);
 
   const handleDateChange = (newDate: Date) => {
-    if (!userInfo) {
-      openAuthModal();
-    } else {
-      setCurrentDate(newDate);
-    }
+    // if (!userInfo) {
+    //   openAuthModal();
+    // } else {
+    setCurrentDate(newDate);
+    // }
   };
 
   const handleNavigateMonth = (direction: "prev" | "next") => {
-    if (!user) {
-      openAuthModal();
-    } else {
-      navigateMonth(direction === "next" ? 1 : -1);
-    }
+    // if (!user) {
+    //   openAuthModal();
+    // } else {
+    navigateMonth(direction === "next" ? 1 : -1);
+    // }
   };
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
@@ -103,9 +103,9 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
 
   const handleFutureEarningsClick = (report: ProcessedReport) => {
     setSelectedCompany({ id: null });
-    if (!user) {
-      openAuthModal();
-    }
+    // if (!user) {
+    //   openAuthModal();
+    // }
     setSelectedFutureEarnings(report);
   };
 
