@@ -4,7 +4,7 @@ import { useGetWatchlist } from "@/app/hooks/use-get-watchlist";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { Button } from "@/components/ui/button";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { Loader2, Star as StarIcon } from "lucide-react";
+import { Loader2, Star as StarIcon, X } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -19,6 +19,10 @@ const Watchlist = () => {
     } catch {
       toast.error("Failed to remove from watchlist");
     }
+  };
+
+  const handleClose = () => {
+    useEarningsStore.setState({ showWatchlist: false });
   };
 
   if (isLoading) {
@@ -39,7 +43,16 @@ const Watchlist = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Your Watchlist</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Your Watchlist</h2>
+        <button
+          onClick={handleClose}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="Close watchlist"
+        >
+          <X className="w-4 h-4 text-gray-500" />
+        </button>
+      </div>
       {!data?.entries || data.entries.length === 0 ? (
         <div className="text-center py-8 mt-60">
           <StarIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />

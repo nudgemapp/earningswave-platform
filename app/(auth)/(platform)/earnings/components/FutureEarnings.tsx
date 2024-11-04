@@ -23,6 +23,8 @@ import StockPriceChart from "./StockPriceChart";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { toast } from "sonner";
 import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
+import { useAuth } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -46,12 +48,19 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     []
   );
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
 
   // Add this query to check if company is in watchlist
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(report.companyId);
 
   const handleWatchlistClick = async () => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
     try {
       if (isWatchlisted) {
         await removeFromWatchlist.mutateAsync(report.companyId);
@@ -104,8 +113,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
     return `$${value.toFixed(2)}`;
   };
-
-  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
   // Get current quarter number
   const quarterNum =
     Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;
@@ -230,25 +237,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">Price History</div>
-              <div className="flex gap-2">
-                {timeframeButtons.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTimeframe(tf)}
-                    className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                      timeframe === tf
-                        ? "bg-blue-100 text-blue-600"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <div className="space-y-4">

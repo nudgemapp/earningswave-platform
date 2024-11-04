@@ -1,14 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
-
-interface Ticker {
-  symbol: string;
-  name: string;
-  logo?: string | null;
-}
 
 interface TickerSearchProps {
   handleFutureEarningsClick: (report: ProcessedReport) => void;
@@ -19,58 +13,39 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [tickers, setTickers] = useState<Ticker[]>([]);
-  const [loading, setLoading] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [filteredReports, setFilteredReports] = useState<ProcessedReport[]>([]);
   const { data } = useGetWeekView();
-
-  const searchTickers = async (query: string) => {
-    if (!query) {
-      setTickers([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/search/tickers?q=${query}`);
-      if (!response.ok) throw new Error("Failed to fetch tickers");
-      const data = await response.json();
-      setTickers(data);
-      setOpen(true); // Ensure popover opens when we have results
-    } catch (error) {
-      console.error("Error searching tickers:", error);
-      setTickers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearch = (query: string) => {
     setValue(query);
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
+
+    if (!query.trim()) {
+      setFilteredReports([]);
+      setOpen(false);
+      return;
     }
 
-    if (query.length > 0) {
-      debounceTimer.current = setTimeout(() => {
-        searchTickers(query);
-      }, 300);
-    } else {
-      setTickers([]);
-      setOpen(false);
-    }
+    // Filter reports directly from the week's data
+    const filtered =
+      data?.reports?.filter(
+        (report: ProcessedReport) =>
+          report.symbol.toLowerCase().includes(query.toLowerCase()) ||
+          report.name.toLowerCase().includes(query.toLowerCase())
+      ) || [];
+
+    setFilteredReports(filtered);
+    setOpen(filtered.length > 0);
   };
 
-  const handleSelect = async (ticker: Ticker) => {
-    const matchingReport = data?.reports.find(
-      (report: ProcessedReport) => report.symbol === ticker.symbol
-    );
-
-    if (matchingReport) {
-      setValue(ticker.symbol);
-      handleFutureEarningsClick(matchingReport);
-      setOpen(false);
-    }
+  const handleSelect = (report: ProcessedReport) => {
+    console.log("Selected report data:", {
+      symbol: report.symbol,
+      name: report.name,
+      // Log other relevant fields
+    });
+    setValue(report.symbol);
+    handleFutureEarningsClick(report);
+    setOpen(false);
   };
 
   return (
@@ -79,10 +54,9 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
         open={open}
         onOpenChange={(isOpen) => {
           setOpen(isOpen);
-          // If closing and no value, reset everything
           if (!isOpen && !value) {
             setValue("");
-            setTickers([]);
+            setFilteredReports([]);
           }
         }}
       >
@@ -93,7 +67,7 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
               value={value}
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={() => {
-                if (value.length > 0 && tickers.length > 0) {
+                if (value.length > 0 && filteredReports.length > 0) {
                   setOpen(true);
                 }
               }}
@@ -104,25 +78,21 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-64 p-2" align="start">
           <div className="max-h-[300px] overflow-y-auto">
-            {loading ? (
+            {filteredReports.length === 0 ? (
               <div className="py-2 text-center text-sm text-gray-500">
-                Loading...
-              </div>
-            ) : tickers.length === 0 ? (
-              <div className="py-2 text-center text-sm text-gray-500">
-                {value ? "No tickers found." : "Type to search tickers..."}
+                {value ? "No companies found" : "Type to search companies..."}
               </div>
             ) : (
               <div className="space-y-1">
-                {tickers.map((ticker) => (
+                {filteredReports.map((report) => (
                   <div
-                    key={ticker.symbol}
-                    onClick={() => handleSelect(ticker)}
+                    key={report.symbol}
+                    onClick={() => handleSelect(report)}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-100 cursor-pointer"
                   >
-                    <span className="font-medium">{ticker.symbol}</span>
+                    <span className="font-medium">{report.symbol}</span>
                     <span className="text-gray-500 text-sm truncate">
-                      {ticker.name}
+                      {report.name}
                     </span>
                   </div>
                 ))}

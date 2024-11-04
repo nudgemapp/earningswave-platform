@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEarningsStore } from "@/store/EarningsStore";
+import { useAuth } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -27,6 +29,8 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
 
   const months = [
     "January",
@@ -87,6 +91,11 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   };
 
   const handleWatchlistClick = () => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
     useEarningsStore.setState({ showWatchlist: true });
   };
 

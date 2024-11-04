@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
+import { Calendar, Sun, Moon, LucideIcon, Star } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
 import {
   ProcessedTranscript,
@@ -134,23 +134,25 @@ const WeekView: React.FC<WeekViewProps> = ({
       }}
       title={`${name} (${symbol})`}
     >
-      <div className="flex-1 relative">
+      <div className="flex-1 relative p-0.5 md:p-1">
         {logo ? (
-          <Image
-            src={logo}
-            alt={`${name} logo`}
-            layout="fill"
-            objectFit="contain"
-            className="p-2"
-          />
+          <div className="w-full h-full relative">
+            <Image
+              src={logo}
+              alt={`${name} logo`}
+              layout="fill"
+              objectFit="contain"
+              className="p-[1px] md:p-0"
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-sm font-medium">{symbol}</span>
+            <span className="text-[8px] md:text-sm font-medium">{symbol}</span>
           </div>
         )}
       </div>
-      <div className="w-full bg-gray-50 py-1 px-2 border-t border-gray-200">
-        <span className="text-xs font-medium text-gray-800 block text-center truncate">
+      <div className="w-full bg-gray-50 py-0.5 md:py-1 px-0.5 md:px-2 border-t border-gray-200">
+        <span className="text-[8px] md:text-xs font-medium text-gray-800 block text-center truncate">
           {symbol}
         </span>
       </div>
@@ -172,20 +174,30 @@ const WeekView: React.FC<WeekViewProps> = ({
   }) => {
     if (reports.length === 0) return null;
 
+    // Limit to 12 companies on mobile (3 rows × 4 columns)
+    const displayedReports = reports.slice(
+      0,
+      window.innerWidth < 768 ? 12 : reports.length
+    );
+    const hasMore = window.innerWidth < 768 && reports.length > 12;
+
     return (
-      <div
-        className={`p-1 rounded-md mb-1 ${bgColor}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-1 mb-1">
-          <Icon className="w-3 h-3 text-gray-600" />
-          <span className="text-[10px] font-medium text-gray-600">{title}</span>
+      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-1">
+            <Icon className="w-3 h-3 text-gray-600" />
+            <span className="text-[10px] font-medium text-gray-600">
+              {title}
+            </span>
+          </div>
+          {hasMore && (
+            <span className="text-[10px] text-gray-500 md:hidden">
+              +{reports.length - 12} more
+            </span>
+          )}
         </div>
-        <div
-          className="grid grid-cols-2 gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {reports.map((report, index) => (
+        <div className="grid grid-cols-4 md:grid-cols-2 gap-0.5 md:gap-2">
+          {displayedReports.map((report, index) => (
             <CompanyCard
               key={`report-${index}`}
               symbol={
@@ -203,21 +215,49 @@ const WeekView: React.FC<WeekViewProps> = ({
     );
   };
 
+  const handleDayClick = (date: Date) => {
+    useEarningsStore.setState({
+      selectedDate: date,
+      selectedCompany: null,
+      selectedFutureEarnings: null,
+      showWatchlist: false, // Ensure watchlist is closed
+    });
+  };
+
+  const handleWatchlistClick = () => {
+    useEarningsStore.setState({
+      showWatchlist: true,
+      selectedDate: null,
+      selectedCompany: null,
+      selectedFutureEarnings: null,
+    });
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden h-full">
-      <div className="flex flex-row">
+      {/* Add mobile header with watchlist button */}
+      <div className="md:hidden flex items-center justify-between p-3 bg-gray-50 border-b border-gray-200  mt-2">
+        <h1 className="text-lg font-semibold text-gray-900">
+          Earnings Calendar
+        </h1>
+        <button
+          onClick={handleWatchlistClick}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-full transition-all hover:bg-gray-100 active:scale-95"
+        >
+          <Star className="w-4 h-4" />
+          <span>Watchlist</span>
+        </button>
+      </div>
+
+      {/* Header row - hide on mobile */}
+      <div className="hidden md:flex flex-row">
         {weekDays.map((day, index) => (
           <div
             key={day}
             className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200 cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100 hover:shadow-sm"
             onClick={(e) => {
               e.stopPropagation();
-              const newDate = new Date(weekDates[index]);
-              useEarningsStore.setState({
-                selectedDate: newDate,
-                selectedCompany: null,
-                selectedFutureEarnings: null,
-              });
+              handleDayClick(weekDates[index]);
             }}
           >
             <div className="p-2 text-center border-b border-gray-200 transition-all duration-300 ease-in-out hover:border-gray-300 group">
@@ -231,46 +271,58 @@ const WeekView: React.FC<WeekViewProps> = ({
           </div>
         ))}
       </div>
-      <div className="flex-1 flex flex-row overflow-y-auto">
+
+      {/* Content area - responsive layout */}
+      <div className="flex-1 md:flex md:flex-row overflow-y-auto">
         {weekDays.map((day, index) => {
           const { dayTranscripts, dayReports, isEmpty } = getDateContent[index];
 
           return (
             <div
               key={day}
-              className="flex-1 border-r last:border-r-0 border-gray-200 cursor-pointer"
+              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                const newDate = new Date(weekDates[index]);
-                useEarningsStore.setState({
-                  selectedDate: newDate,
-                  selectedCompany: null,
-                  selectedFutureEarnings: null,
-                });
+                handleDayClick(weekDates[index]);
               }}
             >
+              {/* Mobile day header */}
+              <div className="md:hidden p-3 bg-gray-50 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-700">
+                      {day}
+                    </h2>
+                    <p className="text-xs text-gray-500">
+                      {weekDates[index].toLocaleDateString(
+                        "en-US",
+                        headerDateFormat
+                      )}
+                    </p>
+                  </div>
+                  {!isEmpty && (
+                    <div className="text-xs font-medium text-gray-500">
+                      {dayTranscripts.length + dayReports.length} earnings
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="p-2 bg-white overflow-y-auto">
                 {isEmpty ? (
                   <NoEarnings />
                 ) : (
-                  <div
-                    className="flex flex-col space-y-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Past Transcripts */}
-                    {dayTranscripts.length > 0 && (
-                      <MarketTimingGroup
-                        title="Past Earnings"
-                        icon={Calendar}
-                        reports={dayTranscripts}
-                        bgColor="bg-gray-50"
-                        handleClick={(report) =>
-                          handleCompanyClick(report as ProcessedTranscript)
-                        }
-                      />
-                    )}
-
-                    {/* Pre-market reports */}
+                  <div className="flex flex-col space-y-2">
+                    {/* Update MarketTimingGroup grid for mobile */}
+                    <MarketTimingGroup
+                      title="Past Earnings"
+                      icon={Calendar}
+                      reports={dayTranscripts}
+                      bgColor="bg-gray-50"
+                      handleClick={(report) =>
+                        handleCompanyClick(report as ProcessedTranscript)
+                      }
+                    />
                     <MarketTimingGroup
                       title="Pre-Market"
                       icon={Sun}
@@ -282,8 +334,6 @@ const WeekView: React.FC<WeekViewProps> = ({
                         handleFutureEarningsClick(report as ProcessedReport)
                       }
                     />
-
-                    {/* After-hours reports */}
                     <MarketTimingGroup
                       title="After Hours"
                       icon={Moon}
@@ -295,8 +345,6 @@ const WeekView: React.FC<WeekViewProps> = ({
                         handleFutureEarningsClick(report as ProcessedReport)
                       }
                     />
-
-                    {/* Not supplied timing reports */}
                     <MarketTimingGroup
                       title="Not Specified"
                       icon={Calendar}
