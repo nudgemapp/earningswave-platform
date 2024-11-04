@@ -15,6 +15,11 @@ interface WeekViewProps {
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
+interface WeekViewData {
+  transcripts: ProcessedTranscript[];
+  reports: ProcessedReport[];
+}
+
 const WeekView: React.FC<WeekViewProps> = ({
   handleCompanyClick,
   handleFutureEarningsClick,
@@ -22,13 +27,14 @@ const WeekView: React.FC<WeekViewProps> = ({
   const currentDate = useCalendarStore((state) => state.currentDate);
 
   const { weekDates } = React.useMemo(() => {
+    // Create date and set to midnight in local timezone
     const date = new Date(currentDate);
+    date.setHours(0, 0, 0, 0);
 
-    // Adjust to Monday of the current week
+    // Calculate Monday's date
+    let mondayDate = new Date(date);
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    const mondayDate = new Date(date.setDate(diff));
-    mondayDate.setHours(0, 0, 0, 0);
+    mondayDate.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
 
     // Generate array of dates for the week (Mon-Fri)
     const dates = Array.from({ length: 5 }, (_, i) => {
@@ -37,10 +43,23 @@ const WeekView: React.FC<WeekViewProps> = ({
       return newDate;
     });
 
+    // Set Friday to end of day
+    const fridayDate = new Date(dates[4]);
+    fridayDate.setHours(23, 59, 59, 999);
+
+    console.log(
+      "Week dates:",
+      dates.map((d) => ({
+        day: d.toLocaleDateString("en-US", { weekday: "long" }),
+        date: d.toISOString(),
+        localDate: d.toLocaleDateString(),
+      }))
+    );
+
     return {
       weekDates: dates,
       monday: mondayDate,
-      friday: dates[dates.length - 1],
+      friday: fridayDate,
     };
   }, [currentDate]);
 
@@ -51,24 +70,24 @@ const WeekView: React.FC<WeekViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts, reports } = data;
+  const { transcripts, reports } = data as WeekViewData;
 
   // Pre-process data for each day
   const getDateContent = weekDates.map((date) => {
-    // Create a date without time component for comparison
-    const currentDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate() - 1
-    ).toDateString();
+    // Format date to YYYY-MM-DD for comparison
+    const currentDay = date.toISOString().split("T")[0];
 
     const dayTranscripts = transcripts.filter((transcript) => {
-      const transcriptDate = new Date(transcript.date).toDateString();
+      const transcriptDate = new Date(transcript.date)
+        .toISOString()
+        .split("T")[0];
       return transcriptDate === currentDay;
     });
 
     const dayReports = reports.filter((report) => {
-      const reportDate = new Date(report.reportDate).toDateString();
+      const reportDate = new Date(report.reportDate)
+        .toISOString()
+        .split("T")[0];
       return reportDate === currentDay;
     });
 
@@ -93,6 +112,8 @@ const WeekView: React.FC<WeekViewProps> = ({
       </div>
     </div>
   );
+
+  console.log(reports);
 
   const CompanyCard = ({
     symbol,

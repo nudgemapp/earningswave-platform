@@ -67,8 +67,6 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  console.log("Raw data:", data);
-
   const { transcripts: rawTranscripts, reports: rawReports } = data as {
     transcripts: ProcessedTranscript[];
     reports: ProcessedReport[];
