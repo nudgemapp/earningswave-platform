@@ -16,7 +16,7 @@ const Watchlist = () => {
     try {
       await removeFromWatchlist.mutateAsync(companyId);
       toast.success("Removed from watchlist");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to remove from watchlist");
     }
   };
@@ -95,7 +95,7 @@ const Watchlist = () => {
                   variant="outline"
                   onClick={() => {
                     useEarningsStore.setState({
-                      // @ts-expect-error
+                      // @ts-expect-error - Company earnings type mismatch between API and store types
                       selectedFutureEarnings: entry.company.earningsReports,
                       selectedCompany: null,
                       showWatchlist: false,

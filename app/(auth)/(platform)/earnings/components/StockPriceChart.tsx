@@ -40,12 +40,6 @@ interface AlphaVantageDaily {
   "5. volume": string;
 }
 
-interface AlphaVantageResponse {
-  "Time Series (Daily)": {
-    [key: string]: AlphaVantageDaily;
-  };
-}
-
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
   timeframe,

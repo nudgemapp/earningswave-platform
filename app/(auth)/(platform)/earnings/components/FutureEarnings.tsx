@@ -60,7 +60,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         await addToWatchlist.mutateAsync(report.companyId);
         toast.success("Added to watchlist");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update watchlist");
     }
   };
@@ -78,8 +78,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         if (!response.ok) throw new Error("Failed to fetch historical data");
         const data = await response.json();
         setHistoricalData(data);
-      } catch (error) {
-        console.error("Error fetching historical data:", error);
+      } catch (_error) {
+        console.error("Error fetching historical data:", _error);
       } finally {
         setIsLoading(false);
       }
