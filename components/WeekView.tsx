@@ -32,7 +32,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     date.setHours(0, 0, 0, 0);
 
     // Calculate Monday's date
-    let mondayDate = new Date(date);
+    const mondayDate = new Date(date);
     const day = date.getDay();
     mondayDate.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
 
