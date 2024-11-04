@@ -113,8 +113,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
     return `$${value.toFixed(2)}`;
   };
-
-  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
   // Get current quarter number
   const quarterNum =
     Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;

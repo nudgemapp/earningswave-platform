@@ -182,8 +182,6 @@ const DayView: React.FC<DayViewProps> = ({
       return acc;
     }, {} as Record<string, ProcessedReport[]>) || {};
 
-  const isMobile = window.innerWidth < 768;
-
   const handleBack = () => {
     useEarningsStore.setState({ selectedDate: null });
   };

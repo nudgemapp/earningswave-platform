@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { Search } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { useEarningsStore } from '@/store/EarningsStore';
+import React, { useState } from "react";
+import { Search } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 
@@ -9,7 +8,9 @@ interface TickerSearchProps {
   handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
 
-const TickerSearch: React.FC<TickerSearchProps> = ({ handleFutureEarningsClick }) => {
+const TickerSearch: React.FC<TickerSearchProps> = ({
+  handleFutureEarningsClick,
+}) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [filteredReports, setFilteredReports] = useState<ProcessedReport[]>([]);
@@ -25,25 +26,27 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ handleFutureEarningsClick }
     }
 
     // Filter reports directly from the week's data
-    const filtered = data?.reports?.filter((report: ProcessedReport) =>
-      report.symbol.toLowerCase().includes(query.toLowerCase()) ||
-      report.name.toLowerCase().includes(query.toLowerCase())
-    ) || [];
+    const filtered =
+      data?.reports?.filter(
+        (report: ProcessedReport) =>
+          report.symbol.toLowerCase().includes(query.toLowerCase()) ||
+          report.name.toLowerCase().includes(query.toLowerCase())
+      ) || [];
 
     setFilteredReports(filtered);
     setOpen(filtered.length > 0);
   };
 
   const handleSelect = (report: ProcessedReport) => {
-    console.log('Selected report data:', {
-        symbol: report.symbol,
-        name: report.name,
-        // Log other relevant fields
+    console.log("Selected report data:", {
+      symbol: report.symbol,
+      name: report.name,
+      // Log other relevant fields
     });
     setValue(report.symbol);
     handleFutureEarningsClick(report);
     setOpen(false);
-};
+  };
 
   return (
     <div className="relative w-64">
@@ -88,7 +91,9 @@ const TickerSearch: React.FC<TickerSearchProps> = ({ handleFutureEarningsClick }
                     className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-100 cursor-pointer"
                   >
                     <span className="font-medium">{report.symbol}</span>
-                    <span className="text-gray-500 text-sm truncate">{report.name}</span>
+                    <span className="text-gray-500 text-sm truncate">
+                      {report.name}
+                    </span>
                   </div>
                 ))}
               </div>

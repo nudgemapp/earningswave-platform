@@ -124,8 +124,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   };
 
   const getTimeframeData = () => {
-    const currentDate = new Date();
-    let startDate = new Date();
     let tradingDays = 0;
 
     switch (timeframe) {
@@ -152,16 +150,19 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   const filteredData = getTimeframeData();
 
   // Calculate domain for Y-axis
-  const yDomain = filteredData.length > 0 ? [
-    Math.min(...filteredData.map(d => d.low)) * 0.99,
-    Math.max(...filteredData.map(d => d.high)) * 1.01
-  ] : ['auto', 'auto'];
+  const yDomain =
+    filteredData.length > 0
+      ? [
+          Math.min(...filteredData.map((d) => d.low)) * 0.99,
+          Math.max(...filteredData.map((d) => d.high)) * 1.01,
+        ]
+      : ["auto", "auto"];
 
   // Calculate optimal tick interval based on timeframe and data length
   const getTickInterval = () => {
     switch (timeframe) {
       case "1W":
-        return 0;  // Show all points
+        return 0; // Show all points
       case "1M":
         return Math.floor(filteredData.length / 5);
       case "6M":
@@ -208,12 +209,22 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="colorDownGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                id="colorDownGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              opacity={0.1}
+            />
             <XAxis
               dataKey="date"
               tickFormatter={(value) => new Date(value).toLocaleDateString()}
