@@ -54,7 +54,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
       try {
         setIsLoading(true);
-        const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY;
+        const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
         const response = await fetch(
           `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`
         );
