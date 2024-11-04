@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MenuIcon, X, ChevronDown } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
@@ -30,6 +30,8 @@ function NavBar() {
   const { mounted, user, isLoaded } = useMount();
   const { signOut } = useClerk();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
+  const pathname = usePathname();
+  const showSearch = pathname.includes('/earnings');
 
   const links = [
     {
@@ -175,7 +177,7 @@ function NavBar() {
 
               {/* Button - Right */}
               <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
-              <TickerSearch handleFutureEarningsClick={handleFutureEarningsClick} />
+              {showSearch && <TickerSearch handleFutureEarningsClick={handleFutureEarningsClick} />}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
