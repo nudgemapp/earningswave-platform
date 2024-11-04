@@ -230,24 +230,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">Price History</div>
-              <div className="flex gap-2">
-                {timeframeButtons.map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTimeframe(tf)}
-                    className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                      timeframe === tf
-                        ? "bg-blue-100 text-blue-600"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
