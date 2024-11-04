@@ -9,25 +9,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { FileText, FileDown, ChevronLeft } from "lucide-react";
 import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  TooltipProps,
-} from "recharts";
+  FileText,
+  FileDown,
+  ChevronLeft,
+  Star as StarIcon,
+} from "lucide-react";
+import { ResponsiveContainer } from "recharts";
 import { ProcessedReport } from "../types";
 import EnhancedEarnings from "./EnhancedEarnings";
 import { useEarningsStore } from "@/store/EarningsStore";
-import {
-  ValueType,
-  NameType,
-} from "recharts/types/component/DefaultTooltipContent";
+import StockPriceChart from "./StockPriceChart";
+import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
+import { toast } from "sonner";
+import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -42,16 +37,6 @@ interface HistoricalEarnings {
   eps: number;
 }
 
-interface TooltipData {
-  date: string;
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  volume: number;
-  gain: boolean;
-}
-
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const selectedDate = useEarningsStore((state) => state.selectedDate);
   const [timeframe, setTimeframe] = useState("1M");
@@ -60,6 +45,25 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const [historicalData, setHistoricalData] = useState<HistoricalEarnings[]>(
     []
   );
+  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+
+  // Add this query to check if company is in watchlist
+  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
+    useWatchlistCheck(report.companyId);
+
+  const handleWatchlistClick = async () => {
+    try {
+      if (isWatchlisted) {
+        await removeFromWatchlist.mutateAsync(report.companyId);
+        toast.success("Removed from watchlist");
+      } else {
+        await addToWatchlist.mutateAsync(report.companyId);
+        toast.success("Added to watchlist");
+      }
+    } catch {
+      toast.error("Failed to update watchlist");
+    }
+  };
 
   //change to use useQuery
   useEffect(() => {
@@ -74,8 +78,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         if (!response.ok) throw new Error("Failed to fetch historical data");
         const data = await response.json();
         setHistoricalData(data);
-      } catch (error) {
-        console.error("Error fetching historical data:", error);
+      } catch (_error) {
+        console.error("Error fetching historical data:", _error);
       } finally {
         setIsLoading(false);
       }
@@ -101,56 +105,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     return `$${value.toFixed(2)}`;
   };
 
-  const generateMockData = () => {
-    const mockData = [];
-    const basePrice = 150;
-
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const open = basePrice + Math.random() * 10 - 5;
-      const close = basePrice + Math.random() * 10 - 5;
-      const high = Math.max(open, close) + Math.random() * 3;
-      const low = Math.min(open, close) - Math.random() * 3;
-      const volume = Math.random() * 1000000;
-
-      mockData.push({
-        date: date.toISOString().split("T")[0],
-        open,
-        close,
-        high,
-        low,
-        volume,
-        gain: close > open,
-      });
-    }
-    return mockData;
-  };
-
-  const data = generateMockData();
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
-
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: TooltipProps<ValueType, NameType>) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload as TooltipData;
-      return (
-        <div className="bg-white shadow-lg rounded-lg p-3 border">
-          <p className="text-gray-600">
-            {new Date(data.date).toLocaleDateString()}
-          </p>
-          <p className="font-semibold">Open: ${data.open.toFixed(2)}</p>
-          <p className="font-semibold">Close: ${data.close.toFixed(2)}</p>
-          <p className="font-semibold">High: ${data.high.toFixed(2)}</p>
-          <p className="font-semibold">Low: ${data.low.toFixed(2)}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   // Get current quarter number
   const quarterNum =
     Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;
@@ -196,6 +151,30 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                 <div className="text-sm text-gray-500">{report.symbol}</div>
               </div>
             </div>
+            <button
+              onClick={handleWatchlistClick}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+              disabled={
+                isCheckingWatchlist ||
+                addToWatchlist.isPending ||
+                removeFromWatchlist.isPending
+              }
+            >
+              <StarIcon
+                className={`w-4 h-4 ${
+                  isCheckingWatchlist ||
+                  addToWatchlist.isPending ||
+                  removeFromWatchlist.isPending
+                    ? "text-gray-300"
+                    : isWatchlisted
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-400"
+                }`}
+                fill={isWatchlisted ? "currentColor" : "none"}
+                strokeWidth={2}
+              />
+              <span className="font-medium">Follow</span>
+            </button>
           </div>
         </CardHeader>
 
@@ -272,57 +251,13 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
 
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={data}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    opacity={0.1}
+                <div className="space-y-4">
+                  <StockPriceChart
+                    symbol={report.symbol}
+                    timeframe={timeframe}
+                    onTimeframeChange={setTimeframe}
                   />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString()
-                    }
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    yAxisId="price"
-                    domain={["auto", "auto"]}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `$${value.toFixed(0)}`}
-                  />
-                  <YAxis
-                    yAxisId="volume"
-                    orientation="right"
-                    tickFormatter={(value) =>
-                      `${(value / 1000000).toFixed(1)}M`
-                    }
-                    tickLine={false}
-                    axisLine={false}
-                    hide
-                  />
-                  <Tooltip content={CustomTooltip} />
-                  <Bar
-                    dataKey="volume"
-                    yAxisId="volume"
-                    fill="#E5ECF6"
-                    opacity={0.5}
-                    barSize={20}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="close"
-                    yAxisId="price"
-                    stroke="#2563EB"
-                    dot={false}
-                    strokeWidth={2}
-                  />
-                </ComposedChart>
+                </div>
               </ResponsiveContainer>
             </div>
           </div>

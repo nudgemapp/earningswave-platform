@@ -4,9 +4,11 @@ import {
   CalendarCheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -65,18 +67,16 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     }
   }, [monthParam, yearParam, router, searchParams]);
 
-  const handleMonthNavigation = (direction: number) => {
+  const handleNavigation = (direction: number) => {
     const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + direction);
+    if (view === "week") {
+      newDate.setDate(newDate.getDate() + direction * 7);
+      setCurrentDate(newDate);
+    } else {
+      newDate.setMonth(newDate.getMonth() + direction);
+      navigateMonth(direction);
+    }
     updateURL(newDate);
-    navigateMonth(direction);
-  };
-
-  const handleWeekNavigation = (direction: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + direction * 7);
-    updateURL(newDate);
-    setCurrentDate(newDate);
   };
 
   const updateURL = (date: Date) => {
@@ -86,16 +86,16 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     router.push(`?${params.toString()}`);
   };
 
+  const handleWatchlistClick = () => {
+    useEarningsStore.setState({ showWatchlist: true });
+  };
+
   return (
     <div className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button
-            onClick={() =>
-              view === "week"
-                ? handleWeekNavigation(-1)
-                : handleMonthNavigation(-1)
-            }
+            onClick={() => handleNavigation(-1)}
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"
@@ -137,11 +137,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             </select>
           </div>
           <Button
-            onClick={() =>
-              view === "week"
-                ? handleWeekNavigation(1)
-                : handleMonthNavigation(1)
-            }
+            onClick={() => handleNavigation(1)}
             variant="ghost"
             size="icon"
             className="hover:bg-gray-100"
@@ -150,6 +146,14 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           </Button>
         </div>
         <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="hover:bg-gray-100"
+            onClick={handleWatchlistClick}
+          >
+            <StarIcon className="h-5 w-5 text-gray-600 mr-2" />
+            Watchlist
+          </Button>
           <Button
             onClick={() => setView("month")}
             variant={view === "month" ? "default" : "outline"}

@@ -195,13 +195,11 @@ const MonthView: React.FC<MonthViewProps> = ({
     icon: Icon,
     reports,
     bgColor,
-    handleFutureEarningsClick,
   }: {
     title: string;
     icon: LucideIcon;
     reports: ProcessedReport[];
     bgColor: string;
-    handleFutureEarningsClick: (report: ProcessedReport) => void;
   }) => {
     if (reports.length === 0) return null;
 
@@ -216,7 +214,10 @@ const MonthView: React.FC<MonthViewProps> = ({
             <div
               key={`report-${reportIndex}`}
               className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-              onClick={() => handleFutureEarningsClick(report)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFutureEarningsClick(report);
+              }}
               title={`${report.name} (${
                 report.symbol
               }) - ${report.marketTiming?.replace("_", " ")}`}
@@ -285,11 +286,11 @@ const MonthView: React.FC<MonthViewProps> = ({
               }`}
               onClick={(e) => {
                 e.stopPropagation();
-                const newDate = new Date(date);
                 useEarningsStore.setState({
-                  selectedDate: newDate,
+                  selectedDate: new Date(date),
                   selectedCompany: null,
                   selectedFutureEarnings: null,
+                  showWatchlist: false,
                 });
               }}
             >
@@ -363,7 +364,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                         (r) => r.marketTiming === "PRE_MARKET"
                       )}
                       bgColor="bg-blue-50"
-                      handleFutureEarningsClick={handleFutureEarningsClick}
                     />
 
                     {/* After-hours reports */}
@@ -374,7 +374,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                         (r) => r.marketTiming === "AFTER_HOURS"
                       )}
                       bgColor="bg-orange-50"
-                      handleFutureEarningsClick={handleFutureEarningsClick}
                     />
 
                     {/* Not supplied timing reports */}
@@ -387,7 +386,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                           r.marketTiming === null
                       )}
                       bgColor="bg-gray-50"
-                      handleFutureEarningsClick={handleFutureEarningsClick}
                     />
                   </div>
                 )}

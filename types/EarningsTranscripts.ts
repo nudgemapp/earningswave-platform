@@ -1,26 +1,27 @@
 export type EarningsCallTranscript = {
-    _id: {
-      $oid: string;
-    };
-    href: string;
+  _id: {
+    $oid: string;
+  };
+  href: string;
+  date: string;
+  title: string;
+  companyId: number;
+  company_info: {
+    company_name: string;
+    ticker_symbol: string;
+    ticker_change: string;
     date: string;
-    title: string;
-    company_info: {
-      company_name: string;
-      ticker_symbol: string;
-      ticker_change: string;
-      date: string;
-      time: string;
-      logo_base64: string;
-    };
-    contents: string[];
-    sections: Record<string, SectionDetail[]>;
-    call_participants: string[];
-    full_text: string;
+    time: string;
+    logo_base64: string;
   };
-  
-  export type SectionDetail = {
-    name: string;
-    role: string | null;
-    text: string;
-  };
+  contents: string[];
+  sections: Record<string, SectionDetail[]>;
+  call_participants: string[];
+  full_text: string;
+};
+
+export type SectionDetail = {
+  name: string;
+  role: string | null;
+  text: string;
+};

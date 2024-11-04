@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import EarningsTranscript from "./EarningsTranscript";
 import FutureEarnings from "./FutureEarnings";
 import WelcomeMessage from "./WelcomeMessage";
@@ -8,6 +9,8 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
 import { ProcessedReport } from "../types";
 import DayView from "./DayView";
+import Watchlist from "./Watchlist";
+import { Loader2 } from "lucide-react";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -16,81 +19,85 @@ interface EarningsTranscriptSheetProps {
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
-  const { selectedCompany, selectedFutureEarnings, selectedDate } =
-    useEarningsStore();
-  const [transcriptData, setTranscriptData] =
-    useState<EarningsCallTranscript | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    selectedCompany,
+    selectedFutureEarnings,
+    selectedDate,
+    showWatchlist,
+  } = useEarningsStore();
 
-  useEffect(() => {
-    const fetchTranscript = async (id: string) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`/api/transcripts/${id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch transcript");
-        }
-        const data = await response.json();
-        setTranscriptData(data);
-      } catch (error) {
-        console.error("Failed to fetch transcript:", error);
-        setError("Failed to load transcript. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Convert to React Query for better caching and loading states
+  const { data: transcriptData, isLoading: isLoadingTranscript } =
+    useQuery<EarningsCallTranscript>({
+      queryKey: ["transcript", selectedCompany?.id],
+      queryFn: async () => {
+        if (!selectedCompany?.id) throw new Error("No transcript selected");
+        const response = await fetch(`/api/transcripts/${selectedCompany.id}`);
+        if (!response.ok) throw new Error("Failed to fetch transcript");
+        return response.json();
+      },
+      enabled: !!selectedCompany?.id,
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
 
-    if (selectedCompany && selectedCompany.id) {
-      fetchTranscript(selectedCompany.id);
-    } else {
-      setTranscriptData(null);
-      setIsLoading(false);
-      setError(null);
-    }
-  }, [selectedCompany]);
-
-  const CustomLoadingSpinner = () => (
+  const LoadingSpinner = () => (
     <div className="flex flex-col items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-black"></div>
-      <p className="mt-4 text-gray-600 font-semibold">Loading transcript...</p>
+      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      <p className="mt-4 text-gray-600 font-semibold">Loading...</p>
     </div>
   );
 
   const renderContent = () => {
-    if (isLoading) {
-      return <CustomLoadingSpinner />;
+    // Priority-based rendering
+    if (showWatchlist) {
+      return <Watchlist />;
     }
-    if (error) {
-      return <div className="p-4 text-red-500">Error: {error}</div>;
+
+    if (selectedCompany?.id) {
+      if (isLoadingTranscript) {
+        return <LoadingSpinner />;
+      }
+      return transcriptData ? (
+        <EarningsTranscript transcriptData={transcriptData} />
+      ) : null;
     }
-    if (transcriptData) {
-      return <EarningsTranscript transcriptData={transcriptData} />;
-    }
+
     if (selectedFutureEarnings) {
       return (
         <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />
       );
     }
+
     if (selectedDate || window.innerWidth < 768) {
       return (
         <DayView
           date={selectedDate || new Date()}
           onTranscriptClick={(transcript) => {
-            useEarningsStore.setState({ selectedCompany: transcript });
+            useEarningsStore.setState({
+              selectedCompany: transcript,
+              showWatchlist: false,
+              selectedFutureEarnings: null,
+            });
           }}
           onReportClick={(report) => {
-            useEarningsStore.setState({ selectedFutureEarnings: report });
+            useEarningsStore.setState({
+              selectedFutureEarnings: report,
+              showWatchlist: false,
+              selectedCompany: null,
+            });
           }}
         />
       );
     }
+
     return <WelcomeMessage />;
   };
 
   return (
-    <div className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}>
+    <div
+      className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}
+      key={`${showWatchlist}-${selectedCompany?.id}-${selectedFutureEarnings?.id}`} // Force re-render on major state changes
+    >
       {renderContent()}
     </div>
   );

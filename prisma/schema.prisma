@@ -20,6 +20,7 @@ model User {
   email        String?      @unique
   subscription Subscription? @relation("UserSubscription")
   invoices     Invoice[]    @relation("UserInvoices")
+  watchlist    WatchlistEntry[]
 
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -150,6 +151,7 @@ model Company {
   logo            Logo?            @relation(fields: [logoId], references: [id])
   logoId          Int?
   earningsCallTranscripts EarningsCallTranscript[]
+  watchlistEntries WatchlistEntry[]
 
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -174,4 +176,17 @@ model Email {
   address   String   @unique
 
   createdAt DateTime @default(now())
+}
+
+model WatchlistEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
 }
