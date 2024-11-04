@@ -9,6 +9,8 @@ import {
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
+import { useAuthModal } from "@/store/AuthModalStore";
+import { useAuth } from "@clerk/nextjs";
 
 interface WeekViewProps {
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
@@ -24,6 +26,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   handleCompanyClick,
   handleFutureEarningsClick,
 }) => {
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
   const currentDate = useCalendarStore((state) => state.currentDate);
 
   const { weekDates } = React.useMemo(() => {
@@ -225,6 +229,11 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   const handleWatchlistClick = () => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
     useEarningsStore.setState({
       showWatchlist: true,
       selectedDate: null,
