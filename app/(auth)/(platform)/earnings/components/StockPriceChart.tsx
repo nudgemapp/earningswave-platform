@@ -55,8 +55,9 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       try {
         setIsLoading(true);
         const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
+        // Use outputsize=full to get more historical data for 6M and 1Y views
         const response = await fetch(
-          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`
         );
 
         if (!response.ok) throw new Error("Failed to fetch stock data");
@@ -84,7 +85,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         }
       } catch (error) {
         console.error("Error fetching stock data:", error);
-        // Fallback to empty dataset or handle error
         setData([]);
       } finally {
         setIsLoading(false);
@@ -92,9 +92,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     };
 
     fetchStockData();
-  }, [symbol, timeframe]);
+  }, [symbol]);
 
-  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
+  // Remove 1D from timeframe buttons since we only have daily data
+  const timeframeButtons = ["1W", "1M", "6M", "1Y"];
 
   const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
     active,
@@ -123,11 +124,53 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   };
 
   const getTimeframeData = () => {
-    // Implement timeframe filtering here if needed
-    return data;
+    const currentDate = new Date();
+    let startDate = new Date();
+    let tradingDays = 0;
+
+    switch (timeframe) {
+      case "1W":
+        tradingDays = 5; // Approximately 5 trading days in a week
+        break;
+      case "1M":
+        tradingDays = 21; // Approximately 21 trading days in a month
+        break;
+      case "6M":
+        tradingDays = 126; // Approximately 126 trading days in 6 months
+        break;
+      case "1Y":
+        tradingDays = 252; // Approximately 252 trading days in a year
+        break;
+      default:
+        tradingDays = 21; // Default to 1M
+    }
+
+    // Get the last n trading days
+    return data.slice(-tradingDays);
   };
 
   const filteredData = getTimeframeData();
+
+  // Calculate domain for Y-axis
+  const yDomain = filteredData.length > 0 ? [
+    Math.min(...filteredData.map(d => d.low)) * 0.99,
+    Math.max(...filteredData.map(d => d.high)) * 1.01
+  ] : ['auto', 'auto'];
+
+  // Calculate optimal tick interval based on timeframe and data length
+  const getTickInterval = () => {
+    switch (timeframe) {
+      case "1W":
+        return 0;  // Show all points
+      case "1M":
+        return Math.floor(filteredData.length / 5);
+      case "6M":
+      case "1Y":
+        return Math.floor(filteredData.length / 6);
+      default:
+        return "preserveStartEnd";
+    }
+  };
 
   return (
     <div className="h-[300px] w-full">
@@ -165,30 +208,21 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
               </linearGradient>
-              <linearGradient
-                id="colorDownGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
+              <linearGradient id="colorDownGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid
-              vertical={false}
-              strokeDasharray="3 3"
-              opacity={0.1}
-            />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
             <XAxis
               dataKey="date"
               tickFormatter={(value) => new Date(value).toLocaleDateString()}
               tickLine={false}
               axisLine={false}
+              interval={getTickInterval()}
             />
             <YAxis
-              domain={["auto", "auto"]}
+              domain={yDomain}
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) => `$${value.toFixed(2)}`}
