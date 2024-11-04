@@ -60,7 +60,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         await addToWatchlist.mutateAsync(report.companyId);
         toast.success("Added to watchlist");
       }
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update watchlist");
     }
   };

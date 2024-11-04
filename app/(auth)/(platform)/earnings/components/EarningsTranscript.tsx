@@ -36,7 +36,7 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
         await addToWatchlist.mutateAsync(transcriptData.companyId);
         toast.success("Added to watchlist");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to update watchlist");
     }
   };

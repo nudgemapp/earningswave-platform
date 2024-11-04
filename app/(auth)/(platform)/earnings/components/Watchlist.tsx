@@ -16,7 +16,7 @@ const Watchlist = () => {
     try {
       await removeFromWatchlist.mutateAsync(companyId);
       toast.success("Removed from watchlist");
-    } catch (_error) {
+    } catch {
       toast.error("Failed to remove from watchlist");
     }
   };
