@@ -11,6 +11,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import {
   ProcessedReport,
@@ -181,9 +182,24 @@ const DayView: React.FC<DayViewProps> = ({
       return acc;
     }, {} as Record<string, ProcessedReport[]>) || {};
 
+  const isMobile = window.innerWidth < 768;
+
+  const handleBack = () => {
+    useEarningsStore.setState({ selectedDate: null });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
+        <div className="relative">
+          <button
+            onClick={handleBack}
+            className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden"
+            aria-label="Close day view"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
         <div className="flex items-center justify-between md:justify-center">
           <button
             onClick={() => changeDate(-1)}

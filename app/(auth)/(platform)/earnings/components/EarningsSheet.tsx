@@ -11,6 +11,7 @@ import { ProcessedReport } from "../types";
 import DayView from "./DayView";
 import Watchlist from "./Watchlist";
 import { Loader2 } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -93,14 +94,35 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     return <WelcomeMessage />;
   };
 
-  return (
+  // Add state to control sheet visibility on mobile
+  const isMobile = window.innerWidth < 768;
+  const shouldShowSheet = !!(
+    selectedCompany ||
+    selectedFutureEarnings ||
+    showWatchlist ||
+    (isMobile && selectedDate)
+  );
+
+  const content = (
     <div
       className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}
-      key={`${showWatchlist}-${selectedCompany?.id}-${selectedFutureEarnings?.id}`} // Force re-render on major state changes
+      key={`${showWatchlist}-${selectedCompany?.id}-${selectedFutureEarnings?.id}`}
     >
       {renderContent()}
     </div>
   );
+
+  if (isMobile) {
+    return (
+      <Sheet open={shouldShowSheet}>
+        <SheetContent side="right" className="w-full p-0">
+          {content}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return content;
 };
 
 export default EarningsTranscriptSheet;

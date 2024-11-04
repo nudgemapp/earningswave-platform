@@ -3,8 +3,10 @@
 import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { Separator } from "@/components/ui/separator";
+import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
+import { useAuth } from "@clerk/nextjs";
 import { ChevronLeft, StarIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
@@ -17,6 +19,8 @@ interface EarningsTranscriptProps {
 const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   transcriptData,
 }) => {
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
   const selectedDate = useEarningsStore((state) => state.selectedDate);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
 
@@ -28,6 +32,11 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   };
 
   const handleWatchlistClick = async () => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
     try {
       if (isWatchlisted) {
         await removeFromWatchlist.mutateAsync(transcriptData.companyId);

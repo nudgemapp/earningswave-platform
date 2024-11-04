@@ -23,6 +23,8 @@ import StockPriceChart from "./StockPriceChart";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { toast } from "sonner";
 import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
+import { useAuth } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -46,12 +48,19 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     []
   );
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
 
   // Add this query to check if company is in watchlist
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(report.companyId);
 
   const handleWatchlistClick = async () => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
     try {
       if (isWatchlisted) {
         await removeFromWatchlist.mutateAsync(report.companyId);
@@ -230,8 +239,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
           </div>
 
           <div className="space-y-4">
-
-
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <div className="space-y-4">
