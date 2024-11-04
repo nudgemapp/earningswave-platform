@@ -9,7 +9,6 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { User, Subscription } from "@prisma/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useUser } from "@clerk/nextjs";
 import { ProcessedReport, ProcessedTranscript } from "../types";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
