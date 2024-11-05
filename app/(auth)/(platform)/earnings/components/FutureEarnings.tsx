@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
+import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -280,6 +281,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
           historicalData={historicalData}
         />
       )}
+
+      <AIEarningsAnalysis report={report} />
 
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
         <DialogContent className="sm:max-w-2xl">
