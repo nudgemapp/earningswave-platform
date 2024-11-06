@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/authDialog";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from "@/store/AuthModalStore";
@@ -24,12 +25,14 @@ export const AuthModal = () => {
 
   return (
     <Dialog open={authModal.isOpen} onOpenChange={authModal.onClose}>
-      <DialogContent>
+      <DialogContent className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
         <DialogHeader className="border-b pb-3">
-          <h2 className="text-lg font-medium">Account Required</h2>
+          <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            Account Required
+          </DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-white mb-4">
             An account is needed to view the whole calendar and access all
             features of the earnings calendar.
           </p>

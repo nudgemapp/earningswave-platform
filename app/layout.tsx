@@ -7,6 +7,8 @@ import GoogleAnalytics from "./googleAnalytics";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -66,18 +68,33 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className="bg-white dark:bg-slate-900">
         <head>
           <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-200`}
         >
-          <Providers>
-            <ModalProvider />
-            {children}
-          </Providers>
-          <Toaster position="bottom-left" />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Providers>
+              <ModalProvider />
+              {children}
+            </Providers>
+            <Toaster
+              position="bottom-left"
+              theme="system"
+              toastOptions={{
+                className:
+                  "bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700",
+              }}
+            />
+          </ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>

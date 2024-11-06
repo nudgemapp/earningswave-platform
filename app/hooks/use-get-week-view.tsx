@@ -18,6 +18,8 @@ export const useGetWeekView = () => {
 
   const { monday, friday } = React.useMemo(() => {
     const date = new Date(currentDate);
+    date.setHours(0, 0, 0, 0);
+
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 

@@ -48,7 +48,7 @@ const AccordionItem = ({
 
   return (
     <motion.div
-      className="border-b border-black/30 overflow-hidden"
+      className="border-b border-gray-200 dark:border-slate-700 overflow-hidden"
       initial={false}
       animate={{
         backgroundColor: isOpen ? "rgba(229, 231, 235, 0.5)" : "transparent",
@@ -56,15 +56,12 @@ const AccordionItem = ({
       transition={{ duration: 0.3 }}
     >
       <motion.header
-        className="py-7 flex items-center cursor-pointer"
+        className="py-7 flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors duration-300"
         onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ backgroundColor: "rgba(229, 231, 235, 0.3)" }}
-        transition={{ duration: 0.2 }}
       >
         <motion.span
-          className="flex-1 text-lg font-bold"
+          className="flex-1 text-lg font-bold text-gray-900 dark:text-gray-200"
           initial={false}
-          animate={{ color: isOpen ? "#000" : "#1a202c" }}
         >
           {question}
         </motion.span>
@@ -72,6 +69,7 @@ const AccordionItem = ({
           initial={false}
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.3 }}
+          className="text-gray-600 dark:text-gray-400"
         >
           {isOpen ? <MinusIcon /> : <PlusIcon />}
         </motion.div>
@@ -92,7 +90,7 @@ const AccordionItem = ({
             <motion.div
               variants={{ collapsed: { scale: 0.8 }, open: { scale: 1 } }}
               transition={{ duration: 0.4 }}
-              className="text-gray-600"
+              className="text-gray-600 dark:text-gray-400"
             >
               {answer}
             </motion.div>
@@ -106,14 +104,14 @@ const AccordionItem = ({
 const FAQsection = () => {
   return (
     <motion.div
-      className="mx-auto py-[72px] sm:py-24"
+      className="mx-auto py-[72px] sm:py-24 bg-white dark:bg-slate-900"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <div className="container">
         <motion.h2
-          className="text-center text-5xl sm:text-6xl sm:max-w-[648px] mx-auto font-bold tracking-tighter"
+          className="text-center text-5xl sm:text-6xl sm:max-w-[648px] mx-auto font-bold tracking-tighter text-gray-900 dark:text-gray-200"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}

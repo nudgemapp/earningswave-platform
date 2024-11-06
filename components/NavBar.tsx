@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MenuIcon, X, ChevronDown } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
@@ -10,8 +10,11 @@ import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import { useEarningsStore } from "@/store/EarningsStore";
-import TickerSearch from "./tickerSearch";
-import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
+import NotificationButton from "./NotificationButton";
+import { ModeToggle } from "./theme-toggle";
+import { useTheme } from "next-themes";
+import darkImg from "@/public/images/ew-logo-dark-noBG.png";
+// import TickerSearch from "./tickerSearch";
 
 function useMount() {
   const [mounted, setMounted] = useState(false);
@@ -30,8 +33,8 @@ function NavBar() {
   const { mounted, user, isLoaded } = useMount();
   const { signOut } = useClerk();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
-  const pathname = usePathname();
-  const showSearch = pathname.includes("/earnings");
+  const { theme } = useTheme();
+  const img = theme === "dark" ? darkImg : lightImg;
 
   const links = [
     {
@@ -70,14 +73,6 @@ function NavBar() {
     }
   };
 
-  const handleFutureEarningsClick = (report: ProcessedReport) => {
-    useEarningsStore.setState({
-      selectedDate: null,
-      selectedCompany: null,
-      selectedFutureEarnings: report,
-    });
-  };
-
   const handleAuthAction = () => {
     if (user) {
       signOut(() => router.push("/"));
@@ -97,7 +92,7 @@ function NavBar() {
           className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0"
         >
           {/* DESKTOP */}
-          <div className="hidden lg:block bg-white p-4">
+          <div className="hidden lg:block bg-white dark:bg-slate-900 p-4">
             <div className="flex items-center mx-4">
               {/* Logo - Left */}
               <motion.div
@@ -119,7 +114,7 @@ function NavBar() {
                   >
                     {item.dropdownItems ? (
                       <>
-                        <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray transition-colors duration-200 relative">
+                        <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-black dark:text-white transition-colors duration-200 relative">
                           {item.name}
                           <ChevronDown
                             size={16}
@@ -132,13 +127,13 @@ function NavBar() {
                             transition={{ duration: 0.2 }}
                           />
                         </p>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white shadow-lg rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-slate-900 shadow-lg dark:shadow-slate-800/50 rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
                           <div className="py-2">
                             {item.dropdownItems.map(
                               (dropdownItem, dropdownIndex) => (
                                 <p
                                   key={dropdownIndex}
-                                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors duration-150 text-gray-700"
+                                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer transition-colors duration-150 text-black dark:text-white"
                                   onClick={() =>
                                     handleNavigation(dropdownItem.route)
                                   }
@@ -152,7 +147,7 @@ function NavBar() {
                       </>
                     ) : (
                       <p
-                        className={`hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray relative`}
+                        className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-black dark:text-white relative"
                         onClick={() => handleNavigation(item.route)}
                       >
                         {item.name}
@@ -177,11 +172,13 @@ function NavBar() {
 
               {/* Button - Right */}
               <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
-                {showSearch && (
+                {/* {showSearch && (
                   <TickerSearch
                     handleFutureEarningsClick={handleFutureEarningsClick}
                   />
-                )}
+                )} */}
+                <ModeToggle />
+                {user && <NotificationButton />}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -199,14 +196,14 @@ function NavBar() {
           </div>
 
           {/* MOBILE */}
-          <div className="block lg:hidden fixed inset-0 z-[999] bg-white">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 bg-white">
+          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-slate-900">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <button onClick={toggleMenu} className="p-2 z-10">
                   {menu ? (
-                    <X className="w-6 h-6 text-gray-800" />
+                    <X className="w-6 h-6 text-black dark:text-white" />
                   ) : (
-                    <MenuIcon className="w-6 h-6 text-gray-800" />
+                    <MenuIcon className="w-6 h-6 text-black dark:text-white" />
                   )}
                 </button>
                 <div
@@ -214,7 +211,7 @@ function NavBar() {
                   onClick={() => handleNavigation("/")}
                 >
                   <Image
-                    src={lightImg}
+                    src={img}
                     alt="logo"
                     fill
                     sizes="(max-width: 768px) 100vw"
@@ -233,13 +230,13 @@ function NavBar() {
               )}
             </div>
             {menu && (
-              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white overflow-hidden">
+              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white dark:bg-slate-900 overflow-hidden">
                 <nav className="flex-grow flex flex-col justify-center items-center px-6">
                   {links.map((item, index) => (
                     <div key={index} className="text-center w-full">
                       {item.dropdownItems ? (
                         <div className="py-6">
-                          <p className="font-semibold text-gray-800 mb-4 text-2xl">
+                          <p className="font-semibold text-black dark:text-white mb-4 text-2xl">
                             {item.name}
                           </p>
                           <div className="space-y-4">
@@ -247,7 +244,7 @@ function NavBar() {
                               (dropdownItem, dropdownIndex) => (
                                 <p
                                   key={dropdownIndex}
-                                  className="text-gray-600 hover:text-primary cursor-pointer transition-colors duration-200 text-xl"
+                                  className="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors duration-200 text-xl"
                                   onClick={() =>
                                     handleNavigation(dropdownItem.route)
                                   }
@@ -260,22 +257,22 @@ function NavBar() {
                         </div>
                       ) : (
                         <p
-                          className="font-semibold text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 text-2xl py-6"
+                          className="font-semibold text-black dark:text-white hover:text-primary dark:hover:text-primary cursor-pointer transition-colors duration-200 text-2xl py-6"
                           onClick={() => handleNavigation(item.route)}
                         >
                           {item.name}
                         </p>
                       )}
                       {index < links.length - 1 && (
-                        <div className="w-1/2 h-px bg-gray-200 mx-auto"></div>
+                        <div className="w-1/2 h-px bg-gray-200 dark:bg-slate-800 mx-auto"></div>
                       )}
                     </div>
                   ))}
                 </nav>
-                <div className="px-6 py-6 bg-gray-50">
+                <div className="px-6 py-6 bg-gray-50 dark:bg-slate-800">
                   {user ? (
                     <Button
-                      className="w-full text-xl py-4"
+                      className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
                       onClick={handleAuthAction}
                     >
                       Logout
@@ -283,13 +280,13 @@ function NavBar() {
                   ) : (
                     <>
                       <Button
-                        className="w-full mb-4 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors duration-200 text-xl py-4"
+                        className="w-full mb-4 bg-white dark:bg-slate-900 text-primary dark:text-primary border-2 border-primary dark:border-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 text-xl py-4"
                         onClick={() => router.push("/sign-up")}
                       >
                         Sign in
                       </Button>
                       <Button
-                        className="w-full text-xl py-4"
+                        className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
                         onClick={() => router.push("/sign-up")}
                       >
                         Sign up

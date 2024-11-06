@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
+import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   report: ProcessedReport;
@@ -40,7 +41,6 @@ interface HistoricalEarnings {
 }
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
-  const selectedDate = useEarningsStore((state) => state.selectedDate);
   const [timeframe, setTimeframe] = useState("1M");
   const [isLoading, setIsLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
@@ -60,6 +60,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
       authModal.onOpen();
       return;
     }
+
+    console.log("isWatchlisted", isWatchlisted);
 
     try {
       if (isWatchlisted) {
@@ -128,20 +130,18 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="w-full shadow-lg bg-white">
+      <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
         <CardHeader className="space-y-2">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              {(selectedDate || window.innerWidth < 768) && (
-                <button
-                  onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden md:[&:has(~[data-selected-date])]:block"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-              )}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+              <button
+                onClick={handleBack}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors md:[&:has(~[data-selected-date])]:block shrink-0"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              </button>
               {report.company?.logo && (
-                <div className="w-12 h-12 relative">
+                <div className="w-12 h-12 relative shrink-0">
                   <Image
                     src={report.company.logo}
                     alt={`${report.name} logo`}
@@ -151,16 +151,23 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                   />
                 </div>
               )}
-              <div>
-                <CardTitle className="text-2xl font-bold">
+              <div className="min-w-0">
+                <CardTitle className="text-2xl font-bold break-words text-gray-900 dark:text-gray-100">
                   {report.name}
                 </CardTitle>
-                <div className="text-sm text-gray-500">{report.symbol}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                  {report.symbol}
+                </div>
               </div>
             </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="flex flex-row items-center gap-4">
             <button
               onClick={handleWatchlistClick}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-full transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
               disabled={
                 isCheckingWatchlist ||
                 addToWatchlist.isPending ||
@@ -172,96 +179,112 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                   isCheckingWatchlist ||
                   addToWatchlist.isPending ||
                   removeFromWatchlist.isPending
-                    ? "text-gray-300"
+                    ? "text-gray-300 dark:text-gray-600"
                     : isWatchlisted
                     ? "fill-yellow-400 text-yellow-400"
-                    : "text-gray-400"
+                    : "text-gray-400 dark:text-gray-500"
                 }`}
                 fill={isWatchlisted ? "currentColor" : "none"}
                 strokeWidth={2}
               />
-              <span className="font-medium">Follow</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Follow
+              </span>
             </button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-medium">REV</span>
-              <div className="flex items-center gap-8">
-                <span className="text-gray-500">
-                  {formatCurrency(report.estimate)} (est)
-                </span>
-                <span>{formatCurrency(report.estimate)}</span>
-                <span
-                  className={`${
-                    Number(
-                      calculatePercentageChange(
-                        report.estimate,
-                        report.estimate
-                      )
-                    ) >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  } font-medium`}
-                >
-                  {calculatePercentageChange(report.estimate, report.estimate)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-medium">EPS</span>
-              <div className="flex items-center gap-8">
-                <span className="text-gray-500">
-                  ${report.estimate?.toFixed(2)} (est)
-                </span>
-                <span>${report.estimate?.toFixed(2)}</span>
-                <span
-                  className={`${
-                    Number(
-                      calculatePercentageChange(
-                        report.estimate,
-                        report.estimate
-                      )
-                    ) >= 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                  } font-medium`}
-                >
-                  {calculatePercentageChange(report.estimate, report.estimate)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <div className="space-y-4">
-                  <StockPriceChart
-                    symbol={report.symbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                  />
-                </div>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pt-4">
             <button
               onClick={() => setShowSummary(true)}
-              className="flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-full transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
             >
-              <FileText className="w-4 h-4" />
-              <span>Summary</span>
+              <FileText
+                className="w-4 h-4 text-gray-400 dark:text-gray-500"
+                strokeWidth={2}
+              />
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Summary
+              </span>
             </button>
-            <button className="flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-              <FileDown className="w-4 h-4" />
-              <span>Report</span>
+            <button
+              onClick={() => setShowSummary(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-full transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
+            >
+              <FileDown
+                className="w-4 h-4 text-gray-400 dark:text-gray-500"
+                strokeWidth={2}
+              />
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Report
+              </span>
             </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-4">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                REV
+              </span>
+              <div className="flex items-center gap-8">
+                <span className="text-gray-500 dark:text-gray-400">
+                  {formatCurrency(report.estimate)} (est)
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {formatCurrency(report.estimate)}
+                </span>
+                <span
+                  className={`${
+                    Number(
+                      calculatePercentageChange(
+                        report.estimate,
+                        report.estimate
+                      )
+                    ) >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  } font-medium`}
+                >
+                  {calculatePercentageChange(report.estimate, report.estimate)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-4">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                EPS
+              </span>
+              <div className="flex items-center gap-8">
+                <span className="text-gray-500 dark:text-gray-400">
+                  ${report.estimate?.toFixed(2)} (est)
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  ${report.estimate?.toFixed(2)}
+                </span>
+                <span
+                  className={`${
+                    Number(
+                      calculatePercentageChange(
+                        report.estimate,
+                        report.estimate
+                      )
+                    ) >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-600 dark:text-red-400"
+                  } font-medium`}
+                >
+                  {calculatePercentageChange(report.estimate, report.estimate)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="h-[300px] w-full mb-8">
+              <ResponsiveContainer width="100%" height="100%">
+                <StockPriceChart
+                  symbol={report.symbol}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
+              </ResponsiveContainer>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -272,8 +295,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
             quarter: `Q${quarterNum}`,
             year: new Date(report.fiscalDateEnding).getFullYear(),
             date: new Date(report.reportDate).toLocaleDateString(),
-            revenue: Number(report.estimate) || 0, // Ensure it's a number
-            eps: Number(report.estimate) || 0, // Ensure it's a number
+            revenue: Number(report.estimate) || 0,
+            eps: Number(report.estimate) || 0,
             revenueBeat: 0,
             epsBeat: epsBeat,
           }}
@@ -281,20 +304,22 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
         />
       )}
 
+      <AIEarningsAnalysis report={report} />
+
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {report.name} ({report.symbol}) - Earnings Summary
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                   Company Information
                 </h3>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <p>
                     <span className="font-medium">Report Date:</span>{" "}
                     {new Date(report.reportDate).toLocaleDateString()}
@@ -310,10 +335,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
                 </div>
               </div>
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                   Financial Metrics
                 </h3>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <p>
                     <span className="font-medium">Current EPS Estimate:</span> $
                     {report.estimate?.toFixed(2)}

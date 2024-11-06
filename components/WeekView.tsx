@@ -109,10 +109,12 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   const NoEarnings = () => (
-    <div className="w-full min-h-[200px] flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
+    <div className="w-full min-h-[200px] flex items-center justify-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-sm">
       <div className="flex flex-row items-center gap-2">
-        <Calendar className="w-5 h-5 text-gray-400" />
-        <span className="text-xs font-medium text-gray-500">No earnings</span>
+        <Calendar className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          No earnings
+        </span>
       </div>
     </div>
   );
@@ -131,32 +133,32 @@ const WeekView: React.FC<WeekViewProps> = ({
     onClick: () => void;
   }) => (
     <div
-      className="aspect-square relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md hover:border-gray-800 cursor-pointer flex flex-col"
+      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
       title={`${name} (${symbol})`}
     >
-      <div className="flex-1 relative p-0.5 md:p-1">
+      <div className="aspect-square relative">
         {logo ? (
-          <div className="w-full h-full relative">
-            <Image
-              src={logo}
-              alt={`${name} logo`}
-              layout="fill"
-              objectFit="contain"
-              className="p-[1px] md:p-0"
-            />
-          </div>
+          <Image
+            src={logo}
+            alt={`${name} logo`}
+            layout="fill"
+            objectFit="cover"
+            className="w-full h-full"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-[8px] md:text-sm font-medium">{symbol}</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+            <span className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {symbol}
+            </span>
           </div>
         )}
       </div>
-      <div className="w-full bg-gray-50 py-0.5 md:py-1 px-0.5 md:px-2 border-t border-gray-200">
-        <span className="text-[8px] md:text-xs font-medium text-gray-800 block text-center truncate">
+      <div className="w-full bg-gray-50 dark:bg-slate-800 py-1 px-1.5 border-t border-gray-200 dark:border-slate-700">
+        <span className="text-[10px] md:text-xs font-medium text-gray-800 dark:text-gray-200 block text-center truncate">
           {symbol}
         </span>
       </div>
@@ -200,7 +202,7 @@ const WeekView: React.FC<WeekViewProps> = ({
             </span>
           )}
         </div>
-        <div className="grid grid-cols-4 md:grid-cols-2 gap-0.5 md:gap-2">
+        <div className="grid grid-cols-4 md:grid-cols-3 gap-0.5 md:gap-2">
           {displayedReports.map((report, index) => (
             <CompanyCard
               key={`report-${index}`}
@@ -243,15 +245,15 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden h-full">
+    <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-lg shadow-sm dark:shadow-slate-800/50 overflow-hidden h-full">
       {/* Add mobile header with watchlist button */}
-      <div className="md:hidden flex items-center justify-between p-3 bg-gray-50 border-b border-gray-200  mt-2">
-        <h1 className="text-lg font-semibold text-gray-900">
+      <div className="md:hidden flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 mt-2">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
           Earnings Calendar
         </h1>
         <button
           onClick={handleWatchlistClick}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-full transition-all hover:bg-gray-100 active:scale-95"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95"
         >
           <Star className="w-4 h-4" />
           <span>Watchlist</span>
@@ -263,17 +265,14 @@ const WeekView: React.FC<WeekViewProps> = ({
         {weekDays.map((day, index) => (
           <div
             key={day}
-            className="flex-1 bg-gray-50 border-r last:border-r-0 border-gray-200 cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100 hover:shadow-sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDayClick(weekDates[index]);
-            }}
+            className="flex-1 bg-gray-50 dark:bg-slate-800 border-r last:border-r-0 border-gray-200 dark:border-slate-700 cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-100 dark:hover:bg-slate-700"
+            onClick={() => handleDayClick(weekDates[index])}
           >
-            <div className="p-2 text-center border-b border-gray-200 transition-all duration-300 ease-in-out hover:border-gray-300 group">
-              <h2 className="text-sm font-semibold text-gray-700 transform transition-all duration-300 ease-in-out group-hover:text-gray-900 group-hover:scale-105">
+            <div className="p-2 text-center border-b border-gray-200 dark:border-slate-700 transition-all duration-300 ease-in-out hover:border-gray-300 dark:hover:border-slate-600 group">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 transform transition-all duration-300 ease-in-out group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-105">
                 {day}
               </h2>
-              <p className="text-xs text-gray-500 transform transition-all duration-300 ease-in-out group-hover:text-gray-600 group-hover:scale-105">
+              <p className="text-xs text-gray-500 dark:text-gray-400 transform transition-all duration-300 ease-in-out group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:scale-105">
                 {weekDates[index].toLocaleDateString("en-US", headerDateFormat)}
               </p>
             </div>
@@ -289,20 +288,17 @@ const WeekView: React.FC<WeekViewProps> = ({
           return (
             <div
               key={day}
-              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDayClick(weekDates[index]);
-              }}
+              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 dark:border-slate-700 cursor-pointer"
+              onClick={() => handleDayClick(weekDates[index])}
             >
               {/* Mobile day header */}
-              <div className="md:hidden p-3 bg-gray-50 border-b border-gray-200">
+              <div className="md:hidden p-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-700">
+                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                       {day}
                     </h2>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {weekDates[index].toLocaleDateString(
                         "en-US",
                         headerDateFormat
@@ -310,24 +306,23 @@ const WeekView: React.FC<WeekViewProps> = ({
                     </p>
                   </div>
                   {!isEmpty && (
-                    <div className="text-xs font-medium text-gray-500">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
                       {dayTranscripts.length + dayReports.length} earnings
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="p-2 bg-white overflow-y-auto">
+              <div className="p-2 bg-white dark:bg-slate-900 overflow-y-auto">
                 {isEmpty ? (
                   <NoEarnings />
                 ) : (
                   <div className="flex flex-col space-y-2">
-                    {/* Update MarketTimingGroup grid for mobile */}
                     <MarketTimingGroup
                       title="Past Earnings"
                       icon={Calendar}
                       reports={dayTranscripts}
-                      bgColor="bg-gray-50"
+                      bgColor="bg-gray-50 dark:bg-slate-800/50"
                       handleClick={(report) =>
                         handleCompanyClick(report as ProcessedTranscript)
                       }
@@ -338,7 +333,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                       reports={dayReports.filter(
                         (r) => r.marketTiming === "PRE_MARKET"
                       )}
-                      bgColor="bg-blue-50"
+                      bgColor="bg-blue-50 dark:bg-blue-950/30"
                       handleClick={(report) =>
                         handleFutureEarningsClick(report as ProcessedReport)
                       }
@@ -349,7 +344,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                       reports={dayReports.filter(
                         (r) => r.marketTiming === "AFTER_HOURS"
                       )}
-                      bgColor="bg-orange-50"
+                      bgColor="bg-orange-50 dark:bg-orange-950/30"
                       handleClick={(report) =>
                         handleFutureEarningsClick(report as ProcessedReport)
                       }
@@ -360,7 +355,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                       reports={dayReports.filter(
                         (r) => r.marketTiming === "NOT_SUPPLIED"
                       )}
-                      bgColor="bg-gray-50"
+                      bgColor="bg-gray-50 dark:bg-slate-800/50"
                       handleClick={(report) =>
                         handleFutureEarningsClick(report as ProcessedReport)
                       }

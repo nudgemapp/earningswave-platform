@@ -77,14 +77,14 @@ function PricingSection({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto py-20 px-4 md:px-8 lg:px-20 xl:px-32"
+      className="container mx-auto py-20 px-4 md:px-8 lg:px-20 xl:px-32 bg-white dark:bg-slate-900"
     >
       {showTitle && (
         <motion.h2
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-12"
+          className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-200 mb-12"
         >
           Transparent Pricing for Every Need
         </motion.h2>
@@ -95,16 +95,22 @@ function PricingSection({
         onValueChange={togglePricingPeriod}
       >
         <div className="flex justify-center mb-12">
-          <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-gray-100 p-1 text-gray-600">
+          <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 p-1 text-gray-600 dark:text-gray-400">
             <TabsTrigger
               value="monthly"
-              className="rounded-full px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm"
+              className="rounded-full px-4 py-2 text-sm font-medium transition-all 
+                data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 
+                data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-200 
+                data-[state=active]:shadow-sm dark:data-[state=active]:shadow-slate-800/50"
             >
               Monthly Billing
             </TabsTrigger>
             <TabsTrigger
               value="annual"
-              className="rounded-full px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm"
+              className="rounded-full px-4 py-2 text-sm font-medium transition-all 
+                data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 
+                data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-200 
+                data-[state=active]:shadow-sm dark:data-[state=active]:shadow-slate-800/50"
             >
               Annual Billing
             </TabsTrigger>

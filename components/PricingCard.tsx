@@ -53,14 +53,14 @@ function PricingCard({
       transition={{ delay: 0.1 * index, duration: 0.5 }}
       className="h-full"
     >
-      <Card className="flex flex-col h-full border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <Card className="flex flex-col h-full border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-xl dark:shadow-slate-800/50 dark:hover:shadow-slate-800 transition-shadow duration-300 bg-white dark:bg-slate-900">
         <CardHeader className="text-center pb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + 0.1 * index, duration: 0.5 }}
           >
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-200">
               {plan.name}
             </CardTitle>
           </motion.div>
@@ -69,9 +69,9 @@ function PricingCard({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 + 0.1 * index, duration: 0.5 }}
           >
-            <CardDescription className="text-4xl font-semibold mt-4 text-gray-900">
+            <CardDescription className="text-4xl font-semibold mt-4 text-gray-900 dark:text-gray-200">
               {isAnnual ? plan.annualPrice : plan.monthlyPrice}
-              <span className="text-base font-normal text-gray-600">
+              <span className="text-base font-normal text-gray-600 dark:text-gray-400">
                 / {isAnnual ? "year" : "month"}
               </span>
             </CardDescription>
@@ -81,7 +81,7 @@ function PricingCard({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + 0.1 * index, duration: 0.5 }}
-              className="text-sm font-medium text-green-600 mt-2"
+              className="text-sm font-medium text-green-600 dark:text-green-400 mt-2"
             >
               Save 20% with annual billing
             </motion.p>
@@ -98,9 +98,9 @@ function PricingCard({
                   delay: 0.5 + 0.05 * featureIndex + 0.1 * index,
                   duration: 0.5,
                 }}
-                className="flex items-center"
+                className="flex items-center text-gray-700 dark:text-gray-300"
               >
-                <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
                 <span>{feature}</span>
               </motion.li>
             ))}
@@ -108,7 +108,7 @@ function PricingCard({
         </CardContent>
         <CardFooter className="mt-auto">
           <Button
-            className="w-full"
+            className="w-full bg-primary dark:bg-white hover:bg-primary/90 dark:hover:bg-gray-100 text-white dark:text-gray-900 transition-colors duration-300"
             onClick={() => {
               if (user?.id) {
                 const priceId = isYearly
@@ -116,9 +116,6 @@ function PricingCard({
                   : plan.priceIdMonthly;
                 if (priceId) {
                   handleCheckout(priceId, true);
-                } else {
-                  console.error("Price ID is undefined");
-                  // You might want to show an error message to the user here
                 }
               } else {
                 router.push("/sign-up");

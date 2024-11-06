@@ -56,6 +56,50 @@ const bufferToImageUrl = (
   return `data:image/png;base64,${btoa(binary)}`;
 };
 
+const CompanyCard = ({
+  symbol,
+  name,
+  logo,
+  onClick,
+}: {
+  symbol: string;
+  name: string;
+  logo: string | null;
+  onClick: () => void;
+}) => (
+  <div
+    className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick();
+    }}
+    title={`${name} (${symbol})`}
+  >
+    <div className="aspect-square relative">
+      {logo ? (
+        <Image
+          src={logo}
+          alt={`${name} logo`}
+          layout="fill"
+          objectFit="contain"
+          className="p-0.5"
+        />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            {symbol}
+          </span>
+        </div>
+      )}
+    </div>
+    <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+      <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
+        {symbol}
+      </span>
+    </div>
+  </div>
+);
+
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   handleCompanyClick,
@@ -179,11 +223,14 @@ const MonthView: React.FC<MonthViewProps> = ({
       remainingCount: dateEntry?.remainingCount || 0,
     };
   };
+
   const NoEarnings = () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 border border-gray-200 rounded-sm">
-      <div className="flex flex-row items-center space-y-1 gap-2">
-        <Calendar className="w-6 h-6 text-gray-400" />
-        <span className="text-xs font-medium text-gray-500">No earnings</span>
+    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-sm">
+      <div className="flex flex-row items-center gap-1">
+        <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+          No earnings
+        </span>
       </div>
     </div>
   );
@@ -202,49 +249,26 @@ const MonthView: React.FC<MonthViewProps> = ({
     if (reports.length === 0) return null;
 
     return (
-      <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
-        <div className="flex items-center gap-1 mb-1">
-          <Icon className="w-3 h-3 text-gray-600" />
-          <span className="text-[10px] font-medium text-gray-600">{title}</span>
+      <div className={`p-0.5 rounded-sm mb-0.5 ${bgColor} dark:bg-opacity-20`}>
+        <div className="flex items-center gap-1 mb-0.5 px-0.5">
+          <Icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+          <span className="text-[9px] font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </span>
         </div>
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-4 gap-0.5">
           {reports.map((report, reportIndex) => (
-            <div
+            <CompanyCard
               key={`report-${reportIndex}`}
-              className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleFutureEarningsClick(report);
-              }}
-              title={`${report.name} (${
-                report.symbol
-              }) - ${report.marketTiming?.replace("_", " ")}`}
-            >
-              <div className="flex-1 relative">
-                {report.company?.logo ? (
-                  <Image
-                    src={bufferToImageUrl(report.company.logo)}
-                    alt={`${report.name} logo`}
-                    fill
-                    style={{ objectFit: "contain" }}
-                    className="p-1"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-[10px] font-medium">
-                      {report.symbol}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div
-                className={`w-full py-0.5 px-1 border-t border-gray-200 ${bgColor}`}
-              >
-                <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
-                  {report.symbol}
-                </span>
-              </div>
-            </div>
+              symbol={report.symbol}
+              name={report.name}
+              logo={
+                report.company?.logo
+                  ? bufferToImageUrl(report.company.logo)
+                  : null
+              }
+              onClick={() => handleFutureEarningsClick(report)}
+            />
           ))}
         </div>
       </div>
@@ -252,145 +276,115 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white relative">
-      <div className="grid grid-cols-5 py-2 bg-gray-100">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
+      <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="bg-gray-100 py-1 text-center text-xs text-gray-600 font-bold"
+            className="py-1 text-center text-xs text-gray-600 dark:text-gray-400 font-medium"
           >
             {day}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-5 gap-px bg-gray-200 flex-grow">
-        {getDaysInMonth(currentDate).map((date, index) => {
-          const { items: dayContent, remainingCount: transcriptRemaining } =
-            getLogosForDate(date, transcripts);
-          const { items: dayReports, remainingCount: reportRemaining } =
-            getReportsForDate(date, reports);
-          const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
+          {getDaysInMonth(currentDate).map((date, index) => {
+            const { items: dayContent, remainingCount: transcriptRemaining } =
+              getLogosForDate(date, transcripts);
+            const { items: dayReports, remainingCount: reportRemaining } =
+              getReportsForDate(date, reports);
+            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
-          return (
-            <div
-              key={index}
-              className={`bg-white p-1 text-center flex flex-col min-h-[100px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 ${
-                !isCurrentMonth ? "text-gray-400 bg-gray-50" : "text-gray-800"
-              } ${
-                date.toDateString() === new Date().toDateString()
-                  ? "bg-blue-50 hover:bg-blue-100"
-                  : ""
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                useEarningsStore.setState({
-                  selectedDate: new Date(date),
-                  selectedCompany: null,
-                  selectedFutureEarnings: null,
-                  showWatchlist: false,
-                });
-              }}
-            >
-              <span className="text-xs mb-1 font-medium transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:text-gray-900">
-                {date.getDate()}
-                {(transcriptRemaining > 0 || reportRemaining > 0) && (
-                  <span className="ml-1 text-gray-500 text-[10px]">
-                    +{transcriptRemaining + reportRemaining} more
-                  </span>
-                )}
-              </span>
-              <div className="flex-grow">
-                {dayContent.length === 0 && dayReports.length === 0 ? (
-                  <NoEarnings />
-                ) : (
-                  <div className="flex flex-col h-full">
-                    {/* Regular transcripts */}
-                    {dayContent.length > 0 && (
-                      <div
-                        className="grid grid-cols-3 gap-1 mb-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {dayContent.map((transcript, logoIndex) => {
-                          console.log(
-                            "Logo data for",
-                            transcript.company?.symbol,
-                            ":",
-                            transcript.company?.logo
-                          );
-                          return (
-                            <div
+            return (
+              <div
+                key={index}
+                className={`bg-white dark:bg-slate-900 p-0.5 text-center flex flex-col min-h-[120px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-slate-800 ${
+                  !isCurrentMonth
+                    ? "text-gray-400 bg-gray-50 dark:bg-slate-800/50"
+                    : "text-gray-800 dark:text-gray-200"
+                } ${
+                  date.toDateString() === new Date().toDateString()
+                    ? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    : ""
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  useEarningsStore.setState({
+                    selectedDate: new Date(date),
+                    selectedCompany: null,
+                    selectedFutureEarnings: null,
+                    showWatchlist: false,
+                  });
+                }}
+              >
+                <span className="text-xs mb-0.5 font-medium">
+                  {date.getDate()}
+                  {(transcriptRemaining > 0 || reportRemaining > 0) && (
+                    <span className="ml-1 text-gray-500 text-[9px]">
+                      +{transcriptRemaining + reportRemaining}
+                    </span>
+                  )}
+                </span>
+                <div className="flex-grow">
+                  {dayContent.length === 0 && dayReports.length === 0 ? (
+                    <NoEarnings />
+                  ) : (
+                    <div className="flex flex-col h-full">
+                      {/* Regular transcripts */}
+                      {dayContent.length > 0 && (
+                        <div className="grid grid-cols-4 gap-0.5 mb-0.5">
+                          {dayContent.map((transcript, logoIndex) => (
+                            <CompanyCard
                               key={`transcript-${logoIndex}`}
-                              className="aspect-square w-full relative bg-white border border-gray-200 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg hover:z-10 cursor-pointer flex flex-col"
+                              symbol={transcript.company?.symbol || ""}
+                              name={transcript.company?.name || ""}
+                              logo={
+                                transcript.company?.logo
+                                  ? bufferToImageUrl(transcript.company.logo)
+                                  : null
+                              }
                               onClick={() => handleCompanyClick(transcript)}
-                            >
-                              <div className="flex-1 relative">
-                                {transcript.company?.logo ? (
-                                  <Image
-                                    src={bufferToImageUrl(
-                                      transcript.company.logo
-                                    )}
-                                    alt={`${transcript.company.name} logo`}
-                                    fill
-                                    style={{ objectFit: "contain" }}
-                                    className="p-1"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-[10px] font-medium">
-                                      {transcript.company?.symbol || ""}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="w-full bg-gray-50 py-0.5 px-1 border-t border-gray-200">
-                                <span className="text-[10px] font-medium text-gray-800 block text-center truncate">
-                                  {transcript.company?.symbol || ""}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Pre-market reports */}
-                    <MarketTimingGroup
-                      title="Pre-Market"
-                      icon={Sun}
-                      reports={dayReports.filter(
-                        (r) => r.marketTiming === "PRE_MARKET"
+                            />
+                          ))}
+                        </div>
                       )}
-                      bgColor="bg-blue-50"
-                    />
 
-                    {/* After-hours reports */}
-                    <MarketTimingGroup
-                      title="After Hours"
-                      icon={Moon}
-                      reports={dayReports.filter(
-                        (r) => r.marketTiming === "AFTER_HOURS"
-                      )}
-                      bgColor="bg-orange-50"
-                    />
-
-                    {/* Not supplied timing reports */}
-                    <MarketTimingGroup
-                      title="Not Specified"
-                      icon={Calendar}
-                      reports={dayReports.filter(
-                        (r) =>
-                          r.marketTiming === "NOT_SUPPLIED" ||
-                          r.marketTiming === null
-                      )}
-                      bgColor="bg-gray-50"
-                    />
-                  </div>
-                )}
+                      {/* Market timing groups */}
+                      <MarketTimingGroup
+                        title="Pre-Market"
+                        icon={Sun}
+                        reports={dayReports.filter(
+                          (r) => r.marketTiming === "PRE_MARKET"
+                        )}
+                        bgColor="bg-blue-50"
+                      />
+                      <MarketTimingGroup
+                        title="After Hours"
+                        icon={Moon}
+                        reports={dayReports.filter(
+                          (r) => r.marketTiming === "AFTER_HOURS"
+                        )}
+                        bgColor="bg-orange-50"
+                      />
+                      <MarketTimingGroup
+                        title="Not Specified"
+                        icon={Calendar}
+                        reports={dayReports.filter(
+                          (r) =>
+                            r.marketTiming === "NOT_SUPPLIED" ||
+                            r.marketTiming === null
+                        )}
+                        bgColor="bg-gray-50"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

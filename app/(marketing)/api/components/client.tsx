@@ -69,7 +69,7 @@ const ApiClientPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-gradient-to-b from-[#FFFFFF] to-[#D2DCFFF] py-8 overflow-x-clip mt-24 sm:mt-0"
+      className="bg-white dark:bg-slate-900 py-8 overflow-x-clip mt-24 sm:mt-0"
     >
       <div className="mx-auto pb-40">
         <motion.div
@@ -78,10 +78,10 @@ const ApiClientPage = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="max-w-[540px] mx-auto flex flex-col items-center"
         >
-          <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5">
+          <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5 text-gray-900 dark:text-gray-100">
             Earnings call transcripts on demand: Flexible access for every need
           </h2>
-          <p className="text-center text-[18px] sm:text-[22px] leading-[28px] sm:leading-[30px] tracking-tight text-[#010D3E] mt-5 mb-8 font-medium sm:font-normal">
+          <p className="text-center text-[18px] sm:text-[22px] leading-[28px] sm:leading-[30px] tracking-tight text-gray-600 dark:text-gray-300 mt-5 mb-8 font-medium sm:font-normal">
             Tailor your transcript access to your specific requirements. Whether
             you need bulk historical data, real-time updates, or targeted
             searches, our flexible API allows you to retrieve exactly the
@@ -96,7 +96,7 @@ const ApiClientPage = () => {
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12"
+              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 bg-primary hover:bg-primary/90 text-white dark:text-white shadow-sm dark:shadow-slate-800/50 transition-all duration-300 dark:text-black"
               onClick={handleCheckout}
             >
               Get API
