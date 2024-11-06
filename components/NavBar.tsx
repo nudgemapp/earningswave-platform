@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MenuIcon, X, ChevronDown } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
@@ -10,7 +10,6 @@ import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
 import NotificationButton from "./NotificationButton";
 import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
@@ -34,16 +33,6 @@ function NavBar() {
   const { mounted, user, isLoaded } = useMount();
   const { signOut } = useClerk();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
-  const pathname = usePathname();
-  const [notifications, setNotifications] = useState<
-    Array<{
-      id: string;
-      title: string;
-      message: string;
-      timestamp: Date;
-      read: boolean;
-    }>
-  >([]);
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
 
