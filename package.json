@@ -12,6 +12,7 @@
     "seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@clerk/nextjs": "^5.7.5",
     "@prisma/client": "^5.20.0",
     "@radix-ui/react-avatar": "^1.1.1",
