@@ -100,18 +100,18 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   };
 
   return (
-    <div className="bg-white shadow-md py-4 px-6 border-b border-gray-200">
+    <div className="bg-white dark:bg-slate-900 shadow-md py-4 px-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button
             onClick={() => handleNavigation(-1)}
             variant="ghost"
             size="icon"
-            className="hover:bg-gray-100"
+            className="hover:text-primary transition-colors duration-200"
           >
-            <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+            <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-          <div className="flex items-center space-x-2 bg-gray-50 rounded-md p-1">
+          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800 rounded-md p-1">
             <select
               value={currentDate.getMonth()}
               onChange={(e) => {
@@ -120,7 +120,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 updateURL(newDate);
                 setCurrentDate(newDate);
               }}
-              className="bg-transparent text-gray-700 font-medium focus:outline-none"
+              className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none"
             >
               {months.map((month, index) => (
                 <option key={month} value={index}>
@@ -136,7 +136,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 updateURL(newDate);
                 setCurrentDate(newDate);
               }}
-              className="bg-transparent text-gray-700 font-medium focus:outline-none"
+              className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none"
             >
               {years.map((year) => (
                 <option key={year} value={year}>
@@ -149,43 +149,51 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             onClick={() => handleNavigation(1)}
             variant="ghost"
             size="icon"
-            className="hover:bg-gray-100"
+            className="hover:text-primary transition-colors duration-200"
           >
-            <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+            <ChevronRightIcon className="h-5 w-5" />
           </Button>
         </div>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="hover:bg-gray-100"
+            className="bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary transition-colors duration-200"
             onClick={handleWatchlistClick}
           >
-            <StarIcon className="h-5 w-5 text-gray-600 mr-2" />
-            Watchlist
+            <StarIcon className="h-5 w-5 mr-2" />
+            <span>Watchlist</span>
           </Button>
           <Button
             onClick={() => setView("month")}
             variant={view === "month" ? "default" : "outline"}
-            className="px-4 py-2"
+            className={`px-4 py-2 transition-colors duration-200 ${
+              view === "month"
+                ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
+                : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+            }`}
           >
             {view === "month" ? (
               <CalendarCheckIcon className="w-4 h-4 mr-2" />
             ) : (
               <Calendar className="w-4 h-4 mr-2" />
             )}
-            Month
+            <span>Month</span>
           </Button>
           <Button
             onClick={() => setView("week")}
             variant={view === "week" ? "default" : "outline"}
-            className="px-4 py-2"
+            className={`px-4 py-2 transition-colors duration-200 ${
+              view === "week"
+                ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
+                : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+            }`}
           >
             {view === "week" ? (
               <CalendarCheckIcon className="w-4 h-4 mr-2" />
             ) : (
               <Calendar className="w-4 h-4 mr-2" />
             )}
-            Week
+            <span>Week</span>
           </Button>
         </div>
       </div>

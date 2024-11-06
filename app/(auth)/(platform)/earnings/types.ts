@@ -97,3 +97,28 @@ export type EarningsReportWithCompany = {
     } | null;
   } | null;
 };
+
+//finhub transcript types
+export interface TranscriptParticipant {
+  description: string;
+  name: string;
+  role: string;
+}
+
+export interface TranscriptSpeech {
+  name: string;
+  session: string;
+  speech: string;
+}
+
+export interface FinnhubTranscript {
+  audio: string;
+  id: string;
+  participant: TranscriptParticipant[];
+  quarter: number;
+  symbol: string;
+  time: number;
+  title: string;
+  transcript: TranscriptSpeech[];
+  year: number;
+}

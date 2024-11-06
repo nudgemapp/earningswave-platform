@@ -10,6 +10,7 @@ import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { User, Subscription } from "@prisma/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ProcessedReport, ProcessedTranscript } from "../types";
+// import { getFinnhubTicker, getTranscript } from "@/utils/finnhub";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
@@ -107,6 +108,13 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     setSelectedFutureEarnings(report);
   };
 
+  // const handleTestClick = async (ticker: string) => {
+  //   // const tickerData = await getFinnhubTicker(ticker);
+  //   // console.log(tickerData);
+  //   const transcriptData = await getTranscript(ticker);
+  //   console.log(transcriptData);
+  // };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
@@ -118,6 +126,8 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
         view={view}
         setView={handleViewChange}
       />
+      {/* <button onClick={() => handleTestClick("AAPL")}>Test ticker</button>
+      <button onClick={() => handleTestClick("AAPL_162777")}>Test</button> */}
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView

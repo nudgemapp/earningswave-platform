@@ -4,12 +4,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import darkImg from "@/public/images/ew-logo-dark-noBG.png";
+import { cn } from "@/lib/utils";
 
 interface LogoProps {
   dark?: boolean;
+  className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ dark = false }) => {
+const Logo: React.FC<LogoProps> = ({ dark = false, className }) => {
   const router = useRouter();
   const img = dark ? darkImg : lightImg;
 
@@ -19,7 +21,10 @@ const Logo: React.FC<LogoProps> = ({ dark = false }) => {
 
   return (
     <div
-      className="w-48 h-12 relative cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105"
+      className={cn(
+        "w-48 h-12 relative cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105",
+        className
+      )}
       onClick={handleClick}
     >
       <Image

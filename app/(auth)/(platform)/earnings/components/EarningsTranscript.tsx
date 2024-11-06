@@ -51,17 +51,17 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
   };
 
   return (
-    <div className="p-4 bg-white overflow-y-auto">
+    <div className="p-4 bg-white dark:bg-slate-900 overflow-y-auto">
       <div className="flex flex-col items-start mb-4">
         <div className="flex justify-between items-center w-full">
           <div className="flex items-center gap-4">
             <button
               onClick={handleBack}
-              className={`p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden ${
+              className={`p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors ${
                 selectedDate ? "md:block" : ""
               }`}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
             <div className="w-12 h-12 relative">
               <Image
@@ -73,17 +73,17 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
               />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {transcriptData.company_info.company_name}
               </h2>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {transcriptData.company_info.ticker_symbol}
               </div>
             </div>
           </div>
           <button
             onClick={handleWatchlistClick}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-full transition-colors hover:bg-gray-50 disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-full transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
             disabled={
               isCheckingWatchlist ||
               addToWatchlist.isPending ||
@@ -95,41 +95,51 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
                 isCheckingWatchlist ||
                 addToWatchlist.isPending ||
                 removeFromWatchlist.isPending
-                  ? "text-gray-300"
+                  ? "text-gray-300 dark:text-gray-600"
                   : isWatchlisted
                   ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-400"
+                  : "text-gray-400 dark:text-gray-500"
               }`}
               fill={isWatchlisted ? "currentColor" : "none"}
               strokeWidth={2}
             />
-            <span className="font-medium">Follow</span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Follow
+            </span>
           </button>
         </div>
-        <Separator className="my-4" />
+        <Separator className="my-4 bg-gray-200 dark:bg-slate-700" />
       </div>
 
-      <h2 className="text-xl font-semibold mb-4">{transcriptData.title}</h2>
+      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        {transcriptData.title}
+      </h2>
 
-      <div className="mb-4">
+      <div className="mb-4 space-y-2 text-gray-700 dark:text-gray-300">
         <p>
-          <strong>Company:</strong> {transcriptData.company_info.company_name}
+          <strong className="text-gray-900 dark:text-gray-100">Company:</strong>{" "}
+          {transcriptData.company_info.company_name}
         </p>
         <p>
-          <strong>Ticker:</strong> {transcriptData.company_info.ticker_symbol} (
+          <strong className="text-gray-900 dark:text-gray-100">Ticker:</strong>{" "}
+          {transcriptData.company_info.ticker_symbol} (
           {transcriptData.company_info.ticker_change})
         </p>
         <p>
-          <strong>Date:</strong> {transcriptData.company_info.date}
+          <strong className="text-gray-900 dark:text-gray-100">Date:</strong>{" "}
+          {transcriptData.company_info.date}
         </p>
         <p>
-          <strong>Time:</strong> {transcriptData.company_info.time}
+          <strong className="text-gray-900 dark:text-gray-100">Time:</strong>{" "}
+          {transcriptData.company_info.time}
         </p>
       </div>
 
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">Contents</h3>
-        <ul className="list-disc pl-5">
+        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          Contents
+        </h3>
+        <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
           {transcriptData.contents.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
@@ -137,30 +147,58 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
       </div>
 
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">Prepared Remarks</h3>
+        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          Prepared Remarks
+        </h3>
         {transcriptData.sections["Prepared Remarks"] ? (
-          transcriptData.sections["Prepared Remarks"].map((remark, index) => (
-            <div key={index} className="mb-4">
-              <p className="font-semibold">{remark.name}</p>
-              <p>{remark.text}</p>
-            </div>
-          ))
+          <div className="space-y-4">
+            {transcriptData.sections["Prepared Remarks"].map(
+              (remark, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700"
+                >
+                  <p className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                    {remark.name}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {remark.text}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
         ) : (
-          <p>No prepared remarks available for this transcript.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            No prepared remarks available for this transcript.
+          </p>
         )}
       </div>
 
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">Questions and Answers</h3>
+        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          Questions and Answers
+        </h3>
         {transcriptData.sections["Questions and Answers"] ? (
-          transcriptData.sections["Questions and Answers"].map((qa, index) => (
-            <div key={index} className="mb-4">
-              <p className="font-semibold">{qa.name}</p>
-              <p>{qa.text}</p>
-            </div>
-          ))
+          <div className="space-y-4">
+            {transcriptData.sections["Questions and Answers"].map(
+              (qa, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700"
+                >
+                  <p className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                    {qa.name}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">{qa.text}</p>
+                </div>
+              )
+            )}
+          </div>
         ) : (
-          <p>No questions and answers available for this transcript.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            No questions and answers available for this transcript.
+          </p>
         )}
       </div>
     </div>

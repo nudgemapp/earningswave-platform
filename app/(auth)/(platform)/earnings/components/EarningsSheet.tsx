@@ -42,9 +42,11 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     });
 
   const LoadingSpinner = () => (
-    <div className="flex flex-col items-center justify-center h-full">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      <p className="mt-4 text-gray-600 font-semibold">Loading...</p>
+    <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-slate-900">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-400" />
+      <p className="mt-4 text-gray-600 dark:text-gray-400 font-semibold">
+        Loading...
+      </p>
     </div>
   );
 
@@ -105,7 +107,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 
   const content = (
     <div
-      className={`h-screen p-4 overflow-y-auto bg-gray-100/80 ${className}`}
+      className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
       key={`${showWatchlist}-${selectedCompany?.id}-${selectedFutureEarnings?.id}`}
     >
       {renderContent()}
@@ -115,14 +117,21 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   if (isMobile) {
     return (
       <Sheet open={shouldShowSheet}>
-        <SheetContent side="right" className="w-full p-0">
+        <SheetContent
+          side="right"
+          className="w-full p-0 bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-800"
+        >
           {content}
         </SheetContent>
       </Sheet>
     );
   }
 
-  return content;
+  return (
+    <div className="bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-800 h-full">
+      {content}
+    </div>
+  );
 };
 
 export default EarningsTranscriptSheet;

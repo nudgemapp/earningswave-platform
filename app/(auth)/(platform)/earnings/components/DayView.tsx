@@ -56,8 +56,8 @@ const DayView: React.FC<DayViewProps> = ({
       onClick={() => setActiveFilter(filter)}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
         activeFilter === filter
-          ? "bg-blue-100 text-blue-700 font-medium"
-          : "hover:bg-gray-100 text-gray-600"
+          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 font-medium"
+          : "hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400"
       }`}
     >
       <Icon className="w-4 h-4" />
@@ -103,7 +103,7 @@ const DayView: React.FC<DayViewProps> = ({
   }) => (
     <div
       onClick={onClick}
-      className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 cursor-pointer"
+      className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 cursor-pointer"
     >
       <div className="relative h-12 w-12 mr-4">
         {company.logo ? (
@@ -121,16 +121,20 @@ const DayView: React.FC<DayViewProps> = ({
         )}
       </div>
       <div className="flex-1">
-        <h3 className="font-medium text-gray-900">{company.name}</h3>
+        <h3 className="font-medium text-gray-900 dark:text-gray-200">
+          {company.name}
+        </h3>
         <div className="flex gap-4">
-          <p className="text-sm text-gray-500">{company.symbol}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {company.symbol}
+          </p>
           {estimate !== undefined && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Est: ${estimate?.toFixed(2) || "N/A"}
             </p>
           )}
           {lastYearEPS !== undefined && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Prior: ${lastYearEPS?.toFixed(2) || "N/A"}
             </p>
           )}
@@ -153,8 +157,8 @@ const DayView: React.FC<DayViewProps> = ({
     if (reports.length === 0) return null;
 
     return (
-      <div className={`space-y-3 mt-4 ${className}`}>
-        <h4 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+      <div className={`space-y-3 mt-4 ${className} dark:bg-opacity-20`}>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
           <Icon className="w-4 h-4" />
           {title}
         </h4>
@@ -187,39 +191,39 @@ const DayView: React.FC<DayViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white dark:bg-slate-900">
       <div className="flex flex-col space-y-4">
         <div className="relative">
           <button
             onClick={handleBack}
-            className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full transition-colors md:hidden"
+            className="absolute right-0 top-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors md:hidden"
             aria-label="Close day view"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 dark:text-gray-400" />
           </button>
         </div>
         <div className="flex items-center justify-between md:justify-center">
           <button
             onClick={() => changeDate(-1)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
             aria-label="Previous day"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 dark:text-gray-400" />
           </button>
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-200">
             {formatDate(date)}
           </h2>
           <button
             onClick={() => changeDate(1)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
             aria-label="Next day"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5 dark:text-gray-400" />
           </button>
         </div>
 
         {/* Filter Bar */}
-        <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-lg w-fit mx-auto">
+        <div className="flex items-center gap-2 p-1 bg-gray-50 dark:bg-slate-800 rounded-lg w-fit mx-auto">
           <FilterButton filter="ALL" label="All" icon={Clock} />
           <FilterButton filter="PRE_MARKET" label="Pre-Market" icon={Sun} />
           <FilterButton filter="AFTER_HOURS" label="After Hours" icon={Moon} />
@@ -244,8 +248,8 @@ const DayView: React.FC<DayViewProps> = ({
         <>
           {filteredData.reports.length === 0 &&
           filteredData.transcripts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500">
-              <Calendar className="w-12 h-12 mb-4 text-gray-400" />
+            <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500 dark:text-gray-400">
+              <Calendar className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" />
               <p className="text-lg font-medium">
                 No earnings data for this date
               </p>
