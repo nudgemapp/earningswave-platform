@@ -71,7 +71,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       );
     }
 
-    if (selectedDate || window.innerWidth < 768) {
+    if (selectedDate || isMobile) {
       return (
         <DayView
           date={selectedDate || new Date()}
