@@ -14,7 +14,7 @@ interface Notification {
 }
 
 export default function NotificationButton() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {

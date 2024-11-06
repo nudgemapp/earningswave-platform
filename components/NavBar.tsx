@@ -35,7 +35,6 @@ function NavBar() {
   const { signOut } = useClerk();
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
   const pathname = usePathname();
-  const showSearch = pathname.includes("/earnings");
   const [notifications, setNotifications] = useState<
     Array<{
       id: string;
@@ -45,16 +44,8 @@ function NavBar() {
       read: boolean;
     }>
   >([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
-
-  useEffect(() => {
-    const unreadNotifications = notifications.filter(
-      (notif) => !notif.read
-    ).length;
-    setUnreadCount(unreadNotifications);
-  }, [notifications]);
 
   const links = [
     {
@@ -91,14 +82,6 @@ function NavBar() {
     if (menu) {
       setMenu(false);
     }
-  };
-
-  const handleFutureEarningsClick = (report: ProcessedReport) => {
-    useEarningsStore.setState({
-      selectedDate: null,
-      selectedCompany: null,
-      selectedFutureEarnings: report,
-    });
   };
 
   const handleAuthAction = () => {
