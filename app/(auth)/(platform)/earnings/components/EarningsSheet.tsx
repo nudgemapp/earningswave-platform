@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import EarningsTranscript from "./EarningsTranscript";
 import FutureEarnings from "./FutureEarnings";
@@ -96,8 +96,24 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     return <WelcomeMessage />;
   };
 
-  // Add state to control sheet visibility on mobile
-  const isMobile = window.innerWidth < 768;
+  // Replace the direct window.innerWidth check with state
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Set initial value
+    setIsMobile(window.innerWidth < 768);
+
+    // Add window resize listener
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const shouldShowSheet = !!(
     selectedCompany ||
     selectedFutureEarnings ||

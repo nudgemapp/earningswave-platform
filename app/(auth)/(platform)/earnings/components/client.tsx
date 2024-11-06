@@ -108,12 +108,33 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
     setSelectedFutureEarnings(report);
   };
 
-  // const handleTestClick = async (ticker: string) => {
-  //   // const tickerData = await getFinnhubTicker(ticker);
-  //   // console.log(tickerData);
-  //   const transcriptData = await getTranscript(ticker);
-  //   console.log(transcriptData);
-  // };
+  const handleFinnhubClick = async (ticker: string) => {
+    try {
+      const url = new URL("/api/finnhub", window.location.origin);
+      url.searchParams.append("exchange", "US");
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${JSON.stringify(
+            errorData
+          )}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Finnhub data:", data);
+    } catch (error) {
+      console.error("Error fetching Finnhub data:", error);
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -126,8 +147,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
         view={view}
         setView={handleViewChange}
       />
-      {/* <button onClick={() => handleTestClick("AAPL")}>Test ticker</button>
-      <button onClick={() => handleTestClick("AAPL_162777")}>Test</button> */}
+      <button onClick={() => handleFinnhubClick("AAPL")}>Finnhub API</button>
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView
