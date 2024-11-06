@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -93,6 +94,7 @@ export default function RootLayout({
               }}
             />
           </ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
