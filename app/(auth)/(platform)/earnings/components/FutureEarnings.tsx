@@ -41,7 +41,6 @@ interface HistoricalEarnings {
 }
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
-  const selectedDate = useEarningsStore((state) => state.selectedDate);
   const [timeframe, setTimeframe] = useState("1M");
   const [isLoading, setIsLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
