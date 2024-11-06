@@ -67,12 +67,12 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className="bg-white dark:bg-slate-900">
         <head>
           <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-200`}
         >
           <ThemeProvider
             attribute="class"
@@ -84,7 +84,14 @@ export default function RootLayout({
               <ModalProvider />
               {children}
             </Providers>
-            <Toaster position="bottom-left" />
+            <Toaster
+              position="bottom-left"
+              theme="system"
+              toastOptions={{
+                className:
+                  "bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700",
+              }}
+            />
           </ThemeProvider>
         </body>
       </html>

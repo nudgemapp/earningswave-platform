@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import darkImg from "@/public/images/ew-logo-dark-noBG.png";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface LogoProps {
   dark?: boolean;
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ dark = false, className }) => {
+const Logo: React.FC<LogoProps> = ({ className }) => {
   const router = useRouter();
-  const img = dark ? darkImg : lightImg;
+  const { theme } = useTheme();
+  const img = theme === "dark" ? darkImg : lightImg;
 
   const handleClick = () => {
     router.push("/");

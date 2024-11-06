@@ -13,6 +13,8 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
 import NotificationButton from "./NotificationButton";
 import { ModeToggle } from "./theme-toggle";
+import { useTheme } from "next-themes";
+import darkImg from "@/public/images/ew-logo-dark-noBG.png";
 // import TickerSearch from "./tickerSearch";
 
 function useMount() {
@@ -44,6 +46,8 @@ function NavBar() {
     }>
   >([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { theme } = useTheme();
+  const img = theme === "dark" ? darkImg : lightImg;
 
   useEffect(() => {
     const unreadNotifications = notifications.filter(
@@ -235,7 +239,7 @@ function NavBar() {
                   onClick={() => handleNavigation("/")}
                 >
                   <Image
-                    src={lightImg}
+                    src={img}
                     alt="logo"
                     fill
                     sizes="(max-width: 768px) 100vw"
