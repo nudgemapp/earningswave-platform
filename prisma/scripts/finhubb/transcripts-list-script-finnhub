@@ -95,31 +95,31 @@ export async function GET(request: Request) {
                 try {
                   const marketTime = determineMarketTime(transcript.time);
 
-                  await withRetry(() =>
-                    prisma.transcript.upsert({
-                      where: {
-                        id: transcript.id,
-                      },
-                      update: {
-                        title: transcript.title,
-                        scheduledAt: new Date(transcript.time),
-                        quarter: transcript.quarter || null,
-                        year: transcript.year || null,
-                        MarketTime: marketTime,
-                        status: TranscriptStatus.SCHEDULED,
-                      },
-                      create: {
-                        id: transcript.id,
-                        companyId: company.id,
-                        title: transcript.title,
-                        scheduledAt: new Date(transcript.time),
-                        quarter: transcript.quarter || null,
-                        year: transcript.year || null,
-                        MarketTime: marketTime,
-                        status: TranscriptStatus.SCHEDULED,
-                      },
-                    })
-                  );
+                  //   await withRetry(() =>
+                  //     prisma.transcript.upsert({
+                  //       where: {
+                  //         id: transcript.id,
+                  //       },
+                  //       update: {
+                  //         title: transcript.title,
+                  //         scheduledAt: new Date(transcript.time),
+                  //         quarter: transcript.quarter || null,
+                  //         year: transcript.year || null,
+                  //         MarketTime: marketTime,
+                  //         status: TranscriptStatus.SCHEDULED,
+                  //       },
+                  //       create: {
+                  //         id: transcript.id,
+                  //         companyId: company.id,
+                  //         title: transcript.title,
+                  //         scheduledAt: new Date(transcript.time),
+                  //         quarter: transcript.quarter || null,
+                  //         year: transcript.year || null,
+                  //         MarketTime: marketTime,
+                  //         status: TranscriptStatus.SCHEDULED,
+                  //       },
+                  //     })
+                  //   );
 
                   stats.createdTranscripts++;
                 } catch (transcriptError) {

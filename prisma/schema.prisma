@@ -26,6 +26,13 @@ model User {
   updatedAt    DateTime     @updatedAt
 }
 
+model Email {
+  id        String   @id @default(uuid())
+  address   String   @unique
+
+  createdAt DateTime @default(now())
+}
+
 model Subscription {
   id                        String   @id @default(uuid())
   subscription_id           String   @unique
@@ -76,112 +83,128 @@ model Payment {
   updatedAt        DateTime @updatedAt
 }
 
-model EarningsCallTranscript {
-  id                Int      @id @default(autoincrement())
-  href              String   @db.VarChar(255)
-  date              DateTime
-  title             String   @db.VarChar(255)
-  company_info      Json
-  contents          String[]
-  sections          Json
-  call_participants String[]
-  full_text         String   @db.Text
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-  logo_id           Int?
-  companyId         Int?     // Make it optional with the ?
-
-  company           Company? @relation(fields: [companyId], references: [id]) // Make relation optional too
-  logo              Logo?    @relation(fields: [logo_id], references: [id])
-
-  @@index([date])
-  @@index([companyId, date])
+enum MarketTime {
+  BMO      // Before Market Open (equivalent to PRE_MARKET)
+  AMC      // After Market Close (equivalent to AFTER_HOURS)
+  DMH      // During Market Hours (this is missing from your original enum)
+  UNKNOWN  // When timing is not supplied (better name than NOT_SUPPLIED)
 }
 
-model Logo {
-  id         Int       @id @default(autoincrement())
-  filename   String
-  data       Bytes
-  companies  Company[]
-
-  created_at DateTime  @default(now())
-
-  // One logo can be associated with many transcripts
-  earningsCallTranscripts EarningsCallTranscript[]
-}
-
-enum MarketTiming {
-  PRE_MARKET
-  AFTER_HOURS
-  NOT_SUPPLIED
-}
-
-model EarningsReport {
-  id                String       @id @default(uuid())
-  symbol            String
-  name              String
-  reportDate        DateTime
-  fiscalDateEnding  DateTime
-  estimate          Float?
-  currency          String
-  marketTiming      MarketTiming?
-  lastYearEPS      Float?
-  lastYearReportDate DateTime?
-  lastYearRevenue   Float?
-  companyId         Int
-  company           Company     @relation(fields: [companyId], references: [id])
-
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  @@unique([symbol, companyId, reportDate, fiscalDateEnding])
-  @@index([reportDate])
-  @@index([companyId, reportDate])
+enum TranscriptStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }
 
 model Company {
-  id              Int              @id @default(autoincrement())
-  symbol          String           @unique
-  name            String
-  exchanges       Exchange[]       @relation("CompanyExchanges")
-  marketCap       Decimal?         // in billions
-  price           Decimal?
-  revenue         Decimal?         // in billions
-  earningsReports EarningsReport[]
-  logo            Logo?            @relation(fields: [logoId], references: [id])
-  logoId          Int?
-  earningsCallTranscripts EarningsCallTranscript[]
-  watchlistEntries WatchlistEntry[]
+  id            String       @id @default(cuid())
+  currency      String       // Trading currency
+  description   String       // Company name/description
+  displaySymbol String       // Display version of symbol
+  figi          String?      @unique  // FIGI identifier should be unique
+  isin          String?      @unique  // ISIN number should be unique
+  mic           MIC         // Market Identifier Code (XNYS or XNAS)
+  shareClassFIGI String?     @unique  // Share class FIGI should be unique
+  symbol        String       // Primary trading symbol
+  symbol2       String?      // Alternative symbol if any
+  type          String       // Security type (Common Stock, ETF, etc)
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+
+  transcripts   Transcript[] // Relation to transcripts
+  watchlist     WatchlistEntry[] // Add relation to WatchlistEntry
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  country              String?      // Country code (e.g., "US")
+  exchange             String?      // Full exchange name
+  ipo                  DateTime?    // IPO date
+  marketCapitalization Float?       // Market cap in millions
+  name                 String?      // Official company name
+  phone                String?      // Company phone number
+  sharesOutstanding    Float?       // Number of shares outstanding in millions
+  weburl               String?      // Company website URL
+  logo                 String?      // URL to hosted logo image
+  finnhubIndustry      String?      // Industry classification
+
+  @@unique([symbol, mic])  // Symbol must be unique within each exchange
+  @@index([symbol])
+  @@index([mic])
+  @@index([type])
+  @@index([currency])
 }
 
-enum ExchangeType {
-  NYSE
-  NASDAQ
+enum MIC {
+  XNYS
+  XNAS
 }
 
-model Exchange {
-  id        Int          @id @default(autoincrement())
-  name      ExchangeType @unique
-  companies Company[]    @relation("CompanyExchanges")
+model Transcript {
+  id          String        @id // e.g. "NVDA_3393990"
+  companyId   String        
+  title       String?        // Optional: future calls might not have title yet
+  scheduledAt DateTime      // Store the 'time' field
+  quarter     Int?         // Optional: some transcripts don't have this
+  year        Int?         // Optional: some transcripts don't have this
+  audioUrl    String?      // Optional: for audio recordings
+  MarketTime  MarketTime   // BMO/AMC/etc
+  status      TranscriptStatus
+  
+  // Financial data (for both past and future calls)
+  epsActual       Float?
+  epsEstimate     Float?
+  revenueActual   Float?
+  revenueEstimate Float?
+  
+  // Full transcript data (only for completed calls)
+  fullText    String?      @db.Text  // Complete transcript text
+  speakers    Json?        // Array of all speakers/participants
+  
+  // Relations
+  participants Participant[]
+  company      Company       @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([companyId, scheduledAt])  // One transcript per company per time
+  @@index([companyId])
+  @@index([scheduledAt])
+  @@index([status])
 }
 
-model Email {
-  id        String   @id @default(uuid())
-  address   String   @unique
+model Participant {
+  id           String     @id @default(cuid())
+  transcriptId String
+  transcript   Transcript @relation(fields: [transcriptId], references: [id])
+  name         String     // e.g. "Prabhu Ramamoorthy"
+  role         String?    // e.g. "executive"
+  description  String?    // Additional description if available
+  speeches     Speech[]   
+  
+  @@unique([transcriptId, name])  // Same person can't appear twice in same transcript
+  @@index([transcriptId])
+}
 
-  createdAt DateTime @default(now())
+model Speech {
+  id            String      @id @default(cuid())
+  participantId String      
+  participant   Participant @relation(fields: [participantId], references: [id])
+  content       String      @db.Text // The actual speech content
+  sequence      Int         // Order in transcript
+  sessionType   String?     // e.g. "management_discussion" - kept as String since types vary
+  
+  createdAt     DateTime    @default(now())
+
+  @@unique([participantId, sequence])  // Each speech must have unique sequence per participant
+  @@index([participantId])
+  @@index([sessionType])
 }
 
 model WatchlistEntry {
   id        String   @id @default(uuid())
   userId    String
-  companyId Int
+  companyId String   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   addedAt   DateTime @default(now())

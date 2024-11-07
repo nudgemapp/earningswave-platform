@@ -1,0 +1,106 @@
+import { NextResponse } from "next/server";
+import { PrismaClient, MarketTime, TranscriptStatus } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+function determineMarketTime(time: string): MarketTime {
+  const hour = new Date(time).getHours();
+  if (hour < 9) return "BMO";
+  if (hour >= 16) return "AMC";
+  return "DMH";
+}
+
+export async function GET(request: Request) {
+  try {
+    // Get all companies from database
+    const companies = await prisma.company.findMany();
+
+    let stats = {
+      totalCompanies: companies.length,
+      processedCompanies: 0,
+      updatedCompanies: 0,
+      errors: 0,
+    };
+
+    // Process each company
+    for (const company of companies) {
+      try {
+        // Fetch company profile
+        const profileResponse = await fetch(
+          `https://finnhub.io/api/v1/stock/profile2?symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+        );
+
+        const profileData = await profileResponse.json();
+
+        // Only update if we got valid data
+        if (profileData && profileData.ticker) {
+          await prisma.company.update({
+            where: {
+              id: company.id,
+            },
+            data: {
+              country: profileData.country ?? null,
+              exchange: profileData.exchange ?? null,
+              ipo: profileData.ipo ? new Date(profileData.ipo) : null,
+              marketCapitalization: profileData.marketCapitalization ?? null,
+              name: profileData.name ?? null,
+              phone: profileData.phone ?? null,
+              sharesOutstanding: profileData.shareOutstanding ?? null,
+              weburl: profileData.weburl ?? null,
+              logo: profileData.logo ?? null,
+              finnhubIndustry: profileData.finnhubIndustry ?? null,
+            },
+          });
+          stats.updatedCompanies++;
+        } else {
+          console.log(`Skipped ${company.symbol}:`, {
+            hasProfileData: !!profileData,
+            hasTicker: profileData?.ticker,
+            responseData: profileData,
+          });
+
+          stats.updatedCompanies++;
+        }
+
+        stats.processedCompanies++;
+
+        // Add a delay to respect rate limits (60 calls/minute = 1 call/second)
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Log progress every 50 companies
+        if (stats.processedCompanies % 50 === 0) {
+          console.log("Progress:", {
+            processedCompanies: stats.processedCompanies,
+            totalCompanies: stats.totalCompanies,
+            updatedCompanies: stats.updatedCompanies,
+            errors: stats.errors,
+          });
+        }
+      } catch (companyError) {
+        console.error(
+          `Error processing company ${company.symbol}:`,
+          companyError
+        );
+        stats.errors++;
+      }
+    }
+
+    console.log("Final Statistics:", stats);
+
+    return NextResponse.json({
+      message: "Company profiles updated successfully",
+      stats,
+    });
+  } catch (error) {
+    console.error("Failed to process company profiles:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to process company profiles",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

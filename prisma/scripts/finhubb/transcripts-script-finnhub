@@ -1,0 +1,123 @@
+import { NextResponse } from "next/server";
+import { PrismaClient, MarketTime, TranscriptStatus } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+function determineMarketTime(time: string): MarketTime {
+  const hour = new Date(time).getHours();
+  if (hour < 9) return "BMO";
+  if (hour >= 16) return "AMC";
+  return "DMH";
+}
+
+export async function GET(request: Request) {
+  try {
+    // Get all companies from database
+    const companies = await prisma.company.findMany();
+
+    let stats = {
+      totalCompanies: companies.length,
+      processedCompanies: 0,
+      totalTranscripts: 0,
+      createdTranscripts: 0,
+      errors: 0,
+    };
+
+    // Process each company
+    for (const company of companies) {
+      try {
+        // Fetch transcript list for each company
+        const transcriptListResponse = await fetch(
+          `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+        );
+
+        const transcriptListData = await transcriptListResponse.json();
+
+        console.log(transcriptListData);
+
+        // if (transcriptListData.transcripts?.length > 0) {
+        //   stats.totalTranscripts += transcriptListData.transcripts.length;
+
+        //   // Process each transcript
+        //   for (const transcript of transcriptListData.transcripts) {
+        //     try {
+        //       await prisma.transcript.upsert({
+        //         where: {
+        //           id: transcript.id
+        //         },
+        //         update: {
+        //           title: transcript.title,
+        //           scheduledAt: new Date(transcript.time),
+        //           quarter: transcript.quarter || null,
+        //           year: transcript.year || null,
+        //           MarketTime: determineMarketTime(transcript.time),
+        //           status: TranscriptStatus.SCHEDULED, // Default to SCHEDULED
+        //         },
+        //         create: {
+        //           id: transcript.id,
+        //           companyId: company.id,
+        //           title: transcript.title,
+        //           scheduledAt: new Date(transcript.time),
+        //           quarter: transcript.quarter || null,
+        //           year: transcript.year || null,
+        //           MarketTime: determineMarketTime(transcript.time),
+        //           status: TranscriptStatus.SCHEDULED,
+        //         }
+        //       });
+
+        //       stats.createdTranscripts++;
+        //     } catch (transcriptError) {
+        //       console.error(`Error processing transcript ${transcript.id}:`, transcriptError);
+        //       stats.errors++;
+        //     }
+        //   }
+        // }
+
+        // stats.processedCompanies++;
+
+        // Add a small delay to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (companyError) {
+        console.error(
+          `Error processing company ${company.symbol}:`,
+          companyError
+        );
+        stats.errors++;
+      }
+
+      // Log progress every 100 companies
+      if (stats.processedCompanies % 100 === 0) {
+        console.log("Progress:", {
+          processedCompanies: stats.processedCompanies,
+          totalCompanies: stats.totalCompanies,
+          transcriptsCreated: stats.createdTranscripts,
+          errors: stats.errors,
+        });
+      }
+    }
+
+    console.log("Final Statistics:", {
+      totalCompanies: stats.totalCompanies,
+      processedCompanies: stats.processedCompanies,
+      totalTranscripts: stats.totalTranscripts,
+      createdTranscripts: stats.createdTranscripts,
+      errors: stats.errors,
+    });
+
+    return NextResponse.json({
+      message: "Transcripts imported successfully",
+      stats,
+    });
+  } catch (error) {
+    console.error("Failed to process transcripts:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to process transcripts",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
