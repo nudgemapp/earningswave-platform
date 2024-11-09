@@ -1,17 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import EarningsTranscript from "./EarningsTranscript";
 import FutureEarnings from "./FutureEarnings";
 import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
-import { ProcessedReport } from "../types";
 import DayView from "./DayView";
 import Watchlist from "./Watchlist";
 import { Loader2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useGetTranscriptData } from "@/app/hooks/use-get-transcript-data";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -22,24 +20,15 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 }) => {
   const {
     selectedCompany,
-    selectedFutureEarnings,
+    // selectedFutureEarnings,
     selectedDate,
     showWatchlist,
   } = useEarningsStore();
 
-  // Convert to React Query for better caching and loading states
   const { data: transcriptData, isLoading: isLoadingTranscript } =
-    useQuery<EarningsCallTranscript>({
-      queryKey: ["transcript", selectedCompany?.id],
-      queryFn: async () => {
-        if (!selectedCompany?.id) throw new Error("No transcript selected");
-        const response = await fetch(`/api/transcripts/${selectedCompany.id}`);
-        if (!response.ok) throw new Error("Failed to fetch transcript");
-        return response.json();
-      },
-      enabled: !!selectedCompany?.id,
-      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    });
+    useGetTranscriptData(selectedCompany?.transcriptId);
+
+  console.log(transcriptData);
 
   const LoadingSpinner = () => (
     <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-slate-900">
@@ -51,24 +40,21 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   );
 
   const renderContent = () => {
-    // Priority-based rendering
     if (showWatchlist) {
       return <Watchlist />;
     }
 
-    if (selectedCompany?.id) {
+    if (selectedCompany?.transcriptId) {
       if (isLoadingTranscript) {
         return <LoadingSpinner />;
       }
-      return transcriptData ? (
-        <EarningsTranscript transcriptData={transcriptData} />
-      ) : null;
+      // return transcriptData ? (
+      //   <EarningsTranscript transcriptData={transcriptData} />
+      // ) : null;
     }
 
-    if (selectedFutureEarnings) {
-      return (
-        <FutureEarnings report={selectedFutureEarnings as ProcessedReport} />
-      );
+    if (selectedCompany?.companyId) {
+      return <FutureEarnings SelectedCompany={selectedCompany} />;
     }
 
     if (selectedDate || isMobile) {
@@ -77,7 +63,10 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
           date={selectedDate || new Date()}
           onTranscriptClick={(transcript) => {
             useEarningsStore.setState({
-              selectedCompany: transcript,
+              selectedCompany: {
+                companyId: transcript.company.id,
+                transcriptId: transcript.id,
+              },
               showWatchlist: false,
               selectedFutureEarnings: null,
             });
@@ -116,7 +105,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
 
   const shouldShowSheet = !!(
     selectedCompany ||
-    selectedFutureEarnings ||
+    // selectedFutureEarnings ||
     showWatchlist ||
     (isMobile && selectedDate)
   );
@@ -124,7 +113,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   const content = (
     <div
       className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
-      key={`${showWatchlist}-${selectedCompany?.id}-${selectedFutureEarnings?.id}`}
+      key={`${showWatchlist}-${selectedCompany?.companyId}`}
     >
       {renderContent()}
     </div>

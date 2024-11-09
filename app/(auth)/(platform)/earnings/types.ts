@@ -1,30 +1,24 @@
 import { MarketTime, TranscriptStatus } from "@prisma/client";
 
-export type ProcessedTranscript = {
-  id: string;
-  title: string | null;
-  scheduledAt: Date;
-  status: TranscriptStatus;
-  MarketTime: MarketTime;
-  quarter: number | null;
-  year: number | null;
-  company: {
-    id: string;
-    symbol: string;
-    name: string | null;
-    logo: string | null;
-  } | null;
-  marketTime: MarketTime; // This is the transformed version for frontend compatibility
-};
-
-// Optional: You might want to add these helper types as well
-export type Company = {
+interface Company {
   id: string;
   symbol: string;
-  name: string | null;
+  name: string;
   logo: string | null;
-};
+}
 
-export type WeekViewResponse = {
+export interface ProcessedTranscript {
+  id: string;
+  title: string;
+  scheduledAt: Date;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
+  quarter: number;
+  marketTime: string;
+  totalForDay?: number;
+  company: Company;
+}
+
+export interface WeekViewResponse {
   transcripts: ProcessedTranscript[];
-};
+}

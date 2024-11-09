@@ -1,15 +1,17 @@
 import { create } from "zustand";
-import { EarningsReport, WatchlistEntry } from "@prisma/client";
+import { WatchlistEntry } from "@prisma/client";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 
 interface SelectedCompany {
-  id: any | null;
+  companyId: string;
+  transcriptId: string;
 }
 
 interface EarningsState {
   selectedCompany: SelectedCompany | null;
   setSelectedCompany: (company: SelectedCompany | null) => void;
-  selectedFutureEarnings: EarningsReport | null;
-  setSelectedFutureEarnings: (report: EarningsReport | null) => void;
+  selectedFutureEarnings: ProcessedTranscript | null;
+  setSelectedFutureEarnings: (report: ProcessedTranscript | null) => void;
   selectedDate: Date | null;
   setSelectedDate: (date: Date | null) => void;
   showWatchlist: boolean;

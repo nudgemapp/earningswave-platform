@@ -16,7 +16,6 @@ import {
   Star as StarIcon,
 } from "lucide-react";
 import { ResponsiveContainer } from "recharts";
-import { ProcessedReport } from "../types";
 import EnhancedEarnings from "./EnhancedEarnings";
 import { useEarningsStore } from "@/store/EarningsStore";
 import StockPriceChart from "./StockPriceChart";
@@ -26,9 +25,10 @@ import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import AIEarningsAnalysis from "./AIEarnings";
+import { useGetCompany } from "@/app/hooks/use-get-company";
 
 interface FutureEarningsProps {
-  report: ProcessedReport;
+  SelectedCompany: any;
 }
 
 interface HistoricalEarnings {
@@ -40,7 +40,7 @@ interface HistoricalEarnings {
   eps: number;
 }
 
-const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
+const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [timeframe, setTimeframe] = useState("1M");
   const [isLoading, setIsLoading] = useState(true);
   const [showSummary, setShowSummary] = useState(false);
@@ -51,9 +51,21 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
 
+  console.log(SelectedCompany);
+
+  if (!SelectedCompany) return null;
+
   // Add this query to check if company is in watchlist
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
-    useWatchlistCheck(report.companyId);
+    useWatchlistCheck(SelectedCompany.companyId);
+
+  const {
+    data: companyData,
+    isLoading: isLoadingCompany,
+    error: companyError,
+  } = useGetCompany(SelectedCompany.companyId);
+
+  console.log(companyData);
 
   const handleWatchlistClick = async () => {
     if (!userId) {
@@ -63,41 +75,41 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
 
     console.log("isWatchlisted", isWatchlisted);
 
-    try {
-      if (isWatchlisted) {
-        await removeFromWatchlist.mutateAsync(report.companyId);
-        toast.success("Removed from watchlist");
-      } else {
-        await addToWatchlist.mutateAsync(report.companyId);
-        toast.success("Added to watchlist");
-      }
-    } catch {
-      toast.error("Failed to update watchlist");
-    }
+    // try {
+    //   if (isWatchlisted) {
+    //     await removeFromWatchlist.mutateAsync(report.companyId);
+    //     toast.success("Removed from watchlist");
+    //   } else {
+    //     await addToWatchlist.mutateAsync(report.companyId);
+    //     toast.success("Added to watchlist");
+    //   }
+    // } catch {
+    //   toast.error("Failed to update watchlist");
+    // }
   };
 
   //change to use useQuery
-  useEffect(() => {
-    const fetchHistoricalData = async () => {
-      if (!report.companyId) return;
+  // useEffect(() => {
+  //   const fetchHistoricalData = async () => {
+  //     if (!report.companyId) return;
 
-      try {
-        setIsLoading(true);
-        const response = await fetch(
-          `/api/earnings/history/${report.companyId}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch historical data");
-        const data = await response.json();
-        setHistoricalData(data);
-      } catch (_error) {
-        console.error("Error fetching historical data:", _error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //     try {
+  //       setIsLoading(true);
+  //       const response = await fetch(
+  //         `/api/earnings/history/${report.companyId}`
+  //       );
+  //       if (!response.ok) throw new Error("Failed to fetch historical data");
+  //       const data = await response.json();
+  //       setHistoricalData(data);
+  //     } catch (_error) {
+  //       console.error("Error fetching historical data:", _error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchHistoricalData();
-  }, [report.companyId]);
+  //   fetchHistoricalData();
+  // }, [report.companyId]);
 
   const calculatePercentageChange = (
     actual: number | null,
@@ -116,21 +128,21 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
     return `$${value.toFixed(2)}`;
   };
   // Get current quarter number
-  const quarterNum =
-    Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;
-  const epsBeat = report.lastYearEPS
-    ? (((report.estimate || 0) - report.lastYearEPS) /
-        Math.abs(report.lastYearEPS)) *
-      100
-    : 0;
+  // const quarterNum =
+  //   Math.floor(new Date(report.fiscalDateEnding).getMonth() / 3) + 1;
+  // const epsBeat = report.lastYearEPS
+  //   ? (((report.estimate || 0) - report.lastYearEPS) /
+  //       Math.abs(report.lastYearEPS)) *
+  //     100
+  //   : 0;
 
-  const handleBack = () => {
-    useEarningsStore.setState({ selectedFutureEarnings: null });
-  };
+  // const handleBack = () => {
+  //   useEarningsStore.setState({ selectedFutureEarnings: null });
+  // };
 
   return (
     <div className="space-y-6">
-      <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+      {/* <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
         <CardHeader className="space-y-2">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
@@ -356,7 +368,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ report }) => {
             </div>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };
