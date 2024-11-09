@@ -1,39 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-// Add these interfaces before the GET function
-interface RawTranscript {
-  id: number;
-  date: Date;
-  title: string;
-  total_count: string | number;
-  remaining_count: string | number;
-  "company.id": number;
-  "company.symbol": string;
-  "company.name": string;
-  "company.logo.data": Buffer | null;
-}
-
-interface RawReport {
-  id: string;
-  symbol: string;
-  name: string;
-  reportDate: Date;
-  fiscalDateEnding: Date;
-  estimate: number | null;
-  currency: string;
-  marketTiming: string | null;
-  lastYearEPS: number | null;
-  lastYearReportDate: Date | null;
-  companyId: number;
-  "company.id": number;
-  "company.symbol": string;
-  "company.name": string;
-  "company.logo.data": Buffer | null;
-  total_count: string | number;
-  remaining_count: string | number;
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startDate = new Date(searchParams.get("startDate") || "");
@@ -49,120 +16,70 @@ export async function GET(request: Request) {
   }
 
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const [transcripts, reports] = await Promise.all([
-        tx.$queryRaw`
-          WITH DailyCounts AS (
-            SELECT DATE(date) as day, COUNT(*) as total_count
-            FROM "EarningsCallTranscript"
-            WHERE date >= ${startDate} AND date <= ${endDate}
-            GROUP BY DATE(date)
-          ),
-          RankedTranscripts AS (
-            SELECT *,
-                   ROW_NUMBER() OVER (PARTITION BY DATE(date) ORDER BY date) as rn
-            FROM "EarningsCallTranscript"
-            WHERE date >= ${startDate} AND date <= ${endDate}
-          )
-          SELECT t.*, 
-                 c.id as "company.id",
-                 c.symbol as "company.symbol",
-                 c.name as "company.name",
-                 l.data as "company.logo.data",
-                 dc.total_count,
-                 GREATEST(dc.total_count - 11, 0) as remaining_count
-          FROM RankedTranscripts t
-          LEFT JOIN "Company" c ON t."companyId" = c.id
-          LEFT JOIN "Logo" l ON c."logoId" = l.id
-          LEFT JOIN DailyCounts dc ON DATE(t.date) = dc.day
-          WHERE rn <= 11
-          ORDER BY date ASC
-        `,
-        tx.$queryRaw`
-          WITH DailyCounts AS (
-            SELECT DATE("reportDate") as day, COUNT(*) as total_count
-            FROM "EarningsReport"
-            WHERE "reportDate" >= ${startDate} AND "reportDate" <= ${endDate}
-            GROUP BY DATE("reportDate")
-          ),
-          RankedReports AS (
-            SELECT *,
-                   ROW_NUMBER() OVER (PARTITION BY DATE("reportDate") ORDER BY "reportDate") as rn
-            FROM "EarningsReport"
-            WHERE "reportDate" >= ${startDate} AND "reportDate" <= ${endDate}
-          )
-          SELECT r.*, 
-                 c.id as "company.id",
-                 c.symbol as "company.symbol",
-                 c.name as "company.name",
-                 l.data as "company.logo.data",
-                 dc.total_count,
-                 GREATEST(dc.total_count - 11, 0) as remaining_count
-          FROM RankedReports r
-          LEFT JOIN "Company" c ON r."companyId" = c.id
-          LEFT JOIN "Logo" l ON c."logoId" = l.id
-          LEFT JOIN DailyCounts dc ON DATE(r."reportDate") = dc.day
-          WHERE rn <= 11
-          ORDER BY "reportDate" ASC
-        `,
-      ]);
+    // Single raw SQL query to get both the daily counts and limited transcripts
+    const result = await prisma.$queryRaw`
+      WITH DailyCounts AS (
+        SELECT 
+          DATE("scheduledAt") as date,
+          COUNT(*) as total_count
+        FROM "Transcript"
+        WHERE 
+          "scheduledAt" >= ${startDate}
+          AND "scheduledAt" <= ${endDate}
+          AND quarter IS NOT NULL
+        GROUP BY DATE("scheduledAt")
+      ),
+      RankedTranscripts AS (
+        SELECT 
+          t.id,
+          t.title,
+          t."scheduledAt",
+          t.status,
+          t."MarketTime",
+          t.quarter,
+          c.id as "companyId",
+          c.symbol,
+          c.name as "companyName",
+          c.logo,
+          dc.total_count,
+          ROW_NUMBER() OVER (PARTITION BY DATE(t."scheduledAt") ORDER BY t."scheduledAt") as rn
+        FROM "Transcript" t
+        JOIN "Company" c ON t."companyId" = c.id
+        JOIN DailyCounts dc ON DATE(t."scheduledAt") = dc.date
+        WHERE 
+          t."scheduledAt" >= ${startDate}
+          AND t."scheduledAt" <= ${endDate}
+          AND t.quarter IS NOT NULL
+      )
+      SELECT *
+      FROM RankedTranscripts
+      WHERE rn <= 12
+      ORDER BY "scheduledAt" ASC;
+    `;
 
-      // Transform the raw SQL results to match the expected structure
-      const formattedTranscripts = (transcripts as RawTranscript[]).map(
-        (t) => ({
-          id: t.id,
-          date: t.date,
-          title: t.title,
-          totalCount: Number(t.total_count),
-          remainingCount: Number(t.remaining_count),
-          company: {
-            id: t["company.id"],
-            symbol: t["company.symbol"],
-            name: t["company.name"],
-            logo: t["company.logo.data"]
-              ? {
-                  data: t["company.logo.data"],
-                }
-              : null,
-          },
-        })
-      );
+    // Transform the raw SQL result into the expected format
+    const transformedTranscripts = (result as any[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      scheduledAt: row.scheduledAt,
+      status: row.status,
+      MarketTime: row.MarketTime,
+      quarter: row.quarter,
+      marketTime: row.MarketTime, // For frontend compatibility
+      totalForDay: Number(row.total_count),
+      company: {
+        id: row.companyId,
+        symbol: row.symbol,
+        name: row.companyName,
+        logo: row.logo,
+      },
+    }));
 
-      const formattedReports = (reports as RawReport[]).map((r) => ({
-        id: r.id,
-        symbol: r.symbol,
-        name: r.name,
-        reportDate: r.reportDate,
-        fiscalDateEnding: r.fiscalDateEnding,
-        estimate: r.estimate,
-        currency: r.currency,
-        marketTiming: r.marketTiming,
-        lastYearEPS: r.lastYearEPS,
-        lastYearReportDate: r.lastYearReportDate,
-        companyId: r.companyId,
-        totalCount: Number(r.total_count),
-        remainingCount: Number(r.remaining_count),
-        company: {
-          id: r["company.id"],
-          symbol: r["company.symbol"],
-          name: r["company.name"],
-          logo: r["company.logo.data"]
-            ? {
-                data: r["company.logo.data"],
-              }
-            : null,
-        },
-      }));
-
-      return {
-        transcripts: formattedTranscripts,
-        reports: formattedReports,
-      };
+    return NextResponse.json({
+      transcripts: transformedTranscripts,
     });
-
-    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching month data:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    console.error("Error fetching month view data:", error);
+    return new Response("Failed to fetch month view data", { status: 500 });
   }
 }

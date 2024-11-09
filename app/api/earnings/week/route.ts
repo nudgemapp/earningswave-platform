@@ -15,96 +15,52 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Date Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const [transcripts, reports] = await Promise.all([
-        tx.earningsCallTranscript.findMany({
-          where: {
-            date: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          select: {
-            id: true,
-            date: true,
-            title: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            date: "asc",
-          },
-        }),
-        tx.earningsReport.findMany({
-          where: {
-            reportDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          select: {
-            id: true,
-            symbol: true,
-            name: true,
-            reportDate: true,
-            fiscalDateEnding: true,
-            estimate: true,
-            currency: true,
-            marketTiming: true,
-            lastYearEPS: true,
-            lastYearReportDate: true,
-            companyId: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            reportDate: "asc",
-          },
-        }),
-      ]);
+    const result = await prisma.$queryRaw`
+      SELECT 
+        t.id,
+        t.title,
+        t."scheduledAt",
+        t.status,
+        t."MarketTime",
+        t.quarter,
+        c.id as "companyId",
+        c.symbol,
+        c.name as "companyName",
+        c.logo
+      FROM "Transcript" t
+      JOIN "Company" c ON t."companyId" = c.id
+      WHERE 
+        t."scheduledAt" >= ${startDate}
+        AND t."scheduledAt" <= ${endDate}
+        AND t.quarter IS NOT NULL
+      ORDER BY t."scheduledAt" ASC;
+    `;
 
-      console.log("Found Records:", {
-        transcriptsCount: transcripts.length,
-        reportsCount: reports.length,
-        firstTranscriptDate: transcripts[0]?.date,
-        lastTranscriptDate: transcripts[transcripts.length - 1]?.date,
-        firstReportDate: reports[0]?.reportDate,
-        lastReportDate: reports[reports.length - 1]?.reportDate,
-      });
+    const transformedTranscripts = (result as any[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      scheduledAt: row.scheduledAt,
+      status: row.status,
+      MarketTime: row.MarketTime,
+      quarter: row.quarter,
+      marketTime: row.MarketTime,
+      company: {
+        id: row.companyId,
+        symbol: row.symbol,
+        name: row.companyName,
+        logo: row.logo,
+      },
+    }));
 
-      return {
-        transcripts,
-        reports,
-      };
+    console.log("Found Records:", {
+      transcriptsCount: transformedTranscripts.length,
+      firstTranscriptDate: transformedTranscripts[0]?.scheduledAt,
+      lastTranscriptDate:
+        transformedTranscripts[transformedTranscripts.length - 1]?.scheduledAt,
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json({ transcripts: transformedTranscripts });
   } catch (error) {
     console.error("Error fetching week view data:", error);
     return new Response("Failed to fetch week view data", { status: 500 });

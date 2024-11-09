@@ -2,10 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Calendar, Sun, Moon, LucideIcon, Star } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
-import {
-  ProcessedTranscript,
-  ProcessedReport,
-} from "@/app/(auth)/(platform)/earnings/types";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
@@ -13,19 +10,10 @@ import { useAuthModal } from "@/store/AuthModalStore";
 import { useAuth } from "@clerk/nextjs";
 
 interface WeekViewProps {
-  handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
-  handleFutureEarningsClick: (report: ProcessedReport) => void;
+  handleCompanyClick: (transcript: ProcessedTranscript) => void;
 }
 
-interface WeekViewData {
-  transcripts: ProcessedTranscript[];
-  reports: ProcessedReport[];
-}
-
-const WeekView: React.FC<WeekViewProps> = ({
-  handleCompanyClick,
-  handleFutureEarningsClick,
-}) => {
+const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const currentDate = useCalendarStore((state) => state.currentDate);
@@ -51,15 +39,6 @@ const WeekView: React.FC<WeekViewProps> = ({
     const fridayDate = new Date(dates[4]);
     fridayDate.setHours(23, 59, 59, 999);
 
-    console.log(
-      "Week dates:",
-      dates.map((d) => ({
-        day: d.toLocaleDateString("en-US", { weekday: "long" }),
-        date: d.toISOString(),
-        localDate: d.toLocaleDateString(),
-      }))
-    );
-
     return {
       weekDates: dates,
       monday: mondayDate,
@@ -74,31 +53,22 @@ const WeekView: React.FC<WeekViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts, reports } = data as WeekViewData;
+  const { transcripts } = data;
 
   // Pre-process data for each day
   const getDateContent = weekDates.map((date) => {
-    // Format date to YYYY-MM-DD for comparison
     const currentDay = date.toISOString().split("T")[0];
 
     const dayTranscripts = transcripts.filter((transcript) => {
-      const transcriptDate = new Date(transcript.date)
+      const transcriptDate = new Date(transcript.scheduledAt)
         .toISOString()
         .split("T")[0];
       return transcriptDate === currentDay;
     });
 
-    const dayReports = reports.filter((report) => {
-      const reportDate = new Date(report.reportDate)
-        .toISOString()
-        .split("T")[0];
-      return reportDate === currentDay;
-    });
-
     return {
       dayTranscripts,
-      dayReports,
-      isEmpty: dayTranscripts.length === 0 && dayReports.length === 0,
+      isEmpty: dayTranscripts.length === 0,
     };
   });
 
@@ -118,8 +88,6 @@ const WeekView: React.FC<WeekViewProps> = ({
       </div>
     </div>
   );
-
-  console.log(reports);
 
   const CompanyCard = ({
     symbol,
@@ -168,24 +136,21 @@ const WeekView: React.FC<WeekViewProps> = ({
   const MarketTimingGroup = ({
     title,
     icon: Icon,
-    reports,
+    transcripts,
     bgColor,
-    handleClick,
   }: {
     title: string;
     icon: LucideIcon;
-    reports: (ProcessedReport | ProcessedTranscript)[];
+    transcripts: ProcessedTranscript[];
     bgColor: string;
-    handleClick: (report: ProcessedReport | ProcessedTranscript) => void;
   }) => {
-    if (reports.length === 0) return null;
+    if (transcripts.length === 0) return null;
 
-    // Limit to 12 companies on mobile (3 rows × 4 columns)
-    const displayedReports = reports.slice(
+    const displayedTranscripts = transcripts.slice(
       0,
-      window.innerWidth < 768 ? 12 : reports.length
+      window.innerWidth < 768 ? 12 : transcripts.length
     );
-    const hasMore = window.innerWidth < 768 && reports.length > 12;
+    const hasMore = window.innerWidth < 768 && transcripts.length > 12;
 
     return (
       <div className={`p-1 rounded-md mb-1 ${bgColor}`}>
@@ -193,27 +158,23 @@ const WeekView: React.FC<WeekViewProps> = ({
           <div className="flex items-center gap-1">
             <Icon className="w-3 h-3 text-gray-600" />
             <span className="text-[10px] font-medium text-gray-600">
-              {title}
+              {title} ({transcripts.length})
             </span>
           </div>
           {hasMore && (
             <span className="text-[10px] text-gray-500 md:hidden">
-              +{reports.length - 12} more
+              +{transcripts.length - 12} more
             </span>
           )}
         </div>
         <div className="grid grid-cols-4 md:grid-cols-3 gap-0.5 md:gap-2">
-          {displayedReports.map((report, index) => (
+          {displayedTranscripts.map((transcript, index) => (
             <CompanyCard
-              key={`report-${index}`}
-              symbol={
-                "symbol" in report
-                  ? report.symbol
-                  : report.company?.symbol || ""
-              }
-              name={"name" in report ? report.name : report.company?.name || ""}
-              logo={"company" in report ? report?.company?.logo || null : null}
-              onClick={() => handleClick(report)}
+              key={`transcript-${index}`}
+              symbol={transcript.company?.symbol || ""}
+              name={transcript.company?.name || ""}
+              logo={transcript.company?.logo || null}
+              onClick={() => handleCompanyClick(transcript)}
             />
           ))}
         </div>
@@ -283,12 +244,26 @@ const WeekView: React.FC<WeekViewProps> = ({
       {/* Content area - responsive layout */}
       <div className="flex-1 md:flex md:flex-row overflow-y-auto">
         {weekDays.map((day, index) => {
-          const { dayTranscripts, dayReports, isEmpty } = getDateContent[index];
+          const { dayTranscripts, isEmpty } = getDateContent[index];
+
+          // Group transcripts by market timing
+          const preMarket = dayTranscripts.filter(
+            (t) => t.marketTime === "BMO"
+          );
+          const duringMarket = dayTranscripts.filter(
+            (t) => t.marketTime === "DMH"
+          );
+          const afterMarket = dayTranscripts.filter(
+            (t) => t.marketTime === "AMC"
+          );
+          const unspecified = dayTranscripts.filter(
+            (t) => t.marketTime === "UNKNOWN"
+          );
 
           return (
             <div
               key={day}
-              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 dark:border-slate-700 cursor-pointer"
+              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 dark:border-slate-700"
               onClick={() => handleDayClick(weekDates[index])}
             >
               {/* Mobile day header */}
@@ -307,7 +282,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                   </div>
                   {!isEmpty && (
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {dayTranscripts.length + dayReports.length} earnings
+                      {dayTranscripts.length} earnings
                     </div>
                   )}
                 </div>
@@ -319,46 +294,28 @@ const WeekView: React.FC<WeekViewProps> = ({
                 ) : (
                   <div className="flex flex-col space-y-2">
                     <MarketTimingGroup
-                      title="Past Earnings"
-                      icon={Calendar}
-                      reports={dayTranscripts}
-                      bgColor="bg-gray-50 dark:bg-slate-800/50"
-                      handleClick={(report) =>
-                        handleCompanyClick(report as ProcessedTranscript)
-                      }
-                    />
-                    <MarketTimingGroup
                       title="Pre-Market"
                       icon={Sun}
-                      reports={dayReports.filter(
-                        (r) => r.marketTiming === "PRE_MARKET"
-                      )}
+                      transcripts={preMarket}
                       bgColor="bg-blue-50 dark:bg-blue-950/30"
-                      handleClick={(report) =>
-                        handleFutureEarningsClick(report as ProcessedReport)
-                      }
+                    />
+                    <MarketTimingGroup
+                      title="During Market"
+                      icon={Calendar}
+                      transcripts={duringMarket}
+                      bgColor="bg-gray-50 dark:bg-slate-800/50"
                     />
                     <MarketTimingGroup
                       title="After Hours"
                       icon={Moon}
-                      reports={dayReports.filter(
-                        (r) => r.marketTiming === "AFTER_HOURS"
-                      )}
+                      transcripts={afterMarket}
                       bgColor="bg-orange-50 dark:bg-orange-950/30"
-                      handleClick={(report) =>
-                        handleFutureEarningsClick(report as ProcessedReport)
-                      }
                     />
                     <MarketTimingGroup
                       title="Not Specified"
                       icon={Calendar}
-                      reports={dayReports.filter(
-                        (r) => r.marketTiming === "NOT_SUPPLIED"
-                      )}
+                      transcripts={unspecified}
                       bgColor="bg-gray-50 dark:bg-slate-800/50"
-                      handleClick={(report) =>
-                        handleFutureEarningsClick(report as ProcessedReport)
-                      }
                     />
                   </div>
                 )}
