@@ -1,171 +1,75 @@
 import { NextResponse } from "next/server";
-import { PrismaClient, MarketTime, TranscriptStatus } from "@prisma/client";
-
-// Add proper type for Prisma errors
-interface PrismaError extends Error {
-  code?: string;
-  clientVersion?: string;
-  meta?: {
-    modelName?: string;
-    database_host?: string;
-    database_port?: number;
-  };
-}
-
-// Add retry logic for database operations
-async function withRetry<T>(
-  operation: () => Promise<T>,
-  maxRetries: number = 3,
-  delay: number = 1000
-): Promise<T> {
-  let lastError: PrismaError | Error = new Error(
-    "Operation failed after all retries"
-  );
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error as PrismaError;
-      if ((error as PrismaError)?.code === "P1001") {
-        console.log(`Database connection attempt ${i + 1} failed, retrying...`);
-        await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)));
-        // Create new Prisma instance
-        prisma = new PrismaClient();
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw lastError;
-}
-
-let prisma = new PrismaClient();
-
-function determineMarketTime(time: string): MarketTime {
-  const hour = new Date(time).getHours();
-  if (hour < 9) return "BMO";
-  if (hour >= 16) return "AMC";
-  return "DMH";
-}
 
 export async function GET(request: Request) {
   try {
-    // Get all companies from database with retry
-    const companies = await withRetry(() =>
-      prisma.company.findMany({
-        select: {
-          id: true,
-          symbol: true,
-        },
-      })
+    // Get the search params from the request URL
+    const { searchParams } = new URL(request.url);
+    const from =
+      searchParams.get("from") || new Date().toISOString().split("T")[0];
+    const to =
+      searchParams.get("to") ||
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+
+    // Add transcript ID parameter handling
+    // Fetch NYSE stocks
+    const nyseResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/symbol?exchange=US&mic=XNYS&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
     );
+    const nyseData = await nyseResponse.json();
 
-    console.log(companies);
+    console.log(nyseData);
 
-    let stats = {
-      totalCompanies: companies.length,
-      processedCompanies: 0,
-      totalTranscripts: 0,
-      createdTranscripts: 0,
-      errors: 0,
-    };
+    // Fetch NASDAQ stocks
+    const nasdaqResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/symbol?exchange=US&mic=XNAS&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const nasdaqData = await nasdaqResponse.json();
 
-    // Process companies in smaller batches
-    const batchSize = 5;
-    for (let i = 0; i < companies.length; i += batchSize) {
-      const batch = companies.slice(i, i + batchSize);
+    console.log(nasdaqData);
 
-      await Promise.all(
-        batch.map(async (company) => {
-          try {
-            const transcriptListResponse = await fetch(
-              `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-            );
+    // Combine all results
+    const combinedData = [...nyseData, ...nasdaqData];
 
-            const transcriptListData = await transcriptListResponse.json();
+    console.log("all companies in NYSE and NASDAQ", combinedData);
 
-            console.log(transcriptListData?.transcripts?.length);
+    const symbol = "NVDA";
+    // Fetch transcript list for
+    const transcriptListResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const transcriptListData = await transcriptListResponse.json();
+    console.log(transcriptListData);
 
-            if (transcriptListData.transcripts?.length > 0) {
-              stats.totalTranscripts += transcriptListData.transcripts.length;
+    // Get the most recent transcript ID from the list
+    const mostRecentTranscriptId = transcriptListData.transcripts?.[0]?.id;
+    console.log(mostRecentTranscriptId);
 
-              // Process transcripts sequentially to avoid overwhelming the connection
-              for (const transcript of transcriptListData.transcripts) {
-                try {
-                  const marketTime = determineMarketTime(transcript.time);
+    // Fetch the full transcript using the most recent ID
+    // Add transcript fetch if ID is provided
+    const transcriptId = "NVDA_3390392";
 
-                  await withRetry(() =>
-                    prisma.transcript.upsert({
-                      where: {
-                        id: transcript.id,
-                      },
-                      update: {
-                        title: transcript.title,
-                        scheduledAt: new Date(transcript.time),
-                        quarter: transcript.quarter || null,
-                        year: transcript.year || null,
-                        MarketTime: marketTime,
-                        status: TranscriptStatus.SCHEDULED,
-                      },
-                      create: {
-                        id: transcript.id,
-                        companyId: company.id,
-                        title: transcript.title,
-                        scheduledAt: new Date(transcript.time),
-                        quarter: transcript.quarter || null,
-                        year: transcript.year || null,
-                        MarketTime: marketTime,
-                        status: TranscriptStatus.SCHEDULED,
-                      },
-                    })
-                  );
+    const transcriptResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptId}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const transcriptData = await transcriptResponse.json();
 
-                  stats.createdTranscripts++;
-                } catch (transcriptError) {
-                  console.error(
-                    `Error processing transcript ${transcript.id}:`,
-                    transcriptError
-                  );
-                  stats.errors++;
-                }
-              }
-            }
-
-            stats.processedCompanies++;
-          } catch (companyError) {
-            console.error(
-              `Error processing company ${company.symbol}:`,
-              companyError
-            );
-            stats.errors++;
-          }
-        })
-      );
-
-      // Add delay between batches
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Log progress every 50 companies
-      if (stats.processedCompanies % 50 === 0) {
-        console.log("Progress:", stats);
-      }
-    }
+    console.log(transcriptData);
 
     return NextResponse.json({
-      message: "Transcripts imported successfully",
-      stats,
+      symbolsData: combinedData,
+      // earningsCalendar: earningsData.earningsCalendar,
+      transcript: transcriptData,
+      transcriptList: transcriptListData.transcripts,
     });
   } catch (error) {
-    console.error("Failed to process transcripts:", error);
     return NextResponse.json(
       {
-        error: "Failed to process transcripts",
+        error: "Failed to fetch data from Finnhub",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
