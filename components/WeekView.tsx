@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useAuth } from "@clerk/nextjs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WeekViewProps {
   handleCompanyClick: (transcript: ProcessedTranscript) => void;
@@ -49,7 +50,74 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
   // Fetch data for the week
   const { data, isLoading, error } = useGetWeekView();
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-lg shadow-sm dark:shadow-slate-800/50 overflow-hidden h-full">
+        {/* Mobile Header Skeleton */}
+        <div className="md:hidden flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 mt-2">
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-8 w-24 rounded-full" />
+        </div>
+
+        {/* Desktop Header Skeleton */}
+        <div className="hidden md:flex flex-row">
+          {[...Array(5)].map((_, index) => (
+            <div
+              key={index}
+              className="flex-1 bg-gray-50 dark:bg-slate-800 border-r last:border-r-0 border-gray-200 dark:border-slate-700"
+            >
+              <div className="p-2 text-center border-b border-gray-200 dark:border-slate-700">
+                <Skeleton className="h-5 w-20 mx-auto mb-1" />
+                <Skeleton className="h-4 w-16 mx-auto" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="flex-1 md:flex md:flex-row overflow-y-auto">
+          {[...Array(5)].map((_, dayIndex) => (
+            <div
+              key={dayIndex}
+              className="md:flex-1 border-b md:border-b-0 md:border-r last:border-r-0 border-gray-200 dark:border-slate-700"
+            >
+              {/* Mobile Day Header Skeleton */}
+              <div className="md:hidden p-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Skeleton className="h-4 w-20 mb-1" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+
+              {/* Day Content Skeleton */}
+              <div className="p-2 bg-white dark:bg-slate-900">
+                {/* Market Timing Group Skeletons */}
+                {[...Array(3)].map((_, groupIndex) => (
+                  <div key={groupIndex} className="mb-4">
+                    <div className="flex items-center gap-1 mb-2">
+                      <Skeleton className="h-3 w-3" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <div className="grid grid-cols-4 md:grid-cols-3 gap-0.5 md:gap-2">
+                      {[...Array(6)].map((_, cardIndex) => (
+                        <div key={cardIndex} className="flex flex-col">
+                          <Skeleton className="aspect-square rounded-md" />
+                          <Skeleton className="h-5 w-full mt-0.5 rounded-sm" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
