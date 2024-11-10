@@ -21,33 +21,34 @@ const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
 }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
-  const selectedDate = useEarningsStore((state) => state.selectedDate);
-  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+  const setSelectedTranscript = useEarningsStore(
+    (state) => state.setSelectedTranscript
+  );
 
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(transcriptData.companyId);
 
   const handleBack = () => {
+    setSelectedTranscript(null);
     useEarningsStore.setState({ selectedCompany: null });
   };
 
   const handleWatchlistClick = async () => {
-    if (!userId) {
-      authModal.onOpen();
-      return;
-    }
-
-    try {
-      if (isWatchlisted) {
-        await removeFromWatchlist.mutateAsync(transcriptData.companyId);
-        toast.success("Removed from watchlist");
-      } else {
-        await addToWatchlist.mutateAsync(transcriptData.companyId);
-        toast.success("Added to watchlist");
-      }
-    } catch {
-      toast.error("Failed to update watchlist");
-    }
+    // if (!userId) {
+    //   authModal.onOpen();
+    //   return;
+    // }
+    // try {
+    //   if (isWatchlisted) {
+    //     await removeFromWatchlist.mutateAsync(transcriptData.companyId);
+    //     toast.success("Removed from watchlist");
+    //   } else {
+    //     await addToWatchlist.mutateAsync(transcriptData.companyId);
+    //     toast.success("Added to watchlist");
+    //   }
+    // } catch {
+    //   toast.error("Failed to update watchlist");
+    // }
   };
 
   return (

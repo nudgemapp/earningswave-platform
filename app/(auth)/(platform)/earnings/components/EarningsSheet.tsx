@@ -53,6 +53,8 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       // ) : null;
     }
 
+    console.log(selectedCompany);
+
     if (selectedCompany?.companyId) {
       return <FutureEarnings SelectedCompany={selectedCompany} />;
     }

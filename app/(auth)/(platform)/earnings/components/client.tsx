@@ -86,6 +86,7 @@ const EarningsClient: React.FC<EarningsClientProps> = ({ userInfo }) => {
   };
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
+    console.log(transcriptInfo);
     if (!transcriptInfo.company) {
       console.error("Company information is missing from transcript");
       return;
