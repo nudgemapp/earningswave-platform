@@ -29,27 +29,47 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (isLoading) {
     return (
       <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
+        {/* Header */}
         <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="py-1 text-center">
-              <Skeleton className="h-4 w-8 mx-auto" />
+              <Skeleton className="h-3.5 w-12 mx-auto rounded-md" />
             </div>
           ))}
         </div>
+
+        {/* Calendar Grid */}
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(35)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-slate-900 p-0.5 min-h-[120px]"
+                className="bg-white dark:bg-slate-900 p-2 min-h-[120px] space-y-2"
               >
-                <Skeleton className="h-4 w-6 mb-1" />
-                <div className="grid grid-cols-4 gap-0.5">
-                  {[...Array(4)].map((_, j) => (
-                    <div key={j} className="aspect-square">
-                      <Skeleton className="w-full h-full" />
-                    </div>
-                  ))}
+                {/* Date */}
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-4 rounded-md" />
+                  <Skeleton className="h-3 w-8 rounded-md" />
+                </div>
+
+                {/* Morning Events */}
+                <div className="space-y-1">
+                  <Skeleton className="h-2 w-16 rounded-md" />
+                  <div className="grid grid-cols-4 gap-1">
+                    {[...Array(4)].map((_, j) => (
+                      <Skeleton key={j} className="aspect-square rounded-sm" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Afternoon Events */}
+                <div className="space-y-1">
+                  <Skeleton className="h-2 w-12 rounded-md" />
+                  <div className="grid grid-cols-4 gap-1">
+                    {[...Array(4)].map((_, j) => (
+                      <Skeleton key={j} className="aspect-square rounded-sm" />
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}

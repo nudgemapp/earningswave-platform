@@ -8,7 +8,6 @@ import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { User, Subscription } from "@prisma/client";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { ProcessedTranscript } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
 
