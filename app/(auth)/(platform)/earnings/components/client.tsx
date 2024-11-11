@@ -8,6 +8,7 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { User, Subscription } from "@prisma/client";
 import { ProcessedTranscript } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
+// import { Button } from "@/components/ui/button";
 // import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 // import { useAuthModal } from "@/store/AuthModalStore";
 
@@ -93,6 +94,13 @@ const EarningsClient = () => {
     setSelectedTranscript(null);
   };
 
+  // const fetchEarningsCalendar = async () => {
+  //   console.log("Fetching earnings calendar");
+  //   const response = await fetch("/api/finnhub");
+  //   const data = await response.json();
+  //   console.log(data);
+  // };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
@@ -104,6 +112,7 @@ const EarningsClient = () => {
         view={view}
         setView={handleViewChange}
       />
+      {/* <Button onClick={fetchEarningsCalendar}>Fetch Earnings Calendar</Button> */}
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView handleCompanyClick={handleCompanyClick} />

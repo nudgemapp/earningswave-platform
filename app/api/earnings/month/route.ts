@@ -37,6 +37,8 @@ export async function GET(request: Request) {
 
   try {
     const currentDate = new Date();
+    const yesterday = new Date(currentDate);
+    yesterday.setDate(yesterday.getDate() - 1);
 
     const result = await prisma.$queryRaw<TranscriptQueryResult[]>`
       WITH DailyTranscripts AS (
@@ -48,7 +50,7 @@ export async function GET(request: Request) {
           "scheduledAt" >= ${startDate}
           AND "scheduledAt" <= ${endDate}
           AND quarter IS NOT NULL
-          AND (status != 'SCHEDULED' OR ("status" = 'SCHEDULED' AND "scheduledAt" > ${currentDate}))
+          AND (status != 'SCHEDULED' OR ("status" = 'SCHEDULED' AND "scheduledAt" > ${yesterday}))
         GROUP BY DATE("scheduledAt")
       ),
       RankedTranscripts AS (
@@ -79,7 +81,7 @@ export async function GET(request: Request) {
           t."scheduledAt" >= ${startDate}
           AND t."scheduledAt" <= ${endDate}
           AND t.quarter IS NOT NULL
-          AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
+          AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${yesterday}))
       )
       SELECT 
         *,
