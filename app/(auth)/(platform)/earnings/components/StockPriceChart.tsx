@@ -174,8 +174,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   };
 
   return (
-    <div className="h-[300px] w-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="h-full w-full">
+      <div className="flex justify-between items-center mb-4 px-2">
         <div className="text-sm text-gray-500">Price History</div>
         <div className="flex gap-2">
           {timeframeButtons.map((tf) => (
@@ -195,71 +195,85 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-[calc(100%-48px)]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={filteredData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
-            <defs>
-              <linearGradient id="colorUpGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient
-                id="colorDownGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              vertical={false}
-              strokeDasharray="3 3"
-              opacity={0.1}
-            />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(value) => new Date(value).toLocaleDateString()}
-              tickLine={false}
-              axisLine={false}
-              interval={getTickInterval()}
-            />
-            <YAxis
-              domain={yDomain}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => `$${value.toFixed(2)}`}
-            />
-            <Tooltip content={CustomTooltip} />
-            {filteredData.length > 0 && (
-              <Area
-                type="monotone"
-                dataKey="close"
-                stroke={
-                  filteredData[filteredData.length - 1].close >
-                  filteredData[0].close
-                    ? "#22c55e"
-                    : "#ef4444"
-                }
-                fill={`url(#${
-                  filteredData[filteredData.length - 1].close >
-                  filteredData[0].close
-                    ? "colorUpGradient"
-                    : "colorDownGradient"
-                })`}
-                strokeWidth={2}
+        <div className="w-full h-[calc(100%-48px)]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={filteredData}
+              margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id="colorUpGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient
+                  id="colorDownGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="3 3"
+                opacity={0.1}
               />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
+              <YAxis
+                domain={yDomain}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `$${value.toFixed(2)}`}
+                width={60}
+                tick={{ fontSize: 11 }}
+                dx={-10}
+              />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                tickLine={false}
+                axisLine={false}
+                interval={getTickInterval()}
+                height={30}
+                tick={{ fontSize: 12 }}
+                dy={10}
+              />
+              <Tooltip content={CustomTooltip} />
+              {filteredData.length > 0 && (
+                <Area
+                  type="monotone"
+                  dataKey="close"
+                  stroke={
+                    filteredData[filteredData.length - 1].close >
+                    filteredData[0].close
+                      ? "#22c55e"
+                      : "#ef4444"
+                  }
+                  fill={`url(#${
+                    filteredData[filteredData.length - 1].close >
+                    filteredData[0].close
+                      ? "colorUpGradient"
+                      : "colorDownGradient"
+                  })`}
+                  strokeWidth={2}
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );
