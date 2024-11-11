@@ -16,6 +16,8 @@ export async function GET(request: Request) {
   }
 
   try {
+    const currentDate = new Date();
+
     const result = await prisma.$queryRaw`
       SELECT 
         t.id,
@@ -34,6 +36,7 @@ export async function GET(request: Request) {
         t."scheduledAt" >= ${startDate}
         AND t."scheduledAt" <= ${endDate}
         AND t.quarter IS NOT NULL
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
       ORDER BY t."scheduledAt" ASC;
     `;
 

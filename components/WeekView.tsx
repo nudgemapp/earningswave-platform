@@ -4,7 +4,6 @@ import { Calendar, Sun, Moon, LucideIcon, Star } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useAuth } from "@clerk/nextjs";

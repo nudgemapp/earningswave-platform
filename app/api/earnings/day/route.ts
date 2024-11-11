@@ -16,44 +16,50 @@ export async function GET(request: Request) {
   }
 
   try {
-    const transcripts = await prisma.transcript.findMany({
-      where: {
-        scheduledAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        scheduledAt: true,
-        quarter: true,
-        year: true,
-        MarketTime: true,
-        epsActual: true,
-        epsEstimate: true,
-        revenueActual: true,
-        revenueEstimate: true,
-        company: {
-          select: {
-            id: true,
-            symbol: true,
-            name: true,
-            logo: true,
-          },
-        },
-      },
-      orderBy: {
-        scheduledAt: "asc",
-      },
-    });
+    const currentDate = new Date();
 
-    // Process the data
-    const processedTranscripts = transcripts.map((transcript) => ({
-      ...transcript,
+    const result = await prisma.$queryRaw`
+      SELECT 
+        t.id,
+        t.title,
+        t."scheduledAt",
+        t.quarter,
+        t.year,
+        t."MarketTime",
+        t."epsActual",
+        t."epsEstimate",
+        t."revenueActual",
+        t."revenueEstimate",
+        c.id as "companyId",
+        c.symbol,
+        c.name as "companyName",
+        c.logo
+      FROM "Transcript" t
+      JOIN "Company" c ON t."companyId" = c.id
+      WHERE 
+        t."scheduledAt" >= ${startDate}
+        AND t."scheduledAt" <= ${endDate}
+        AND t.quarter IS NOT NULL
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
+      ORDER BY t."scheduledAt" ASC;
+    `;
+
+    const processedTranscripts = (result as any[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      scheduledAt: row.scheduledAt,
+      quarter: row.quarter,
+      year: row.year,
+      MarketTime: row.MarketTime,
+      epsActual: row.epsActual,
+      epsEstimate: row.epsEstimate,
+      revenueActual: row.revenueActual,
+      revenueEstimate: row.revenueEstimate,
       company: {
-        ...transcript.company,
-        logo: transcript.company.logo || null,
+        id: row.companyId,
+        symbol: row.symbol,
+        name: row.companyName,
+        logo: row.logo || null,
       },
     }));
 

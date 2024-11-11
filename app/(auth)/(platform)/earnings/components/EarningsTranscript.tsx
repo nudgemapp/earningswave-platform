@@ -14,6 +14,7 @@ const EarningsTranscript = () => {
   );
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
 
+  console.log(transcript);
   const handleBack = () => {
     setSelectedTranscript(null);
   };
