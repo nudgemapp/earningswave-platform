@@ -38,13 +38,14 @@ function NavBar() {
 
   const links = [
     {
-      route: "/earnings",
+      route: "/",
       name: "Earnings",
       badgeCount: 0,
     },
     {
       name: "Company",
       dropdownItems: [
+        { name: "Marketing", route: "/marketing" },
         { name: "Pricing", route: "/pricing" },
         { name: "About Us", route: "/about-us" },
         { name: "Docs", route: "/docs" },
@@ -63,7 +64,7 @@ function NavBar() {
   };
 
   const handleNavigation = (route: string) => {
-    if (route === "/earnings") {
+    if (route === "/") {
       setSelectedCompany(null);
       setSelectedFutureEarnings(null);
     }

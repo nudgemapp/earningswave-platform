@@ -1,5 +1,5 @@
 import NavBar from "@/components/NavBar";
-import EarningsClient from "./components/client";
+import EarningsClient from "./earnings/components/client";
 // import { auth } from "@clerk/nextjs/server";
 // import prisma from "../../../../lib/prismadb";
 

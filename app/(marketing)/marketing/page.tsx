@@ -11,12 +11,12 @@ import AlertSection from "@/components/AlertSection";
 export default function Home() {
   return (
     <main className="bg-white dark:bg-slate-900">
-      <div className="flex flex-col-reverse md:flex-col">
+      {/* <div className="flex flex-col-reverse md:flex-col">
         <AlertSection />
       </div>
       <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
         <NavBar />
-      </div>
+      </div> */}
       <div className="pt-20 bg-white dark:bg-slate-900">
         <HeroSection />
       </div>
@@ -35,9 +35,6 @@ export default function Home() {
         {/* <LovedByBuildersSection /> */}
         {/* <ReadyToBuildSection /> */}
         <CallToAction />
-        <div className="border-t border-gray-200 dark:border-slate-700">
-          <FooterSection />
-        </div>
       </div>
     </main>
   );

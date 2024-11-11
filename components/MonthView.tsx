@@ -181,7 +181,6 @@ const MonthView: React.FC<MonthViewProps> = ({
     return {
       items: dateEntry?.items || [],
       totalCount: dateEntry?.items.length || 0,
-      remainingCount: dateEntry?.items.length || 0,
     };
   };
 
@@ -248,7 +247,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
           {getDaysInMonth(currentDate).map((date, index) => {
-            const { items: dayContent, remainingCount: transcriptRemaining } =
+            const { items: dayContent, totalCount: transcriptRemaining } =
               getLogosForDate(date, transcripts);
             const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
@@ -287,22 +286,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                     <NoEarnings />
                   ) : (
                     <div className="flex flex-col h-full">
-                      {/* Regular transcripts */}
-                      {dayContent.length > 0 && (
-                        <div className="grid grid-cols-4 gap-0.5 mb-0.5">
-                          {dayContent.map((transcript, logoIndex) => (
-                            <CompanyCard
-                              key={`transcript-${logoIndex}`}
-                              symbol={transcript.company?.symbol || ""}
-                              name={transcript.company?.name || ""}
-                              logo={transcript.company?.logo || null}
-                              onClick={() => handleCompanyClick(transcript)}
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Market timing groups */}
                       <MarketTimingGroup
                         title="Pre-Market"
                         icon={Sun}

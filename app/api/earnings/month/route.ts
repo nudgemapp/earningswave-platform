@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-// Add this interface before the GET function
 interface TranscriptQueryResult {
   id: string;
   title: string | null;
@@ -13,7 +12,8 @@ interface TranscriptQueryResult {
   symbol: string;
   companyName: string | null;
   logo: string | null;
-  total_count: bigint; // SQL COUNT returns bigint
+  total_for_day: bigint;
+  remaining_count: bigint;
 }
 
 export async function GET(request: Request) {
@@ -34,10 +34,10 @@ export async function GET(request: Request) {
     const currentDate = new Date();
 
     const result = await prisma.$queryRaw<TranscriptQueryResult[]>`
-      WITH DailyCounts AS (
+      WITH DailyTranscripts AS (
         SELECT 
           DATE("scheduledAt") as date,
-          COUNT(*) as total_count
+          COUNT(*) as total_for_day
         FROM "Transcript"
         WHERE 
           "scheduledAt" >= ${startDate}
@@ -58,24 +58,46 @@ export async function GET(request: Request) {
           c.symbol,
           c.name as "companyName",
           c.logo,
-          dc.total_count,
-          ROW_NUMBER() OVER (PARTITION BY DATE(t."scheduledAt") ORDER BY t."scheduledAt") as rn
+          dt.total_for_day,
+          ROW_NUMBER() OVER (
+            PARTITION BY DATE(t."scheduledAt"), t."MarketTime" 
+            ORDER BY t."scheduledAt"
+          ) as market_time_rank,
+          ROW_NUMBER() OVER (
+            PARTITION BY DATE(t."scheduledAt")
+            ORDER BY t."scheduledAt"
+          ) as overall_rank
         FROM "Transcript" t
         JOIN "Company" c ON t."companyId" = c.id
-        JOIN DailyCounts dc ON DATE(t."scheduledAt") = dc.date
+        JOIN DailyTranscripts dt ON DATE(t."scheduledAt") = dt.date
         WHERE 
           t."scheduledAt" >= ${startDate}
           AND t."scheduledAt" <= ${endDate}
           AND t.quarter IS NOT NULL
           AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
       )
-      SELECT *
+      SELECT 
+        *,
+        (total_for_day - 11) as remaining_count
       FROM RankedTranscripts
-      WHERE rn <= 12
+      WHERE 
+        ("MarketTime" = 'AMC' AND market_time_rank <= 4)
+        OR ("MarketTime" = 'BMO' AND market_time_rank <= 4)
+        OR ("MarketTime" = 'DMH' AND market_time_rank <= 3)
+        OR (overall_rank <= 11 AND NOT EXISTS (
+          SELECT 1 
+          FROM RankedTranscripts r2 
+          WHERE 
+            DATE(r2."scheduledAt") = DATE(RankedTranscripts."scheduledAt")
+            AND (
+              (r2."MarketTime" = 'AMC' AND r2.market_time_rank <= 4)
+              OR (r2."MarketTime" = 'BMO' AND r2.market_time_rank <= 4)
+              OR (r2."MarketTime" = 'DMH' AND r2.market_time_rank <= 3)
+            )
+        ))
       ORDER BY "scheduledAt" ASC;
     `;
 
-    // Update the transformation with proper typing
     const transformedTranscripts = result.map((row) => ({
       id: row.id,
       title: row.title,
@@ -83,8 +105,8 @@ export async function GET(request: Request) {
       status: row.status,
       MarketTime: row.MarketTime,
       quarter: row.quarter,
-      marketTime: row.MarketTime,
-      totalForDay: Number(row.total_count),
+      totalForDay: Number(row.total_for_day),
+      remainingCount: Math.max(0, Number(row.remaining_count)),
       company: {
         id: row.companyId,
         symbol: row.symbol,

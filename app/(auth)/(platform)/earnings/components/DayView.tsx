@@ -339,10 +339,10 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
         <div className="relative">
           <button
             onClick={handleBack}
-            className="absolute right-0 top-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors md:hidden"
+            className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
             aria-label="Close day view"
           >
-            <X className="w-4 h-4 dark:text-gray-400" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
         <div className="flex items-center justify-between md:justify-center">
