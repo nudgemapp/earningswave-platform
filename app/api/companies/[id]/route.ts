@@ -54,6 +54,9 @@ export async function GET(
   }
 
   try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
     const result = await prisma.$queryRaw`
       WITH company_stats AS (
         SELECT 
@@ -65,6 +68,7 @@ export async function GET(
           MIN("scheduledAt") as earliest_transcript
         FROM "Transcript"
         WHERE "companyId" = ${params.id}
+        AND (status != 'SCHEDULED' OR (status = 'SCHEDULED' AND "scheduledAt" > ${yesterday}))
         GROUP BY "companyId"
       )
       SELECT 
@@ -116,6 +120,7 @@ export async function GET(
             SELECT *
             FROM "Transcript"
             WHERE "companyId" = ${params.id}
+            AND (status != 'SCHEDULED' OR (status = 'SCHEDULED' AND "scheduledAt" > ${yesterday}))
             ORDER BY "scheduledAt" DESC
             LIMIT 4
           ) t
