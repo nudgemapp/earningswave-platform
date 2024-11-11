@@ -30,7 +30,6 @@ const itemVariants = {
 
 const WelcomeMessage: React.FC = () => {
   const pathname = usePathname();
-  const showSearch = pathname.includes("/");
 
   return (
     <motion.div
