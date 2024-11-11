@@ -97,31 +97,31 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Remove 1D from timeframe buttons since we only have daily data
   const timeframeButtons = ["1W", "1M", "6M", "1Y"];
 
-  const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
-    active,
-    payload,
-  }) => {
-    if (active && payload && payload.length > 0) {
-      const data = payload[0].payload as StockData;
-      return (
-        <div className="bg-white shadow-lg rounded-lg p-3 border">
-          <p className="text-gray-600">
-            {new Date(data.date).toLocaleDateString()}
-          </p>
-          <div className={data.gain ? "text-green-600" : "text-red-600"}>
-            <p className="font-medium">Open: ${data.open.toFixed(2)}</p>
-            <p className="font-medium">Close: ${data.close.toFixed(2)}</p>
-            <p className="font-medium">High: ${data.high.toFixed(2)}</p>
-            <p className="font-medium">Low: ${data.low.toFixed(2)}</p>
-            <p className="font-medium mt-1">
-              Volume: {(data.volume / 1e6).toFixed(2)}M
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  // const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
+  //   active,
+  //   payload,
+  // }) => {
+  //   if (active && payload && payload.length > 0) {
+  //     const data = payload[0].payload as StockData;
+  //     return (
+  //       <div className="bg-white shadow-lg rounded-lg p-3 border">
+  //         <p className="text-gray-600">
+  //           {new Date(data.date).toLocaleDateString()}
+  //         </p>
+  //         <div className={data.gain ? "text-green-600" : "text-red-600"}>
+  //           <p className="font-medium">Open: ${data.open.toFixed(2)}</p>
+  //           <p className="font-medium">Close: ${data.close.toFixed(2)}</p>
+  //           <p className="font-medium">High: ${data.high.toFixed(2)}</p>
+  //           <p className="font-medium">Low: ${data.low.toFixed(2)}</p>
+  //           <p className="font-medium mt-1">
+  //             Volume: {(data.volume / 1e6).toFixed(2)}M
+  //           </p>
+  //         </div>
+  //       </div>
+  //     );
+  //   }
+  //   return null;
+  // };
 
   const getTimeframeData = () => {
     let tradingDays = 0;
