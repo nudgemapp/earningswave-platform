@@ -175,17 +175,38 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   return (
     <div className="h-full w-full">
-      <div className="flex justify-between items-center mb-4 px-2">
-        <div className="text-sm text-gray-500">Price History</div>
-        <div className="flex gap-2">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            Price History
+          </h3>
+          {!isLoading && filteredData.length > 0 && (
+            <div className="flex items-baseline gap-2">
+              <span
+                className={`text-lg font-semibold ${
+                  filteredData[filteredData.length - 1].close >
+                  filteredData[0].close
+                    ? "text-emerald-600 dark:text-emerald-500"
+                    : "text-red-600 dark:text-red-500"
+                }`}
+              >
+                ${filteredData[filteredData.length - 1].close.toFixed(2)}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                USD
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-1 p-1 bg-gray-100/80 dark:bg-slate-800/80 rounded-lg">
           {timeframeButtons.map((tf) => (
             <button
               key={tf}
               onClick={() => onTimeframeChange(tf)}
-              className={`px-3 py-1 rounded-md text-sm ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
                 timeframe === tf
-                  ? "bg-blue-100 text-blue-600"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               {tf}
@@ -195,15 +216,20 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-[calc(100%-48px)]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="flex items-center justify-center h-[calc(100%-40px)]">
+          <div className="animate-pulse flex flex-col items-center gap-4">
+            <div className="h-8 w-8 rounded-full border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 animate-spin" />
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Loading data...
+            </span>
+          </div>
         </div>
       ) : (
-        <div className="w-full h-[calc(100%-48px)]">
+        <div className="w-full h-[calc(100%-40px)]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={filteredData}
-              margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
+              margin={{ top: 5, right: 5, left: -15, bottom: 0 }}
             >
               <defs>
                 <linearGradient
@@ -213,8 +239,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.12} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
                 </linearGradient>
                 <linearGradient
                   id="colorDownGradient"
@@ -223,35 +249,84 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.12} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid
-                vertical={false}
                 strokeDasharray="3 3"
-                opacity={0.1}
+                vertical={false}
+                stroke="#e5e7eb"
+                className="dark:stroke-gray-700"
               />
               <YAxis
                 domain={yDomain}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `$${value.toFixed(2)}`}
-                width={60}
+                width={65}
                 tick={{ fontSize: 11 }}
-                dx={-10}
+                dx={-5}
+                className="text-gray-500 dark:text-gray-400"
               />
               <XAxis
                 dataKey="date"
-                tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return timeframe === "1W"
+                    ? date.toLocaleDateString(undefined, { weekday: "short" })
+                    : date.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      });
+                }}
                 tickLine={false}
                 axisLine={false}
                 interval={getTickInterval()}
                 height={30}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
                 dy={10}
+                className="text-gray-500 dark:text-gray-400"
               />
-              <Tooltip content={CustomTooltip} />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload as StockData;
+                    return (
+                      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-4 border border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                          {new Date(data.date).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                        <div
+                          className={`space-y-1 ${
+                            data.gain
+                              ? "text-emerald-600 dark:text-emerald-500"
+                              : "text-red-600 dark:text-red-500"
+                          }`}
+                        >
+                          <p className="text-sm font-semibold">
+                            Close: ${data.close.toFixed(2)}
+                          </p>
+                          <div className="text-xs space-y-0.5 pt-1 border-t border-gray-100 dark:border-gray-700">
+                            <p>Open: ${data.open.toFixed(2)}</p>
+                            <p>High: ${data.high.toFixed(2)}</p>
+                            <p>Low: ${data.low.toFixed(2)}</p>
+                            <p className="text-gray-500 dark:text-gray-400 pt-1">
+                              Volume: {(data.volume / 1e6).toFixed(2)}M
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
               {filteredData.length > 0 && (
                 <Area
                   type="monotone"
@@ -259,16 +334,16 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                   stroke={
                     filteredData[filteredData.length - 1].close >
                     filteredData[0].close
-                      ? "#22c55e"
+                      ? "#10b981"
                       : "#ef4444"
                   }
+                  strokeWidth={1.5}
                   fill={`url(#${
                     filteredData[filteredData.length - 1].close >
                     filteredData[0].close
                       ? "colorUpGradient"
                       : "colorDownGradient"
                   })`}
-                  strokeWidth={2}
                 />
               )}
             </AreaChart>

@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { ChevronLeft, File, Star as StarIcon, Globe } from "lucide-react";
-import { ResponsiveContainer } from "recharts";
 import { useEarningsStore } from "@/store/EarningsStore";
 import StockPriceChart from "./StockPriceChart";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
@@ -159,28 +158,27 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Only show the main card if no transcript is selected */}
+    <div className="space-y-4">
       {!selectedTranscript && (
-        <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
-          <CardHeader className="space-y-4">
+        <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
+          <CardHeader className="space-y-4 pb-4 px-4">
             {/* Company Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 >
                   <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </button>
                 {company.logo && (
-                  <div className="w-12 h-12 relative shrink-0">
+                  <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
                     <Image
                       src={company.logo}
                       alt={`${company.name} logo`}
                       layout="fill"
                       objectFit="contain"
-                      className="rounded"
+                      className="rounded-lg"
                     />
                   </div>
                 )}
@@ -201,12 +199,17 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <HoverCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <HoverCard openDelay={200}>
                 <HoverCardTrigger asChild>
                   <button
                     onClick={handleWatchlistClick}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                      ${
+                        isWatchlisted
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                          : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                      } border border-gray-200 dark:border-slate-700`}
                     disabled={
                       isCheckingWatchlist ||
                       addToWatchlist.isPending ||
@@ -215,274 +218,283 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   >
                     <StarIcon
                       className={`w-4 h-4 ${
-                        isCheckingWatchlist ||
-                        addToWatchlist.isPending ||
-                        removeFromWatchlist.isPending
-                          ? "text-gray-300 dark:text-gray-600"
-                          : isWatchlisted
+                        isWatchlisted
                           ? "fill-blue-500 text-blue-500"
                           : "text-gray-400 dark:text-gray-500"
                       }`}
                       fill={isWatchlisted ? "currentColor" : "none"}
                       strokeWidth={1.5}
                     />
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                      {isWatchlisted ? "Following" : "Follow"}
-                    </span>
+                    <span>{isWatchlisted ? "Following" : "Follow"}</span>
                   </button>
                 </HoverCardTrigger>
-                <HoverCardContent className="w-80">
+                <HoverCardContent className="w-80 p-4">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Company Following</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Company Following
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       Follow this company to receive notifications about:
-                      <ul className="list-disc list-inside mt-1">
-                        <li>New earnings transcripts</li>
-                        <li>Important company news</li>
-                        <li>Price changes</li>
-                        <li>Market sentiment updates</li>
-                        <li>Financial reports</li>
+                      <ul className="mt-2 space-y-1 list-none">
+                        {[
+                          "New earnings transcripts",
+                          "Important company news",
+                          "Price changes",
+                          "Market sentiment updates",
+                          "Financial reports",
+                        ].map((item) => (
+                          <li key={item} className="flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-blue-500" />
+                            {item}
+                          </li>
+                        ))}
                       </ul>
                     </p>
                   </div>
                 </HoverCardContent>
               </HoverCard>
+
               <button
                 onClick={() => setShowSummary(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 transition-colors"
               >
                 <File
                   className="w-4 h-4 text-gray-500 dark:text-gray-400"
                   strokeWidth={1.5}
                 />
-                <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Company Info
-                </span>
+                <span>Company Info</span>
               </button>
+
               {company.weburl && (
                 <a
                   href={company.weburl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 transition-colors"
                 >
                   <Globe
                     className="w-4 h-4 text-gray-500 dark:text-gray-400"
                     strokeWidth={1.5}
                   />
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Website
-                  </span>
+                  <span>Website</span>
                 </a>
               )}
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
-            {/* Stock price chart */}
-            <div className="space-y-4">
+          <CardContent className="space-y-4 px-4 pb-4">
+            {/* Stock Chart Container */}
+            <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
               <div className="h-[400px] w-full">
-                <div className="w-full h-full px-2">
-                  <StockPriceChart
-                    symbol={company.symbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                  />
+                <StockPriceChart
+                  symbol={company.symbol}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
+              </div>
+            </div>
+
+            {/* Company Quick Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Market Cap */}
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+                <div className="flex flex-col h-full">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                    Market Cap
+                  </span>
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {company.marketCapitalization
+                          ? new Intl.NumberFormat("en-US", {
+                              maximumFractionDigits: 2,
+                              notation: "compact",
+                              compactDisplay: "short",
+                            }).format(company.marketCapitalization)
+                          : "N/A"}
+                      </span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        USD
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                      {company.marketCapitalization
+                        ? new Intl.NumberFormat("en-US", {
+                            style: "decimal",
+                            maximumFractionDigits: 0,
+                          }).format(company.marketCapitalization)
+                        : "No data"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Industry */}
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+                <div className="flex flex-col h-full">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                    Industry
+                  </span>
+                  <div className="mt-auto">
+                    <HoverCard openDelay={200}>
+                      <HoverCardTrigger asChild>
+                        <span className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 hover:cursor-help">
+                          {company.finnhubIndustry || "N/A"}
+                        </span>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-auto max-w-sm">
+                        {company.finnhubIndustry}
+                      </HoverCardContent>
+                    </HoverCard>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                      Listed on {company.exchange}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* IPO Date */}
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+                <div className="flex flex-col h-full">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                    IPO Date
+                  </span>
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {company.ipo
+                          ? new Date(company.ipo).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                      {company.ipo
+                        ? `${Math.abs(
+                            new Date(company.ipo).getFullYear() -
+                              new Date().getFullYear()
+                          )} years ago`
+                        : "No data"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shares Outstanding */}
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+                <div className="flex flex-col h-full">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                    Shares Outstanding
+                  </span>
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {company.sharesOutstanding
+                          ? new Intl.NumberFormat("en-US", {
+                              maximumFractionDigits: 1,
+                              notation: "compact",
+                              compactDisplay: "short",
+                            }).format(company.sharesOutstanding)
+                          : "N/A"}
+                      </span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        shares
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                      {company.sharesOutstanding
+                        ? `${new Intl.NumberFormat("en-US", {
+                            style: "decimal",
+                            maximumFractionDigits: 0,
+                          }).format(company.sharesOutstanding)} total shares`
+                        : "No data"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
-
-          {/* Company Quick Stats */}
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            {/* Market Cap */}
-            <div className="relative p-5 rounded-lg bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
-              <div className="flex flex-col">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                  Market Cap
-                </span>
-                <div className="mt-auto">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      $
-                      {new Intl.NumberFormat("en-US", {
-                        maximumFractionDigits: 2,
-                        notation: "compact",
-                        compactDisplay: "short",
-                      }).format(company.marketCapitalization || 0)}
-                    </span>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      USD
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "decimal",
-                      maximumFractionDigits: 0,
-                    }).format(company.marketCapitalization || 0)}{" "}
-                    USD
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Industry */}
-            <div className="relative p-5 rounded-lg bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
-              <div className="flex flex-col h-full">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                  Industry
-                </span>
-                <div className="mt-auto">
-                  <HoverCard openDelay={200}>
-                    <HoverCardTrigger asChild>
-                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 hover:cursor-help">
-                        {company.finnhubIndustry || "N/A"}
-                      </span>
-                    </HoverCardTrigger>
-                    <HoverCardContent
-                      className="w-auto max-w-sm bg-white dark:bg-slate-900 p-3"
-                      side="right"
-                    >
-                      {company.finnhubIndustry}
-                    </HoverCardContent>
-                  </HoverCard>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                    {company.exchange
-                      ? `Listed on ${company.exchange}`
-                      : "Exchange data unavailable"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* IPO Date */}
-            <div className="relative p-5 rounded-lg bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
-              <div className="flex flex-col h-full">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                  IPO Date
-                </span>
-                <div className="mt-auto">
-                  <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    {company.ipo
-                      ? new Date(company.ipo).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "N/A"}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                    {company.ipo
-                      ? `${Math.abs(
-                          new Date(company.ipo).getFullYear() -
-                            new Date().getFullYear()
-                        )} years ago`
-                      : "No IPO data"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Shares Outstanding */}
-            <div className="relative p-5 rounded-lg bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
-              <div className="flex flex-col h-full">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
-                  Shares Outstanding
-                </span>
-                <div className="mt-auto">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                      {company.sharesOutstanding
-                        ? new Intl.NumberFormat("en-US", {
-                            maximumFractionDigits: 1,
-                            notation: "compact",
-                            compactDisplay: "short",
-                          }).format(company.sharesOutstanding)
-                        : "N/A"}
-                    </span>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      shares
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                    {company.sharesOutstanding
-                      ? new Intl.NumberFormat("en-US", {
-                          style: "decimal",
-                          maximumFractionDigits: 0,
-                        }).format(company.sharesOutstanding)
-                      : "No data"}{" "}
-                    total shares
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
         </Card>
       )}
 
-      {/* Only show CompanyTranscripts if no transcript is selected */}
+      {/* Company Transcripts Section - Adjusted to match card width */}
       {!selectedTranscript &&
         company.recentTranscripts &&
         company.recentTranscripts.length > 0 && (
-          <CompanyTranscripts transcripts={company.recentTranscripts} />
+          <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm">
+            <CardHeader className="pb-4 px-4">
+              <CardTitle className="text-lg font-semibold">
+                Recent Transcripts
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <CompanyTranscripts transcripts={company.recentTranscripts} />
+            </CardContent>
+          </Card>
         )}
 
-      {/* Show EarningsTranscript when a transcript is selected */}
-      {selectedTranscript && <EarningsTranscript />}
-
-      {/* Additional components */}
-      {/* <AIEarningsAnalysis company={company} /> */}
+      {/* Selected Transcript View */}
+      {selectedTranscript && (
+        <Card className="w-full">
+          <CardContent className="p-4">
+            <EarningsTranscript />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {company.name} ({company.symbol}) - Company Summary
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                  Company Information
-                </h3>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>
-                    <span className="font-medium">Industry:</span>{" "}
-                    {company.finnhubIndustry}
-                  </p>
-                  <p>
-                    <span className="font-medium">Exchange:</span>{" "}
-                    {company.exchange}
-                  </p>
-                  <p>
-                    <span className="font-medium">Market Cap:</span> $
-                    {company.marketCapitalization?.toFixed(2)}M
-                  </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                {
+                  title: "Company Information",
+                  items: [
+                    { label: "Industry", value: company.finnhubIndustry },
+                    { label: "Exchange", value: company.exchange },
+                    {
+                      label: "Market Cap",
+                      value: `$${company.marketCapitalization?.toFixed(2)}M`,
+                    },
+                  ],
+                },
+                {
+                  title: "Additional Details",
+                  items: [
+                    { label: "Website", value: company.weburl },
+                    {
+                      label: "IPO Date",
+                      value: company.ipo
+                        ? new Date(company.ipo).toLocaleDateString()
+                        : "N/A",
+                    },
+                    { label: "Country", value: company.country },
+                  ],
+                },
+              ].map((section, index) => (
+                <div key={index} className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    {section.items.map((item, itemIndex) => (
+                      <p key={itemIndex} className="flex items-center gap-2">
+                        <span className="font-medium">{item.label}:</span>{" "}
+                        {item.value}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                  Additional Details
-                </h3>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>
-                    <span className="font-medium">Website:</span>{" "}
-                    {company.weburl}
-                  </p>
-                  <p>
-                    <span className="font-medium">IPO Date:</span>{" "}
-                    {company.ipo
-                      ? new Date(company.ipo).toLocaleDateString()
-                      : "N/A"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Country:</span>{" "}
-                    {company.country}
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </DialogContent>
