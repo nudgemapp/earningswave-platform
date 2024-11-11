@@ -49,6 +49,8 @@ export async function GET(request: Request) {
 
   try {
     const currentDate = new Date();
+    const yesterday = new Date(currentDate);
+    yesterday.setDate(yesterday.getDate() - 1);
 
     const result = await prisma.$queryRaw`
       SELECT 
@@ -68,7 +70,7 @@ export async function GET(request: Request) {
         t."scheduledAt" >= ${startDate}
         AND t."scheduledAt" <= ${endDate}
         AND t.quarter IS NOT NULL
-        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${yesterday}))
       ORDER BY t."scheduledAt" ASC;
     `;
 
@@ -93,7 +95,6 @@ export async function GET(request: Request) {
       firstTranscriptDate: transformedTranscripts[0]?.scheduledAt,
       lastTranscriptDate:
         transformedTranscripts[transformedTranscripts.length - 1]?.scheduledAt,
-
     });
 
     return NextResponse.json({ transcripts: transformedTranscripts });

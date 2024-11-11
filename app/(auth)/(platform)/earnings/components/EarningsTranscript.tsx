@@ -15,8 +15,6 @@ const EarningsTranscript = () => {
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
 
   console.log(transcript);
-
-  console.log(transcript);
   const handleBack = () => {
     setSelectedTranscript(null);
   };
@@ -26,6 +24,8 @@ const EarningsTranscript = () => {
   }
 
   if (!transcript) return null;
+
+  console.log(transcript);
 
   // Add check for scheduled status
   if (transcript.status === "SCHEDULED") {
@@ -57,6 +57,39 @@ const EarningsTranscript = () => {
             </div>
           </div>
         </div>
+
+        {/* Add Financial Information Section */}
+        {(transcript.financials?.epsEstimate ||
+          transcript.financials?.revenueEstimate) && (
+          <div className="grid grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Estimated EPS
+              </p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {transcript.financials?.epsEstimate
+                    ? `$${transcript.financials.epsEstimate.toFixed(2)}`
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Estimated Revenue
+              </p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {transcript.financials?.revenueEstimate
+                    ? `$${(transcript.financials.revenueEstimate / 1e9).toFixed(
+                        2
+                      )}B`
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empty state message */}
         <div className="flex flex-col items-center justify-center py-12 text-center">
