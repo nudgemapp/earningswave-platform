@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+// Add this interface before the GET function
+interface TranscriptQueryResult {
+  id: string;
+  title: string | null;
+  scheduledAt: Date;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
+  quarter: number;
+  companyId: string;
+  symbol: string;
+  companyName: string | null;
+  logo: string | null;
+  total_count: bigint; // SQL COUNT returns bigint
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startDate = new Date(searchParams.get("startDate") || "");
@@ -18,7 +33,7 @@ export async function GET(request: Request) {
   try {
     const currentDate = new Date();
 
-    const result = await prisma.$queryRaw`
+    const result = await prisma.$queryRaw<TranscriptQueryResult[]>`
       WITH DailyCounts AS (
         SELECT 
           DATE("scheduledAt") as date,
@@ -60,15 +75,15 @@ export async function GET(request: Request) {
       ORDER BY "scheduledAt" ASC;
     `;
 
-    // Transform the raw SQL result into the expected format
-    const transformedTranscripts = (result as any[]).map((row) => ({
+    // Update the transformation with proper typing
+    const transformedTranscripts = result.map((row) => ({
       id: row.id,
       title: row.title,
       scheduledAt: row.scheduledAt,
       status: row.status,
       MarketTime: row.MarketTime,
       quarter: row.quarter,
-      marketTime: row.MarketTime, // For frontend compatibility
+      marketTime: row.MarketTime,
       totalForDay: Number(row.total_count),
       company: {
         id: row.companyId,
