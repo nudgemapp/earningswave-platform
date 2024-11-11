@@ -15,6 +15,8 @@ const EarningsTranscript = () => {
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
 
   console.log(transcript);
+
+  console.log(transcript);
   const handleBack = () => {
     setSelectedTranscript(null);
   };
@@ -24,6 +26,58 @@ const EarningsTranscript = () => {
   }
 
   if (!transcript) return null;
+
+  // Add check for scheduled status
+  if (transcript.status === "SCHEDULED") {
+    return (
+      <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+        {/* Header */}
+        <div className="space-y-4 border-b border-gray-200 dark:border-slate-700 pb-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            </button>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {transcript.title}
+              </h2>
+              <div className="flex items-center gap-4 mt-1">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-4 h-4" />
+                  {format(new Date(transcript.scheduledAt), "MMMM d, yyyy")}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Clock className="w-4 h-4" />
+                  {transcript.MarketTime}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Empty state message */}
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Calendar className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Upcoming Earnings Call
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            This earnings call is scheduled for{" "}
+            {format(
+              new Date(transcript.scheduledAt),
+              "MMMM d, yyyy 'at' h:mm a"
+            )}
+          </p>
+          <div className="text-sm text-gray-400 dark:text-gray-600">
+            The transcript will be available after the call has concluded
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Split transcript into sections (this is a basic example - you might want to enhance this)
   const sections =
