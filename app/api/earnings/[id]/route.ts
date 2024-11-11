@@ -2,6 +2,61 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+interface Speech {
+  id: string;
+  content: string;
+  sequence: number;
+  sessionType: string;
+  createdAt: Date;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  role: string;
+  description: string | null;
+  speeches: Speech[];
+}
+
+interface TranscriptResult {
+  id: string;
+  title: string;
+  scheduledAt: Date;
+  quarter: string;
+  year: number;
+  audioUrl: string | null;
+  MarketTime: string;
+  status: string;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  fullText: string | null;
+  speakers: string | null;
+  companyId: string;
+  currency: string;
+  companyDescription: string;
+  displaySymbol: string;
+  figi: string;
+  isin: string;
+  mic: string;
+  shareClassFIGI: string;
+  symbol: string;
+  symbol2: string;
+  type: string;
+  country: string;
+  exchange: string;
+  ipo: string;
+  marketCapitalization: number;
+  companyName: string;
+  phone: string;
+  sharesOutstanding: number;
+  weburl: string;
+  logo: string;
+  finnhubIndustry: string;
+  participants: Participant[];
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -93,7 +148,7 @@ export async function GET(
         c.weburl, c.logo, c."finnhubIndustry"
     `;
 
-    const transcript = (result as any[])[0];
+    const transcript = (result as TranscriptResult[])[0];
 
     if (!transcript) {
       return new NextResponse("Transcript not found", { status: 404 });
@@ -140,7 +195,7 @@ export async function GET(
         logo: transcript.logo,
         finnhubIndustry: transcript.finnhubIndustry,
       },
-      participants: transcript.participants.map((p: any) => ({
+      participants: transcript.participants.map((p: Participant) => ({
         id: p.id,
         name: p.name,
         role: p.role,

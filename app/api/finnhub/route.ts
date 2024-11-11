@@ -3,14 +3,14 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   try {
     // Get the search params from the request URL
-    const { searchParams } = new URL(request.url);
-    const from =
-      searchParams.get("from") || new Date().toISOString().split("T")[0];
-    const to =
-      searchParams.get("to") ||
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
+    // const { searchParams } = new URL(request.url);
+    // const from =
+    //   searchParams.get("from") || new Date().toISOString().split("T")[0];
+    // const to =
+    //   searchParams.get("to") ||
+    //   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    //     .toISOString()
+    //     .split("T")[0];
 
     // Add transcript ID parameter handling
     // Fetch NYSE stocks

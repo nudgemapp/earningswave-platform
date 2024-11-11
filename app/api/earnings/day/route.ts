@@ -1,6 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+interface TranscriptRow {
+  id: string;
+  title: string;
+  scheduledAt: Date;
+  quarter: string;
+  year: number;
+  MarketTime: string;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  companyId: string;
+  symbol: string;
+  companyName: string;
+  logo: string | null;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startDate = new Date(searchParams.get("startDate") || "");
@@ -44,7 +61,7 @@ export async function GET(request: Request) {
       ORDER BY t."scheduledAt" ASC;
     `;
 
-    const processedTranscripts = (result as any[]).map((row) => ({
+    const processedTranscripts = (result as TranscriptRow[]).map((row) => ({
       id: row.id,
       title: row.title,
       scheduledAt: row.scheduledAt,

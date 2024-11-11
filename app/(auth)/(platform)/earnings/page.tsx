@@ -72,9 +72,9 @@ const EarningsPage = async ({
     <div className="h-screen flex flex-col">
       <NavBar />
       <EarningsClient
-        userInfo={userInfo}
-        // transcripts={processedTranscripts}
-        // reports={processedReports}
+      // userInfo={userInfo}
+      // transcripts={processedTranscripts}
+      // reports={processedReports}
       />
     </div>
   );

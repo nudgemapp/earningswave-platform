@@ -315,16 +315,16 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
 
           // Group transcripts by market timing
           const preMarket = dayTranscripts.filter(
-            (t) => t.marketTime === "BMO"
+            (t) => t.MarketTime === "BMO"
           );
           const duringMarket = dayTranscripts.filter(
-            (t) => t.marketTime === "DMH"
+            (t) => t.MarketTime === "DMH"
           );
           const afterMarket = dayTranscripts.filter(
-            (t) => t.marketTime === "AMC"
+            (t) => t.MarketTime === "AMC"
           );
           const unspecified = dayTranscripts.filter(
-            (t) => t.marketTime === "UNKNOWN"
+            (t) => t.MarketTime === "UNKNOWN"
           );
 
           return (

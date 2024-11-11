@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import FutureEarnings from "./FutureEarnings";
 import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";

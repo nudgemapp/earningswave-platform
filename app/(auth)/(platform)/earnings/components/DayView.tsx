@@ -161,8 +161,8 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
         <div className="relative h-12 w-12 mr-4">
           {transcript.company.logo ? (
             <Image
-              src={transcript.company.logo}
-              alt={transcript.company.name}
+              src={transcript.company.logo || ""}
+              alt={transcript.company.name || ""}
               layout="fill"
               objectFit="contain"
               className="rounded-md"

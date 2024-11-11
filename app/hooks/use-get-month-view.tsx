@@ -7,6 +7,27 @@ interface MonthViewResponse {
   transcripts: ProcessedTranscript[];
 }
 
+interface RawTranscript {
+  id: string;
+  companyId: string;
+  title?: string;
+  scheduledAt: string;
+  quarter?: number;
+  year?: number;
+  audioUrl?: string;
+  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+  epsActual?: number;
+  epsEstimate?: number;
+  revenueActual?: number;
+  revenueEstimate?: number;
+  company?: {
+    symbol: string;
+    name?: string;
+    logo?: string;
+  };
+}
+
 export const useGetMonthView = () => {
   const { currentDate } = useCalendarStore();
 
@@ -52,7 +73,7 @@ export const useGetMonthView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map((t: any) => ({
+        transcripts: data.transcripts.map((t: RawTranscript) => ({
           ...t,
           scheduledAt: new Date(t.scheduledAt),
         })),

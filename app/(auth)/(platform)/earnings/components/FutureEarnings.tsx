@@ -158,11 +158,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     setSelectedCompany(null);
   };
 
-  // Get the most recent upcoming transcript with proper type checking
-  const upcomingTranscript = company.recentTranscripts?.find(
-    (t: Transcript) => new Date(t.scheduledAt).getTime() > new Date().getTime()
-  );
-
   return (
     <div className="space-y-6">
       {/* Only show the main card if no transcript is selected */}

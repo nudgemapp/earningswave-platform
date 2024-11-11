@@ -16,9 +16,21 @@ const Watchlist = () => {
   const handleRemoveFromWatchlist = async (companyId: string) => {
     try {
       await removeFromWatchlist.mutateAsync(companyId);
-      toast.success("Removed from watchlist");
+      toast.success("Removed from watchlist", {
+        className:
+          "bg-white dark:bg-slate-900 text-gray-900 dark:text-white border-gray-200 dark:border-slate-700",
+        descriptionClassName: "text-gray-700 dark:text-gray-300",
+      });
     } catch (error) {
-      toast.error("Failed to remove from watchlist");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to remove from watchlist",
+        {
+          className: "bg-white text-gray-900 border-gray-200",
+          descriptionClassName: "text-gray-700",
+        }
+      );
     }
   };
 

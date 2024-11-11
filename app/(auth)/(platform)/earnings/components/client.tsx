@@ -4,12 +4,12 @@ import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
-import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { User, Subscription } from "@prisma/client";
 import { ProcessedTranscript } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
+// import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
+// import { useAuthModal } from "@/store/AuthModalStore";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
@@ -31,16 +31,20 @@ export type UserWithSubscription =
   | null;
 
 interface EarningsClientProps {
-  userInfo: UserWithSubscription;
+  // userInfo: UserWithSubscription;
 }
 
-const EarningsClient: React.FC<EarningsClientProps> = ({ userInfo }) => {
+const EarningsClient: React.FC<EarningsClientProps> = (
+  {
+    // userInfo
+  }
+) => {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const { setSelectedCompany } = useEarningsStore();
 
-  const { onOpen: openAuthModal } = useAuthModal();
-  const { onOpen: openSubscriptionModal } = useSubscriptionModal();
+  // const { onOpen: openAuthModal } = useAuthModal();
+  // const { onOpen: openSubscriptionModal } = useSubscriptionModal();
   const emailModal = useEmailModal();
 
   useEffect(() => {
@@ -86,7 +90,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({ userInfo }) => {
   };
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
-    console.log(transcriptInfo);
     if (!transcriptInfo.company) {
       console.error("Company information is missing from transcript");
       return;
@@ -96,7 +99,6 @@ const EarningsClient: React.FC<EarningsClientProps> = ({ userInfo }) => {
       companyId: transcriptInfo.company.id,
       transcriptId: transcriptInfo.id,
     });
-    console.log(transcriptInfo);
   };
 
   return (

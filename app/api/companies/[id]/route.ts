@@ -1,6 +1,50 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+interface CompanyQueryResult {
+  id: string;
+  currency: string;
+  description: string | null;
+  displaySymbol: string;
+  figi: string | null;
+  isin: string | null;
+  mic: string | null;
+  shareClassFIGI: string | null;
+  symbol: string;
+  symbol2: string | null;
+  type: string;
+  country: string;
+  exchange: string;
+  ipo: Date | null;
+  marketCapitalization: number | null;
+  name: string;
+  phone: string | null;
+  sharesOutstanding: number | null;
+  weburl: string | null;
+  logo: string | null;
+  finnhubIndustry: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  total_transcripts: number;
+  completed_transcripts: number;
+  scheduled_transcripts: number;
+  latest_transcript: Date | null;
+  earliest_transcript: Date | null;
+  recent_transcripts: Array<{
+    id: string;
+    title: string;
+    scheduledAt: Date;
+    status: string;
+    marketTime: string;
+    quarter: number;
+    year: number;
+    epsActual: number | null;
+    epsEstimate: number | null;
+    revenueActual: number | null;
+    revenueEstimate: number | null;
+  }> | null;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -81,7 +125,7 @@ export async function GET(
       WHERE c.id = ${params.id}
     `;
 
-    const company = (result as any[])[0];
+    const company = (result as CompanyQueryResult[])[0];
 
     if (!company) {
       return new NextResponse("Company not found", { status: 404 });
