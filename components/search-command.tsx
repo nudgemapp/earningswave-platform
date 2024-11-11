@@ -15,8 +15,6 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { Building2, Loader2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
-const TOP_OFFSET = "20vh";
-
 export const SearchCommand = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [query, setQuery] = useState("");
