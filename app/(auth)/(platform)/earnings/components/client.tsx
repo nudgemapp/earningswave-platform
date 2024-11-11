@@ -33,7 +33,7 @@ export type UserWithSubscription =
 const EarningsClient = () => {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
-  const { setSelectedCompany } = useEarningsStore();
+  const { setSelectedCompany, setSelectedTranscript } = useEarningsStore();
 
   // const { onOpen: openAuthModal } = useAuthModal();
   // const { onOpen: openSubscriptionModal } = useSubscriptionModal();
@@ -89,8 +89,8 @@ const EarningsClient = () => {
 
     setSelectedCompany({
       companyId: transcriptInfo.company.id,
-      transcriptId: transcriptInfo.id,
     });
+    setSelectedTranscript(null);
   };
 
   return (
