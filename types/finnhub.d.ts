@@ -1,23 +1,41 @@
 declare module "finnhub" {
+  interface Authentication {
+    apiKey: string;
+  }
+
+  interface Authentications {
+    api_key: Authentication;
+  }
+
   export class ApiClient {
     static instance: {
-      authentications: {
-        api_key: {
-          apiKey: string;
-        };
-      };
+      authentications: Authentications;
     };
   }
 
   export class DefaultApi {
+    constructor();
+
     transcripts(
       id: string,
       callback: (error: any, data: any, response: any) => void
     ): void;
+
+    symbolSearch(
+      query: string,
+      callback: (error: any, data: any, response: any) => void
+    ): void;
+
+    stockSymbols(
+      exchange: string,
+      callback: (error: any, data: any, response: any) => void
+    ): void;
   }
 
-  export default {
-    ApiClient,
-    DefaultApi,
+  const finnhub: {
+    ApiClient: typeof ApiClient;
+    DefaultApi: typeof DefaultApi;
   };
+
+  export default finnhub;
 }

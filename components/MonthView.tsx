@@ -4,126 +4,92 @@ import React from "react";
 import Image from "next/image";
 
 import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
-import {
-  ProcessedReport as BaseProcessedReport,
-  ProcessedTranscript as BaseProcessedTranscript,
-} from "@/app/(auth)/(platform)/earnings/types";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEarningsStore } from "@/store/EarningsStore";
-
-// Extend the base interfaces to include the count properties
-interface ProcessedReport extends BaseProcessedReport {
-  totalCount: number;
-  remainingCount: number;
-}
-
-interface ProcessedTranscript extends BaseProcessedTranscript {
-  totalCount: number;
-  remainingCount: number;
-}
 
 // First, let's define proper interfaces for our data structure
 interface GroupedTranscript {
   date: string;
-  totalCount: number;
-  remainingCount: number;
   items: ProcessedTranscript[];
-}
-
-interface GroupedReport {
-  date: string;
-  totalCount: number;
-  remainingCount: number;
-  items: ProcessedReport[];
 }
 
 interface MonthViewProps {
   currentDate: Date;
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
-  handleFutureEarningsClick: (report: ProcessedReport) => void;
 }
-
-const bufferToImageUrl = (
-  logoData: { data: { type: "Buffer"; data: number[] } } | string
-) => {
-  if (typeof logoData === "string") return logoData;
-  if (!logoData?.data?.data) return "";
-
-  const uint8Array = new Uint8Array(logoData.data.data);
-  let binary = "";
-  uint8Array.forEach((byte) => (binary += String.fromCharCode(byte)));
-  return `data:image/png;base64,${btoa(binary)}`;
-};
-
-const CompanyCard = ({
-  symbol,
-  name,
-  logo,
-  onClick,
-}: {
-  symbol: string;
-  name: string;
-  logo: string | null;
-  onClick: () => void;
-}) => (
-  <div
-    className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick();
-    }}
-    title={`${name} (${symbol})`}
-  >
-    <div className="aspect-square relative">
-      {logo ? (
-        <Image
-          src={logo}
-          alt={`${name} logo`}
-          layout="fill"
-          objectFit="contain"
-          className="p-0.5"
-        />
-      ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-            {symbol}
-          </span>
-        </div>
-      )}
-    </div>
-    <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
-      <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
-        {symbol}
-      </span>
-    </div>
-  </div>
-);
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   handleCompanyClick,
-  handleFutureEarningsClick,
 }) => {
   const { data, isLoading, error } = useGetMonthView();
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
+        {/* Header */}
+        <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="py-1 text-center">
+              <Skeleton className="h-3.5 w-12 mx-auto rounded-md" />
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
+            {[...Array(35)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-slate-900 p-2 min-h-[120px] space-y-2"
+              >
+                {/* Date */}
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-4 rounded-md" />
+                  <Skeleton className="h-3 w-8 rounded-md" />
+                </div>
+
+                {/* Morning Events */}
+                <div className="space-y-1">
+                  <Skeleton className="h-2 w-16 rounded-md" />
+                  <div className="grid grid-cols-4 gap-1">
+                    {[...Array(4)].map((_, j) => (
+                      <Skeleton key={j} className="aspect-square rounded-sm" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Afternoon Events */}
+                <div className="space-y-1">
+                  <Skeleton className="h-2 w-12 rounded-md" />
+                  <div className="grid grid-cols-4 gap-1">
+                    {[...Array(4)].map((_, j) => (
+                      <Skeleton key={j} className="aspect-square rounded-sm" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts: rawTranscripts, reports: rawReports } = data as {
-    transcripts: ProcessedTranscript[];
-    reports: ProcessedReport[];
-  };
+  const { transcripts: rawTranscripts } = data;
 
   const transcripts: GroupedTranscript[] = Object.entries(
     rawTranscripts.reduce((acc, transcript) => {
-      const date = transcript.date.toISOString().split("T")[0];
+      const date = transcript.scheduledAt.toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = {
           date,
-          totalCount: transcript.totalCount || 0,
-          remainingCount: transcript.remainingCount || 0,
           items: [],
         };
       }
@@ -132,29 +98,49 @@ const MonthView: React.FC<MonthViewProps> = ({
     }, {} as Record<string, GroupedTranscript>)
   ).map(([, group]) => group);
 
-  const reports: GroupedReport[] = Object.entries(
-    rawReports.reduce((acc, report) => {
-      console.log("Processing report:", {
-        symbol: report.symbol,
-        date: report.reportDate,
-        isoString: report.reportDate.toISOString(),
-      });
-
-      const date = report.reportDate.toISOString().split("T")[0];
-      if (!acc[date]) {
-        acc[date] = {
-          date,
-          totalCount: report.totalCount || 0,
-          remainingCount: report.remainingCount || 0,
-          items: [],
-        };
-      }
-      acc[date].items.push(report);
-      return acc;
-    }, {} as Record<string, GroupedReport>)
-  ).map(([, group]) => group);
-
-  console.log("Processed reports:", reports);
+  const CompanyCard = ({
+    symbol,
+    name,
+    logo,
+    onClick,
+  }: {
+    symbol: string;
+    name: string;
+    logo: string | null;
+    onClick: () => void;
+  }) => (
+    <div
+      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      title={`${name} (${symbol})`}
+    >
+      <div className="aspect-square relative">
+        {logo ? (
+          <Image
+            src={logo}
+            alt={`${name} logo`}
+            layout="fill"
+            objectFit="contain"
+            className="p-0.5"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              {symbol}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+        <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
+          {symbol}
+        </span>
+      </div>
+    </div>
+  );
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -189,38 +175,12 @@ const MonthView: React.FC<MonthViewProps> = ({
   const getLogosForDate = (date: Date, transcriptData: GroupedTranscript[]) => {
     const formattedDate = date.toISOString().split("T")[0];
     const dateEntry = transcriptData.find(
-      (entry) =>
-        new Date(entry.date).toISOString().split("T")[0] === formattedDate
+      (entry) => entry.date === formattedDate
     );
 
     return {
       items: dateEntry?.items || [],
-      totalCount: dateEntry?.totalCount || 0,
-      remainingCount: dateEntry?.remainingCount || 0,
-    };
-  };
-
-  const getReportsForDate = (date: Date, reportData: GroupedReport[]) => {
-    const formattedDate = date.toISOString().split("T")[0];
-
-    console.log("Checking reports for date:", {
-      formattedDate,
-      availableDates: reportData.map((r) => r.date),
-      matchingEntry: reportData.find(
-        (entry) =>
-          new Date(entry.date).toISOString().split("T")[0] === formattedDate
-      ),
-    });
-
-    const dateEntry = reportData.find(
-      (entry) =>
-        new Date(entry.date).toISOString().split("T")[0] === formattedDate
-    );
-
-    return {
-      items: dateEntry?.items || [],
-      totalCount: dateEntry?.totalCount || 0,
-      remainingCount: dateEntry?.remainingCount || 0,
+      totalCount: dateEntry?.items.length || 0,
     };
   };
 
@@ -238,36 +198,32 @@ const MonthView: React.FC<MonthViewProps> = ({
   const MarketTimingGroup = ({
     title,
     icon: Icon,
-    reports,
+    transcripts,
     bgColor,
   }: {
     title: string;
     icon: LucideIcon;
-    reports: ProcessedReport[];
+    transcripts: ProcessedTranscript[];
     bgColor: string;
   }) => {
-    if (reports.length === 0) return null;
+    if (transcripts.length === 0) return null;
 
     return (
       <div className={`p-0.5 rounded-sm mb-0.5 ${bgColor} dark:bg-opacity-20`}>
         <div className="flex items-center gap-1 mb-0.5 px-0.5">
           <Icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
           <span className="text-[9px] font-medium text-gray-600 dark:text-gray-400">
-            {title}
+            {title} ({transcripts.length})
           </span>
         </div>
         <div className="grid grid-cols-4 gap-0.5">
-          {reports.map((report, reportIndex) => (
+          {transcripts.map((transcript, index) => (
             <CompanyCard
-              key={`report-${reportIndex}`}
-              symbol={report.symbol}
-              name={report.name}
-              logo={
-                report.company?.logo
-                  ? bufferToImageUrl(report.company.logo)
-                  : null
-              }
-              onClick={() => handleFutureEarningsClick(report)}
+              key={`transcript-${index}`}
+              symbol={transcript.company?.symbol || ""}
+              name={transcript.company?.name || ""}
+              logo={transcript.company?.logo || null}
+              onClick={() => handleCompanyClick(transcript)}
             />
           ))}
         </div>
@@ -291,10 +247,8 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
           {getDaysInMonth(currentDate).map((date, index) => {
-            const { items: dayContent, remainingCount: transcriptRemaining } =
+            const { items: dayContent, totalCount: transcriptRemaining } =
               getLogosForDate(date, transcripts);
-            const { items: dayReports, remainingCount: reportRemaining } =
-              getReportsForDate(date, reports);
             const isCurrentMonth = date.getMonth() === currentDate.getMonth();
 
             return (
@@ -321,62 +275,40 @@ const MonthView: React.FC<MonthViewProps> = ({
               >
                 <span className="text-xs mb-0.5 font-medium">
                   {date.getDate()}
-                  {(transcriptRemaining > 0 || reportRemaining > 0) && (
+                  {transcriptRemaining > 0 && (
                     <span className="ml-1 text-gray-500 text-[9px]">
-                      +{transcriptRemaining + reportRemaining}
+                      +{transcriptRemaining}
                     </span>
                   )}
                 </span>
                 <div className="flex-grow">
-                  {dayContent.length === 0 && dayReports.length === 0 ? (
+                  {dayContent.length === 0 ? (
                     <NoEarnings />
                   ) : (
                     <div className="flex flex-col h-full">
-                      {/* Regular transcripts */}
-                      {dayContent.length > 0 && (
-                        <div className="grid grid-cols-4 gap-0.5 mb-0.5">
-                          {dayContent.map((transcript, logoIndex) => (
-                            <CompanyCard
-                              key={`transcript-${logoIndex}`}
-                              symbol={transcript.company?.symbol || ""}
-                              name={transcript.company?.name || ""}
-                              logo={
-                                transcript.company?.logo
-                                  ? bufferToImageUrl(transcript.company.logo)
-                                  : null
-                              }
-                              onClick={() => handleCompanyClick(transcript)}
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Market timing groups */}
                       <MarketTimingGroup
                         title="Pre-Market"
                         icon={Sun}
-                        reports={dayReports.filter(
-                          (r) => r.marketTiming === "PRE_MARKET"
+                        transcripts={dayContent.filter(
+                          (t) => t.MarketTime === "BMO"
                         )}
                         bgColor="bg-blue-50"
                       />
                       <MarketTimingGroup
-                        title="After Hours"
-                        icon={Moon}
-                        reports={dayReports.filter(
-                          (r) => r.marketTiming === "AFTER_HOURS"
-                        )}
-                        bgColor="bg-orange-50"
-                      />
-                      <MarketTimingGroup
-                        title="Not Specified"
+                        title="During Market"
                         icon={Calendar}
-                        reports={dayReports.filter(
-                          (r) =>
-                            r.marketTiming === "NOT_SUPPLIED" ||
-                            r.marketTiming === null
+                        transcripts={dayContent.filter(
+                          (t) => t.MarketTime === "DMH"
                         )}
                         bgColor="bg-gray-50"
+                      />
+                      <MarketTimingGroup
+                        title="After Hours"
+                        icon={Moon}
+                        transcripts={dayContent.filter(
+                          (t) => t.MarketTime === "AMC"
+                        )}
+                        bgColor="bg-orange-50"
                       />
                     </div>
                   )}

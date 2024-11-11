@@ -10,7 +10,11 @@ export async function DELETE(req: Request) {
     }
 
     const { companyId } = await req.json();
+    if (!companyId) {
+      return new NextResponse("Company ID is required", { status: 400 });
+    }
 
+    // Delete the watchlist entry
     await prisma.watchlistEntry.delete({
       where: {
         userId_companyId: {

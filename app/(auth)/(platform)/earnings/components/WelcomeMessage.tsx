@@ -2,8 +2,6 @@ import React from "react";
 import { Calendar, ChartBar, FileText } from "lucide-react";
 import { usePathname } from "next/navigation";
 import TickerSearch from "@/components/tickerSearch";
-import { useEarningsStore } from "@/store/EarningsStore";
-import { ProcessedReport } from "../types";
 import Logo from "@/components/Logo";
 import { motion } from "framer-motion";
 
@@ -33,15 +31,7 @@ const itemVariants = {
 
 const WelcomeMessage: React.FC = () => {
   const pathname = usePathname();
-  const showSearch = pathname.includes("/earnings");
-
-  const handleFutureEarningsClick = (report: ProcessedReport) => {
-    useEarningsStore.setState({
-      selectedDate: null,
-      selectedCompany: null,
-      selectedFutureEarnings: report,
-    });
-  };
+  const showSearch = pathname.includes("/");
 
   return (
     <motion.div
@@ -70,7 +60,7 @@ const WelcomeMessage: React.FC = () => {
 
       {showSearch && (
         <motion.div variants={itemVariants} className="w-full max-w-3xl">
-          <TickerSearch handleFutureEarningsClick={handleFutureEarningsClick} />
+          <TickerSearch />
         </motion.div>
       )}
 

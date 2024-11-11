@@ -11,6 +11,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -155,14 +160,34 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           </Button>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            className="bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary transition-colors duration-200"
-            onClick={handleWatchlistClick}
-          >
-            <StarIcon className="h-5 w-5 mr-2" />
-            <span>Watchlist</span>
-          </Button>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary transition-colors duration-200"
+                onClick={handleWatchlistClick}
+              >
+                <StarIcon className="h-5 w-5 mr-2" />
+                <span>Watchlist</span>
+              </Button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80">
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">Company Watchlist</h4>
+                <p className="text-sm text-muted-foreground">
+                  Add companies to your watchlist to receive notifications
+                  about:
+                  <ul className="list-disc list-inside mt-1">
+                    <li>New earnings transcripts</li>
+                    <li>Important company news</li>
+                    <li>Price changes</li>
+                    <li>Market sentiment updates</li>
+                    <li>Financial reports</li>
+                  </ul>
+                </p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
           <Button
             onClick={() => setView("month")}
             variant={view === "month" ? "default" : "outline"}

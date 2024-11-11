@@ -7,35 +7,38 @@ import {
   Sun,
   Moon,
   LucideIcon,
-  File,
   Clock,
   ChevronLeft,
   ChevronRight,
   X,
+  Star,
 } from "lucide-react";
-import {
-  ProcessedReport,
-  ProcessedTranscript,
-} from "@/app/(auth)/(platform)/earnings/types";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
-import Spinner from "@/components/ui/Spinner";
 import { useEarningsStore } from "@/store/EarningsStore";
+import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertTriangle } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
-type FilterType = "ALL" | "PRE_MARKET" | "AFTER_HOURS";
+type FilterType = "ALL" | "BMO" | "AMC" | "DMH" | "UNKNOWN";
 
 interface DayViewProps {
   date: Date;
   onTranscriptClick: (transcript: ProcessedTranscript) => void;
-  onReportClick: (report: ProcessedReport) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({
-  date,
-  onTranscriptClick,
-  onReportClick,
-}) => {
+const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("ALL");
   const { data, isLoading, error } = useGetDayView(date);
+  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
+  const [watchlistedCompanies, setWatchlistedCompanies] = useState<Set<string>>(
+    new Set()
+  );
+  const { userId } = useAuth();
+  const authModal = useAuthModal();
 
   const changeDate = (days: number) => {
     const newDate = new Date(date);
@@ -70,16 +73,22 @@ const DayView: React.FC<DayViewProps> = ({
 
     return {
       ...data,
-      reports: data.reports.filter((report) => {
-        if (activeFilter === "PRE_MARKET")
-          return report.marketTiming === "PRE_MARKET";
-        if (activeFilter === "AFTER_HOURS")
-          return report.marketTiming === "AFTER_HOURS";
-        return true;
-      }),
-      transcripts: data.transcripts,
+      transcripts: data.transcripts.filter(
+        (transcript) => transcript.MarketTime === activeFilter
+      ),
     };
   }, [data, activeFilter]);
+
+  const groupedTranscripts = React.useMemo(() => {
+    if (!filteredData?.transcripts) return {};
+
+    return filteredData.transcripts.reduce((acc, transcript) => {
+      const timing = transcript.MarketTime || "UNKNOWN";
+      if (!acc[timing]) acc[timing] = [];
+      acc[timing].push(transcript);
+      return acc;
+    }, {} as Record<string, ProcessedTranscript[]>);
+  }, [filteredData]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
@@ -90,71 +99,135 @@ const DayView: React.FC<DayViewProps> = ({
     });
   };
 
+  const handleWatchlistToggle = async (companyId: string) => {
+    if (!userId) {
+      authModal.onOpen();
+      return;
+    }
+
+    try {
+      if (watchlistedCompanies.has(companyId)) {
+        await removeFromWatchlist.mutateAsync(companyId);
+        setWatchlistedCompanies((prev) => {
+          const next = new Set(prev);
+          next.delete(companyId);
+          return next;
+        });
+        toast.success("Removed from watchlist", {
+          className:
+            "bg-white dark:bg-slate-900 text-gray-900 dark:text-white border-gray-200 dark:border-slate-700",
+          descriptionClassName: "text-gray-700 dark:text-gray-300",
+          style: {
+            "--toast-success": "var(--green-500)",
+          } as React.CSSProperties,
+        });
+      } else {
+        await addToWatchlist.mutateAsync(companyId);
+        setWatchlistedCompanies((prev) => new Set(prev).add(companyId));
+        toast.success("Added to watchlist", {
+          className:
+            "bg-white dark:bg-slate-900 text-gray-900 dark:text-white border-gray-200 dark:border-slate-700",
+          descriptionClassName: "text-gray-700 dark:text-gray-300",
+          style: {
+            "--toast-success": "var(--green-500)",
+          } as React.CSSProperties,
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update watchlist",
+        {
+          className:
+            "bg-white dark:bg-slate-900 text-gray-900 dark:text-white border-gray-200 dark:border-slate-700",
+          descriptionClassName: "text-gray-700 dark:text-gray-300",
+        }
+      );
+    }
+  };
+
   const CompanyCard = ({
-    company,
+    transcript,
     onClick,
-    estimate,
-    lastYearEPS,
+    isWatchlisted,
+    onWatchlistToggle,
   }: {
-    company: { name: string; symbol: string; logo?: string | null };
+    transcript: ProcessedTranscript;
     onClick: () => void;
-    estimate?: number | null;
-    lastYearEPS?: number | null;
+    isWatchlisted: boolean;
+    onWatchlistToggle: (companyId: string) => Promise<void>;
   }) => (
-    <div
-      onClick={onClick}
-      className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 cursor-pointer"
-    >
-      <div className="relative h-12 w-12 mr-4">
-        {company.logo ? (
-          <Image
-            src={company.logo}
-            alt={company.name}
-            layout="fill"
-            objectFit="contain"
-            className="rounded-md"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center bg-gray-100 rounded-md">
-            <span className="text-sm font-medium">{company.symbol}</span>
-          </div>
-        )}
-      </div>
-      <div className="flex-1">
-        <h3 className="font-medium text-gray-900 dark:text-gray-200">
-          {company.name}
-        </h3>
-        <div className="flex gap-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {company.symbol}
-          </p>
-          {estimate !== undefined && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Est: ${estimate?.toFixed(2) || "N/A"}
-            </p>
-          )}
-          {lastYearEPS !== undefined && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Prior: ${lastYearEPS?.toFixed(2) || "N/A"}
-            </p>
+    <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 cursor-pointer group">
+      <div className="flex-1 flex items-center gap-4" onClick={onClick}>
+        <div className="relative h-12 w-12 mr-4">
+          {transcript.company.logo ? (
+            <Image
+              src={transcript.company.logo || ""}
+              alt={transcript.company.name || ""}
+              layout="fill"
+              objectFit="contain"
+              className="rounded-md"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-md">
+              <span className="text-sm font-medium">
+                {transcript.company.symbol}
+              </span>
+            </div>
           )}
         </div>
+        <div className="flex-1">
+          <h3 className="font-medium text-gray-900 dark:text-gray-200">
+            {transcript.company.name}
+          </h3>
+          <div className="flex gap-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {transcript.company.symbol}
+            </p>
+            {transcript.epsEstimate !== null && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Est: ${transcript.epsEstimate.toFixed(2)}
+              </p>
+            )}
+            {transcript.epsActual !== null && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Act: ${transcript.epsActual.toFixed(2)}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onWatchlistToggle(transcript.company.id);
+        }}
+        className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+      >
+        <Star
+          className={`w-4 h-4 ${
+            isWatchlisted
+              ? "fill-blue-500 text-blue-500"
+              : "text-gray-400 dark:text-gray-500"
+          }`}
+          fill={isWatchlisted ? "currentColor" : "none"}
+          strokeWidth={1.5}
+        />
+      </button>
     </div>
   );
 
   const MarketTimingGroup = ({
     title,
     icon: Icon,
-    reports,
+    transcripts,
     className,
   }: {
     title: string;
     icon: LucideIcon;
-    reports: ProcessedReport[];
+    transcripts: ProcessedTranscript[];
     className: string;
   }) => {
-    if (reports.length === 0) return null;
+    if (!transcripts?.length) return null;
 
     return (
       <div className={`space-y-3 mt-4 ${className} dark:bg-opacity-20`}>
@@ -163,13 +236,13 @@ const DayView: React.FC<DayViewProps> = ({
           {title}
         </h4>
         <div className="grid gap-3">
-          {reports.map((report) => (
+          {transcripts.map((transcript) => (
             <CompanyCard
-              key={report.id}
-              company={report.company}
-              onClick={() => onReportClick(report)}
-              estimate={report.estimate}
-              lastYearEPS={report.lastYearEPS}
+              key={transcript.id}
+              transcript={transcript}
+              onClick={() => onTranscriptClick(transcript)}
+              isWatchlisted={watchlistedCompanies.has(transcript.company.id)}
+              onWatchlistToggle={handleWatchlistToggle}
             />
           ))}
         </div>
@@ -177,18 +250,88 @@ const DayView: React.FC<DayViewProps> = ({
     );
   };
 
-  // Group reports by marketTiming
-  const groupedReports =
-    filteredData?.reports.reduce((acc, report) => {
-      const timing = report.marketTiming || "NOT_SUPPLIED";
-      if (!acc[timing]) acc[timing] = [];
-      acc[timing].push(report);
-      return acc;
-    }, {} as Record<string, ProcessedReport[]>) || {};
-
   const handleBack = () => {
     useEarningsStore.setState({ selectedDate: null });
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 bg-white dark:bg-slate-900">
+        {/* Header Skeleton */}
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between md:justify-center">
+            <Skeleton className="w-8 h-8 rounded-full md:hidden" />
+            <Skeleton className="w-48 h-8" />
+            <Skeleton className="w-8 h-8 rounded-full md:hidden" />
+          </div>
+
+          {/* Filter Bar Skeleton */}
+          <div className="flex items-center gap-2 p-1 bg-gray-50 dark:bg-slate-800 rounded-lg w-fit mx-auto">
+            {[1, 2, 3].map((i) => (
+              <Skeleton
+                key={i}
+                className="w-24 h-9 rounded-lg bg-gray-100 dark:bg-slate-700"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Market Timing Groups Skeleton */}
+        {["BMO", "AMC", "DMH"].map((timing) => (
+          <div
+            key={timing}
+            className="space-y-3 mt-4 p-4 rounded-md bg-gray-50 dark:bg-slate-800/50"
+          >
+            {/* Group Header */}
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="w-24 h-4" />
+            </div>
+
+            {/* Company Cards */}
+            <div className="grid gap-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700"
+                >
+                  {/* Company Logo Skeleton */}
+                  <div className="flex-1 flex items-center gap-4">
+                    <Skeleton className="h-12 w-12 rounded-md shrink-0" />
+
+                    {/* Company Info Skeleton */}
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-48" />
+                      <div className="flex gap-4">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Button Skeleton */}
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white dark:bg-slate-900 text-gray-500 dark:text-gray-400">
+        <div className="text-center space-y-2">
+          <AlertTriangle className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500" />
+          <h3 className="font-medium text-lg">Error loading earnings data</h3>
+          <p className="text-sm">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 bg-white dark:bg-slate-900">
@@ -196,10 +339,10 @@ const DayView: React.FC<DayViewProps> = ({
         <div className="relative">
           <button
             onClick={handleBack}
-            className="absolute right-0 top-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors md:hidden"
+            className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
             aria-label="Close day view"
           >
-            <X className="w-4 h-4 dark:text-gray-400" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
         <div className="flex items-center justify-between md:justify-center">
@@ -222,32 +365,17 @@ const DayView: React.FC<DayViewProps> = ({
           </button>
         </div>
 
-        {/* Filter Bar */}
+        {/* Updated Filter Bar */}
         <div className="flex items-center gap-2 p-1 bg-gray-50 dark:bg-slate-800 rounded-lg w-fit mx-auto">
           <FilterButton filter="ALL" label="All" icon={Clock} />
-          <FilterButton filter="PRE_MARKET" label="Pre-Market" icon={Sun} />
-          <FilterButton filter="AFTER_HOURS" label="After Hours" icon={Moon} />
+          <FilterButton filter="BMO" label="Pre-Market" icon={Sun} />
+          <FilterButton filter="AMC" label="After Hours" icon={Moon} />
         </div>
       </div>
 
-      {/* Loading and Error States */}
-      {isLoading && (
-        <div className="flex flex-col justify-center items-center min-h-[600px] mt-16 gap-3">
-          <Spinner size="lg" />
-          <span className="text-gray-500">Loading earnings data...</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="flex justify-center items-center min-h-[200px] text-gray-600">
-          Error loading data
-        </div>
-      )}
-
       {!isLoading && !error && filteredData && (
         <>
-          {filteredData.reports.length === 0 &&
-          filteredData.transcripts.length === 0 ? (
+          {filteredData.transcripts.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500 dark:text-gray-400">
               <Calendar className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" />
               <p className="text-lg font-medium">
@@ -257,54 +385,30 @@ const DayView: React.FC<DayViewProps> = ({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Reports */}
-              {filteredData.reports.length > 0 && (
-                <div className="space-y-3">
-                  <MarketTimingGroup
-                    title="Pre-Market"
-                    icon={Sun}
-                    reports={groupedReports["PRE_MARKET"] || []}
-                    className="bg-blue-50 p-4 rounded-md"
-                  />
-
-                  <MarketTimingGroup
-                    title="After Hours"
-                    icon={Moon}
-                    reports={groupedReports["AFTER_HOURS"] || []}
-                    className="bg-orange-50 p-4 rounded-md"
-                  />
-
-                  <MarketTimingGroup
-                    title="Not Specified"
-                    icon={Calendar}
-                    reports={groupedReports["NOT_SUPPLIED"] || []}
-                    className="bg-gray-50 p-4 rounded-md"
-                  />
-                </div>
-              )}
-
-              {/* Transcripts - Moved outside the reports conditional */}
-              {filteredData.transcripts.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                    <File className="w-5 h-5" />
-                    Earnings Transcripts
-                  </h3>
-                  <div className="grid gap-3">
-                    {filteredData.transcripts.map((transcript) => (
-                      <CompanyCard
-                        key={transcript.id}
-                        company={{
-                          name: transcript.company?.name || "",
-                          symbol: transcript.company?.symbol || "",
-                          logo: transcript.company?.logo || null,
-                        }}
-                        onClick={() => onTranscriptClick(transcript)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              <MarketTimingGroup
+                title="Pre-Market"
+                icon={Sun}
+                transcripts={groupedTranscripts["BMO"] || []}
+                className="bg-blue-50 p-4 rounded-md"
+              />
+              <MarketTimingGroup
+                title="After Hours"
+                icon={Moon}
+                transcripts={groupedTranscripts["AMC"] || []}
+                className="bg-orange-50 p-4 rounded-md"
+              />
+              <MarketTimingGroup
+                title="During Market"
+                icon={Calendar}
+                transcripts={groupedTranscripts["DMH"] || []}
+                className="bg-green-50 p-4 rounded-md"
+              />
+              <MarketTimingGroup
+                title="Not Specified"
+                icon={Calendar}
+                transcripts={groupedTranscripts["UNKNOWN"] || []}
+                className="bg-gray-50 p-4 rounded-md"
+              />
             </div>
           )}
         </>

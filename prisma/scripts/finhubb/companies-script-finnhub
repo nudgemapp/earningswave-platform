@@ -1,0 +1,108 @@
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
+  try {
+    // Fetch NYSE stocks
+    const nyseResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/symbol?exchange=US&mic=XNYS&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const nyseData = await nyseResponse.json();
+
+    console.log(nyseData);
+
+    // Fetch NASDAQ stocks
+    const nasdaqResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/symbol?exchange=US&mic=XNAS&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const nasdaqData = await nasdaqResponse.json();
+
+    console.log(nasdaqData);
+
+    // Combine both results
+    const combinedData = [...nyseData, ...nasdaqData];
+
+    console.log("all companies in NYSE and NASDAQ", combinedData);
+
+    // Stats tracking
+    let stats = {
+      total: combinedData.length,
+      created: 0,
+      errors: 0,
+      nyse: 0,
+      nasdaq: 0,
+    };
+
+    console.log("Processing companies...");
+
+    // Process and store each company
+    // for (const company of combinedData) {
+    //   try {
+    //     await prisma.company.upsert({
+    //       where: {
+    //         // Try to find existing company by symbol and mic
+    //         symbol_mic: {
+    //           symbol: company.symbol,
+    //           mic: company.mic as "XNYS" | "XNAS",
+    //         },
+    //       },
+    //       update: {
+    //         currency: company.currency,
+    //         description: company.description,
+    //         displaySymbol: company.displaySymbol,
+    //         figi: company.figi || null,
+    //         isin: company.isin || null,
+    //         shareClassFIGI: company.shareClassFIGI || null,
+    //         symbol2: company.symbol2 || null,
+    //         type: company.type,
+    //       },
+    //       create: {
+    //         currency: company.currency,
+    //         description: company.description,
+    //         displaySymbol: company.displaySymbol,
+    //         figi: company.figi || null,
+    //         isin: company.isin || null,
+    //         mic: company.mic as "XNYS" | "XNAS",
+    //         shareClassFIGI: company.shareClassFIGI || null,
+    //         symbol: company.symbol,
+    //         symbol2: company.symbol2 || null,
+    //         type: company.type,
+    //       },
+    //     });
+
+    //     stats.created++;
+    //     if (company.mic === "XNYS") stats.nyse++;
+    //     if (company.mic === "XNAS") stats.nasdaq++;
+    //   } catch (error) {
+    //     console.error(`Error processing company ${company.symbol}:`, error);
+    //     stats.errors++;
+    //   }
+    // }
+
+    // console.log("Import Statistics:", {
+    //   totalCompanies: stats.total,
+    //   successfullyCreated: stats.created,
+    //   errors: stats.errors,
+    //   nyseCompanies: stats.nyse,
+    //   nasdaqCompanies: stats.nasdaq,
+    // });
+
+    return NextResponse.json({
+      message: "Companies imported successfully",
+      stats,
+    });
+  } catch (error) {
+    console.error("Failed to process companies:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to process companies",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

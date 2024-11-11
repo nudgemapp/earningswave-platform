@@ -1,20 +1,24 @@
 import { create } from "zustand";
-import { EarningsReport, WatchlistEntry } from "@prisma/client";
+import { WatchlistEntry } from "@prisma/client";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 
 interface SelectedCompany {
-  id: any | null;
+  companyId: string;
+  transcriptId?: string | null;
 }
 
 interface EarningsState {
   selectedCompany: SelectedCompany | null;
   setSelectedCompany: (company: SelectedCompany | null) => void;
-  selectedFutureEarnings: EarningsReport | null;
-  setSelectedFutureEarnings: (report: EarningsReport | null) => void;
+  selectedFutureEarnings: ProcessedTranscript | null;
+  setSelectedFutureEarnings: (report: ProcessedTranscript | null) => void;
   selectedDate: Date | null;
   setSelectedDate: (date: Date | null) => void;
   showWatchlist: boolean;
   setShowWatchlist: (show: boolean) => void;
   watchlistItems: WatchlistEntry[];
+  selectedTranscript: string | null;
+  setSelectedTranscript: (transcriptId: string | null) => void;
 }
 
 export const useEarningsStore = create<EarningsState>((set) => ({
@@ -51,4 +55,10 @@ export const useEarningsStore = create<EarningsState>((set) => ({
         : {}),
     }),
   watchlistItems: [],
+  selectedTranscript: null,
+  setSelectedTranscript: (transcriptId) =>
+    set({
+      selectedTranscript: transcriptId,
+      showWatchlist: false, // Close watchlist when transcript is selected
+    }),
 }));

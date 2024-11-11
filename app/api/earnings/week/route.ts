@@ -1,33 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-// Add interfaces similar to month route
-interface RawTranscript {
-  id: number;
-  date: Date;
-  title: string;
-  "company.id": number;
-  "company.symbol": string;
-  "company.name": string;
-  "company.logo.data": Buffer | null;
-}
-
-interface RawReport {
+interface TranscriptRow {
   id: string;
+  title: string;
+  scheduledAt: Date;
+  status: string;
+  MarketTime: string;
+  quarter: string;
+  companyId: string;
   symbol: string;
-  name: string;
-  reportDate: Date;
-  fiscalDateEnding: Date;
-  estimate: number | null;
-  currency: string;
-  marketTiming: string | null;
-  lastYearEPS: number | null;
-  lastYearReportDate: Date | null;
-  companyId: number;
-  "company.id": number;
-  "company.symbol": string;
-  "company.name": string;
-  "company.logo.data": Buffer | null;
+  companyName: string;
+  logo: string;
 }
 
 export async function GET(request: Request) {
@@ -63,89 +47,56 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  // console.log("API Date Range:", {
-  //   startDate: startDate.toISOString(),
-  //   endDate: endDate.toISOString(),
-  // });
-
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const [transcripts, reports] = await Promise.all([
-        tx.$queryRaw`
-          SELECT t.*, 
-                 c.id as "company.id",
-                 c.symbol as "company.symbol",
-                 c.name as "company.name",
-                 l.data as "company.logo.data"
-          FROM "EarningsCallTranscript" t
-          LEFT JOIN "Company" c ON t."companyId" = c.id
-          LEFT JOIN "Logo" l ON c."logoId" = l.id
-          WHERE t.date >= ${startDate} AND t.date <= ${endDate}
-          ORDER BY t.date ASC
-        `,
-        tx.$queryRaw`
-          SELECT r.*, 
-                 c.id as "company.id",
-                 c.symbol as "company.symbol",
-                 c.name as "company.name",
-                 l.data as "company.logo.data"
-          FROM "EarningsReport" r
-          LEFT JOIN "Company" c ON r."companyId" = c.id
-          LEFT JOIN "Logo" l ON c."logoId" = l.id
-          WHERE r."reportDate" >= ${startDate} AND r."reportDate" <= ${endDate}
-          ORDER BY r."reportDate" ASC
-        `,
-      ]);
+    const currentDate = new Date();
 
-      // Transform raw results to match expected structure
-      const formattedTranscripts = (transcripts as RawTranscript[]).map(
-        (t) => ({
-          id: t.id,
-          date: t.date,
-          title: t.title,
-          company: {
-            id: t["company.id"],
-            symbol: t["company.symbol"],
-            name: t["company.name"],
-            logo: t["company.logo.data"]
-              ? { data: t["company.logo.data"] }
-              : null,
-          },
-        })
-      );
+    const result = await prisma.$queryRaw`
+      SELECT 
+        t.id,
+        t.title,
+        t."scheduledAt",
+        t.status,
+        t."MarketTime",
+        t.quarter,
+        c.id as "companyId",
+        c.symbol,
+        c.name as "companyName",
+        c.logo
+      FROM "Transcript" t
+      JOIN "Company" c ON t."companyId" = c.id
+      WHERE 
+        t."scheduledAt" >= ${startDate}
+        AND t."scheduledAt" <= ${endDate}
+        AND t.quarter IS NOT NULL
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
+      ORDER BY t."scheduledAt" ASC;
+    `;
 
-      const formattedReports = (reports as RawReport[]).map((r) => ({
-        id: r.id,
-        symbol: r.symbol,
-        name: r.name,
-        reportDate: r.reportDate,
-        fiscalDateEnding: r.fiscalDateEnding,
-        estimate: r.estimate,
-        currency: r.currency,
-        marketTiming: r.marketTiming,
-        lastYearEPS: r.lastYearEPS,
-        lastYearReportDate: r.lastYearReportDate,
-        companyId: r.companyId,
-        company: {
-          id: r["company.id"],
-          symbol: r["company.symbol"],
-          name: r["company.name"],
-          logo: r["company.logo.data"]
-            ? { data: r["company.logo.data"] }
-            : null,
-        },
-      }));
+    const transformedTranscripts = (result as TranscriptRow[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      scheduledAt: row.scheduledAt,
+      status: row.status,
+      MarketTime: row.MarketTime,
+      quarter: row.quarter,
+      marketTime: row.MarketTime,
+      company: {
+        id: row.companyId,
+        symbol: row.symbol,
+        name: row.companyName,
+        logo: row.logo,
+      },
+    }));
 
-      console.log("Formatted transcripts:", formattedTranscripts);
-      console.log("Formatted reports:", formattedReports);
+    console.log("Found Records:", {
+      transcriptsCount: transformedTranscripts.length,
+      firstTranscriptDate: transformedTranscripts[0]?.scheduledAt,
+      lastTranscriptDate:
+        transformedTranscripts[transformedTranscripts.length - 1]?.scheduledAt,
 
-      return {
-        transcripts: formattedTranscripts,
-        reports: formattedReports,
-      };
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json({ transcripts: transformedTranscripts });
   } catch (error) {
     console.error("Error fetching week view data:", error);
     return new Response("Failed to fetch week view data", { status: 500 });

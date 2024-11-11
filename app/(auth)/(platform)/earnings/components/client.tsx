@@ -4,24 +4,24 @@ import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
-import { useAuthModal } from "@/store/AuthModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { User, Subscription } from "@prisma/client";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import { ProcessedReport, ProcessedTranscript } from "../types";
-// import { getFinnhubTicker, getTranscript } from "@/utils/finnhub";
+import { ProcessedTranscript } from "../types";
+import { CalendarSkeleton } from "./loading-skeleton";
+// import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
+// import { useAuthModal } from "@/store/AuthModalStore";
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
+  loading: () => <CalendarSkeleton />,
 });
 const WeekView = dynamic(() => import("@/components/WeekView"), {
   ssr: false,
-  loading: () => <LoadingSpinner />,
+  loading: () => <CalendarSkeleton />,
 });
 const MonthView = dynamic(() => import("@/components/MonthView"), {
   ssr: false,
-  loading: () => <LoadingSpinner />,
+  loading: () => <CalendarSkeleton />,
 });
 
 export type UserWithSubscription =
@@ -30,23 +30,14 @@ export type UserWithSubscription =
     })
   | null;
 
-interface EarningsClientProps {
-  userInfo: UserWithSubscription;
-  // transcripts: ProcessedTranscript[];
-  // reports: ProcessedReport[];
-}
-
-const EarningsClient: React.FC<EarningsClientProps> = ({
-  userInfo,
-  // transcripts,
-  // reports,
-}) => {
+const EarningsClient = () => {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
+  const { setSelectedCompany } = useEarningsStore();
+
+  // const { onOpen: openAuthModal } = useAuthModal();
+  // const { onOpen: openSubscriptionModal } = useSubscriptionModal();
   const emailModal = useEmailModal();
-  const { onOpen: openAuthModal } = useAuthModal();
-  const { onOpen: openSubscriptionModal } = useSubscriptionModal();
-  const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("emailModalShown");
@@ -91,29 +82,16 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
   };
 
   const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
-    if (userInfo && userInfo.subscription?.status === "active") {
-      setSelectedCompany({ id: transcriptInfo.id });
-    } else if (!userInfo) {
-      openAuthModal();
-    } else {
-      openSubscriptionModal();
+    if (!transcriptInfo.company) {
+      console.error("Company information is missing from transcript");
+      return;
     }
-  };
 
-  const handleFutureEarningsClick = (report: ProcessedReport) => {
-    setSelectedCompany({ id: null });
-    // if (!user) {
-    //   openAuthModal();
-    // }
-    setSelectedFutureEarnings(report);
+    setSelectedCompany({
+      companyId: transcriptInfo.company.id,
+      transcriptId: transcriptInfo.id,
+    });
   };
-
-  // const handleTestClick = async (ticker: string) => {
-  //   // const tickerData = await getFinnhubTicker(ticker);
-  //   // console.log(tickerData);
-  //   const transcriptData = await getTranscript(ticker);
-  //   console.log(transcriptData);
-  // };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -126,19 +104,13 @@ const EarningsClient: React.FC<EarningsClientProps> = ({
         view={view}
         setView={handleViewChange}
       />
-      {/* <button onClick={() => handleTestClick("AAPL")}>Test ticker</button>
-      <button onClick={() => handleTestClick("AAPL_162777")}>Test</button> */}
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
-          <WeekView
-            handleCompanyClick={handleCompanyClick}
-            handleFutureEarningsClick={handleFutureEarningsClick}
-          />
+          <WeekView handleCompanyClick={handleCompanyClick} />
         ) : (
           <MonthView
             currentDate={currentDate}
             handleCompanyClick={handleCompanyClick}
-            handleFutureEarningsClick={handleFutureEarningsClick}
           />
         )}
       </div>

@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
+interface TranscriptRow {
+  id: string;
+  title: string;
+  scheduledAt: Date;
+  quarter: string;
+  year: number;
+  MarketTime: string;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  companyId: string;
+  symbol: string;
+  companyName: string;
+  logo: string | null;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startDate = new Date(searchParams.get("startDate") || "");
   const endDate = new Date(searchParams.get("endDate") || "");
-
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(23, 59, 59, 999);
 
   if (
     !startDate ||
@@ -18,98 +32,55 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Date Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const [transcripts, reports] = await Promise.all([
-        tx.earningsCallTranscript.findMany({
-          where: {
-            date: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          select: {
-            id: true,
-            date: true,
-            title: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            date: "asc",
-          },
-        }),
-        tx.earningsReport.findMany({
-          where: {
-            reportDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          select: {
-            id: true,
-            symbol: true,
-            name: true,
-            reportDate: true,
-            fiscalDateEnding: true,
-            estimate: true,
-            currency: true,
-            marketTiming: true,
-            lastYearEPS: true,
-            lastYearReportDate: true,
-            companyId: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            reportDate: "asc",
-          },
-        }),
-      ]);
+    const currentDate = new Date();
 
-      console.log("Date Range Details:", {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        startDateTimestamp: startDate.getTime(),
-        endDateTimestamp: endDate.getTime(),
-        transcriptsFound: transcripts.map((t) => ({
-          date: t.date,
-          title: t.title,
-        })),
-      });
+    const result = await prisma.$queryRaw`
+      SELECT 
+        t.id,
+        t.title,
+        t."scheduledAt",
+        t.quarter,
+        t.year,
+        t."MarketTime",
+        t."epsActual",
+        t."epsEstimate",
+        t."revenueActual",
+        t."revenueEstimate",
+        c.id as "companyId",
+        c.symbol,
+        c.name as "companyName",
+        c.logo
+      FROM "Transcript" t
+      JOIN "Company" c ON t."companyId" = c.id
+      WHERE 
+        t."scheduledAt" >= ${startDate}
+        AND t."scheduledAt" <= ${endDate}
+        AND t.quarter IS NOT NULL
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${currentDate}))
+      ORDER BY t."scheduledAt" ASC;
+    `;
 
-      return {
-        transcripts,
-        reports,
-      };
-    });
+    const processedTranscripts = (result as TranscriptRow[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      scheduledAt: row.scheduledAt,
+      quarter: row.quarter,
+      year: row.year,
+      MarketTime: row.MarketTime,
+      epsActual: row.epsActual,
+      epsEstimate: row.epsEstimate,
+      revenueActual: row.revenueActual,
+      revenueEstimate: row.revenueEstimate,
+      company: {
+        id: row.companyId,
+        symbol: row.symbol,
+        name: row.companyName,
+        logo: row.logo || null,
+      },
+    }));
 
-    return NextResponse.json(data);
+    return NextResponse.json({ transcripts: processedTranscripts });
   } catch (error) {
     console.error("Error fetching day view data:", error);
     return new Response("Failed to fetch day view data", { status: 500 });

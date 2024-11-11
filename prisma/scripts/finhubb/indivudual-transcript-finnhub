@@ -1,0 +1,268 @@
+import { NextResponse } from "next/server";
+import { PrismaClient, MarketTime, TranscriptStatus } from "@prisma/client";
+
+// Types for transcript data
+interface TranscriptParticipant {
+  name: string;
+  description?: string;
+  role?: string;
+}
+
+interface TranscriptSpeech {
+  name: string;
+  speech: string[];
+  session: "management_discussion" | "question_answer";
+}
+
+interface TranscriptData {
+  id: string;
+  audio?: string;
+  participant: TranscriptParticipant[];
+  quarter: number;
+  symbol: string;
+  time: string;
+  title: string;
+  transcript: TranscriptSpeech[];
+  year: number;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  transcriptData?: TranscriptData;
+  error?: string;
+}
+
+// Validation function
+function validateTranscriptData(data: any): ValidationResult {
+  try {
+    if (!data.id || !data.symbol || !data.time || !data.title) {
+      return {
+        isValid: false,
+        error: "Missing required fields",
+      };
+    }
+
+    // Validate participants
+    if (!Array.isArray(data.participant)) {
+      return {
+        isValid: false,
+        error: "Invalid participant data",
+      };
+    }
+
+    // Validate transcript entries
+    if (!Array.isArray(data.transcript)) {
+      return {
+        isValid: false,
+        error: "Invalid transcript data",
+      };
+    }
+
+    return {
+      isValid: true,
+      transcriptData: data as TranscriptData,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      error: `Validation error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    };
+  }
+}
+
+function determineMarketTime(time: string): MarketTime {
+  const hour = new Date(time).getHours();
+  if (hour < 9) return "BMO";
+  if (hour >= 16) return "AMC";
+  return "DMH";
+}
+
+let prisma: PrismaClient | null = null;
+
+async function getPrismaClient() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error: any) {
+    if (retries > 0 && error?.code === "P1001") {
+      console.log(
+        `🔄 Database connection failed, retrying in ${delay}ms... (${retries} retries left)`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return withRetry(operation, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
+export async function GET(request: Request) {
+  const batchSize = 25;
+  let db: PrismaClient;
+
+  try {
+    db = await getPrismaClient();
+  } catch (error) {
+    console.error("❌ Failed to initialize database connection:", error);
+    return NextResponse.json(
+      { error: "Database connection failed" },
+      { status: 500 }
+    );
+  }
+
+  const stats = {
+    totalTranscripts: 0,
+    updatedTranscripts: 0,
+    errors: 0,
+    rateLimitHits: 0,
+    dbRetries: 0,
+    startTime: new Date(),
+    processingTimeMs: 0,
+  };
+
+  try {
+    console.log("🚀 Starting transcript update process...");
+
+    const existingTranscripts = await withRetry(() =>
+      db.transcript.findMany({
+        select: {
+          id: true,
+          company: {
+            select: {
+              symbol: true,
+            },
+          },
+        },
+      })
+    );
+
+    stats.totalTranscripts = existingTranscripts.length;
+    console.log(`📊 Found ${stats.totalTranscripts} transcripts to process`);
+
+    for (let i = 0; i < existingTranscripts.length; i += batchSize) {
+      const batch = existingTranscripts.slice(i, i + batchSize);
+      console.log(
+        `\n🔄 Processing batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(
+          existingTranscripts.length / batchSize
+        )}`
+      );
+
+      await Promise.allSettled(
+        batch.map(async (transcript) => {
+          try {
+            const transcriptResponse = await fetch(
+              `https://finnhub.io/api/v1/stock/transcripts?id=${transcript.id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+            );
+
+            if (!transcriptResponse.ok) {
+              if (transcriptResponse.status === 429) {
+                stats.rateLimitHits++;
+                console.log(
+                  `⚠️ Rate limit hit, waiting 2s... (Total hits: ${stats.rateLimitHits})`
+                );
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                return;
+              }
+              throw new Error(
+                `Failed to fetch transcript: ${transcriptResponse.statusText}`
+              );
+            }
+
+            const transcriptData = await transcriptResponse.json();
+
+            // Wrap the database operation in retry logic
+            await withRetry(async () => {
+              await db.transcript.update({
+                where: { id: transcript.id },
+                data: {
+                  title: transcriptData.title,
+                  scheduledAt: new Date(transcriptData.time),
+                  quarter: transcriptData.quarter || null,
+                  year: transcriptData.year || null,
+                  audioUrl: transcriptData.audio || null,
+                  MarketTime: determineMarketTime(transcriptData.time),
+                  status: "COMPLETED",
+                  fullText: transcriptData.transcript
+                    .map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
+                    .join("\n"),
+                  speakers: transcriptData.participant,
+                  participants: {
+                    deleteMany: {},
+                    create: transcriptData.participant.map((p: any) => ({
+                      name: p.name,
+                      role: p.role || null,
+                      description: p.description || null,
+                      speeches: {
+                        create: transcriptData.transcript
+                          .filter((t: any) => t.name === p.name)
+                          .map((t: any, idx: number) => ({
+                            content: t.speech.join("\n"),
+                            sequence: idx,
+                            sessionType: t.session || null,
+                          })),
+                      },
+                    })),
+                  },
+                },
+              });
+            });
+
+            stats.updatedTranscripts++;
+            console.log(
+              `✅ Updated transcript ${transcript.id} (${transcript.company.symbol})`
+            );
+          } catch (error) {
+            stats.errors++;
+            console.error(
+              `❌ Error updating transcript ${transcript.id}:`,
+              error
+            );
+          }
+        })
+      );
+
+      // Progress update after each batch
+      stats.processingTimeMs = new Date().getTime() - stats.startTime.getTime();
+      console.log("\n📈 Current Progress:", {
+        ...stats,
+        percentComplete: `${Math.round(
+          ((i + batchSize) / existingTranscripts.length) * 100
+        )}%`,
+        timeElapsed: `${Math.round(stats.processingTimeMs / 1000)}s`,
+        estimatedTimeRemaining: `${Math.round(
+          ((stats.processingTimeMs / (i + batchSize)) *
+            (existingTranscripts.length - (i + batchSize))) /
+            1000
+        )}s`,
+      });
+
+      // Add delay between batches
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    console.log("\n🎉 Process completed!");
+    return NextResponse.json({
+      message: "Transcripts updated successfully",
+      stats,
+    });
+  } catch (error) {
+    console.error("❌ Failed to update transcripts:", error);
+    return NextResponse.json(
+      { error: "Failed to update transcripts", details: error },
+      { status: 500 }
+    );
+  } finally {
+    await db.$disconnect();
+  }
+}

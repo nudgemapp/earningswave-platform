@@ -4,14 +4,17 @@ export const useWatchlistMutations = () => {
   const queryClient = useQueryClient();
 
   const addToWatchlist = useMutation({
-    mutationFn: async (companyId: number) => {
+    mutationFn: async (companyId: string) => {
       const response = await fetch("/api/watchlist/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ companyId }),
       });
 
-      if (!response.ok) throw new Error("Failed to add to watchlist");
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || "Failed to add to watchlist");
+      }
       return response.json();
     },
     onMutate: async (companyId) => {
@@ -48,14 +51,17 @@ export const useWatchlistMutations = () => {
   });
 
   const removeFromWatchlist = useMutation({
-    mutationFn: async (companyId: number) => {
+    mutationFn: async (companyId: string) => {
       const response = await fetch("/api/watchlist/remove", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ companyId }),
       });
 
-      if (!response.ok) throw new Error("Failed to remove from watchlist");
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || "Failed to remove from watchlist");
+      }
       return response.json();
     },
     onMutate: async (companyId) => {

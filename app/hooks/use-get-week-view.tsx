@@ -1,16 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
-import {
-  EarningsCallTranscriptWithCompany,
-  EarningsReportWithCompany,
-  ProcessedReport,
-  ProcessedTranscript,
-} from "@/app/(auth)/(platform)/earnings/types";
 import React from "react";
+import { MarketTime, TranscriptStatus } from "@prisma/client";
+
+interface Company {
+  id: string;
+  symbol: string;
+  name: string | null;
+  logo: string | null;
+}
+
+interface RawTranscript {
+  id: string;
+  companyId: string;
+  title: string | null;
+  scheduledAt: string;
+  quarter: number | null;
+  year: number | null;
+  audioUrl: string | null;
+  MarketTime: MarketTime;
+  status: TranscriptStatus;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  company: Company;
+}
+
+export interface ProcessedTranscript
+  extends Omit<RawTranscript, "scheduledAt"> {
+  scheduledAt: Date;
+}
 
 interface WeekViewResponse {
   transcripts: ProcessedTranscript[];
-  reports: ProcessedReport[];
 }
 
 export const useGetWeekView = () => {
@@ -47,39 +70,9 @@ export const useGetWeekView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map(
-          (t: EarningsCallTranscriptWithCompany) => ({
-            ...t,
-            date: new Date(t.date),
-            company: t.company
-              ? {
-                  ...t.company,
-                  logo: t.company.logo?.data
-                    ? `data:image/png;base64,${Buffer.from(
-                        t.company.logo.data
-                      ).toString("base64")}`
-                    : null,
-                }
-              : null,
-          })
-        ),
-        reports: data.reports.map((r: EarningsReportWithCompany) => ({
-          ...r,
-          reportDate: new Date(r.reportDate),
-          fiscalDateEnding: new Date(r.fiscalDateEnding),
-          lastYearReportDate: r.lastYearReportDate
-            ? new Date(r.lastYearReportDate)
-            : null,
-          company: r.company
-            ? {
-                ...r.company,
-                logo: r.company.logo?.data
-                  ? `data:image/png;base64,${Buffer.from(
-                      r.company.logo.data
-                    ).toString("base64")}`
-                  : null,
-              }
-            : null,
+        transcripts: data.transcripts.map((t: RawTranscript) => ({
+          ...t,
+          scheduledAt: new Date(t.scheduledAt),
         })),
       };
     },

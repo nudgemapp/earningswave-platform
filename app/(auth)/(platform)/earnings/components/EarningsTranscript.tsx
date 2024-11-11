@@ -1,208 +1,161 @@
 "use client";
 
-import { useWatchlistCheck } from "@/app/hooks/use-watchlist-check";
-import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
-import { Separator } from "@/components/ui/separator";
-import { useAuthModal } from "@/store/AuthModalStore";
+import { useGetTranscriptData } from "@/app/hooks/use-get-transcript-data";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { EarningsCallTranscript } from "@/types/EarningsTranscripts";
-import { useAuth } from "@clerk/nextjs";
-import { ChevronLeft, StarIcon } from "lucide-react";
-import Image from "next/image";
+import { ChevronLeft, Volume2, Calendar, Clock } from "lucide-react";
 import React from "react";
-import { toast } from "sonner";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface EarningsTranscriptProps {
-  transcriptData: EarningsCallTranscript;
-}
+const EarningsTranscript = () => {
+  const transcriptId = useEarningsStore((state) => state.selectedTranscript);
+  const setSelectedTranscript = useEarningsStore(
+    (state) => state.setSelectedTranscript
+  );
+  const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
 
-const EarningsTranscript: React.FC<EarningsTranscriptProps> = ({
-  transcriptData,
-}) => {
-  const { userId } = useAuth();
-  const authModal = useAuthModal();
-  const selectedDate = useEarningsStore((state) => state.selectedDate);
-  const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
-
-  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
-    useWatchlistCheck(transcriptData.companyId);
-
+  console.log(transcript);
   const handleBack = () => {
-    useEarningsStore.setState({ selectedCompany: null });
+    setSelectedTranscript(null);
   };
 
-  const handleWatchlistClick = async () => {
-    if (!userId) {
-      authModal.onOpen();
-      return;
-    }
+  if (isLoading) {
+    return <TranscriptSkeleton />;
+  }
 
-    try {
-      if (isWatchlisted) {
-        await removeFromWatchlist.mutateAsync(transcriptData.companyId);
-        toast.success("Removed from watchlist");
-      } else {
-        await addToWatchlist.mutateAsync(transcriptData.companyId);
-        toast.success("Added to watchlist");
-      }
-    } catch {
-      toast.error("Failed to update watchlist");
-    }
-  };
+  if (!transcript) return null;
+
+  // Split transcript into sections (this is a basic example - you might want to enhance this)
+  const sections =
+    transcript.fullText?.split("\n").filter((line) => line.trim()) || [];
 
   return (
-    <div className="p-4 bg-white dark:bg-slate-900 overflow-y-auto">
-      <div className="flex flex-col items-start mb-4">
-        <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className={`p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors ${
-                selectedDate ? "md:block" : ""
-              }`}
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            </button>
-            <div className="w-12 h-12 relative">
-              <Image
-                src={transcriptData.company_info.logo_base64}
-                alt={`${transcriptData.company_info.company_name} logo`}
-                layout="fill"
-                objectFit="contain"
-                className="rounded"
-              />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {transcriptData.company_info.company_name}
-              </h2>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {transcriptData.company_info.ticker_symbol}
+    <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+      {/* Header */}
+      <div className="space-y-4 border-b border-gray-200 dark:border-slate-700 pb-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleBack}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          </button>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              {transcript.title}
+            </h2>
+            <div className="flex items-center gap-4 mt-1">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Calendar className="w-4 h-4" />
+                {format(new Date(transcript.scheduledAt), "MMMM d, yyyy")}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Clock className="w-4 h-4" />
+                {transcript.MarketTime}
               </div>
             </div>
           </div>
-          <button
-            onClick={handleWatchlistClick}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-full transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
-            disabled={
-              isCheckingWatchlist ||
-              addToWatchlist.isPending ||
-              removeFromWatchlist.isPending
-            }
-          >
-            <StarIcon
-              className={`w-4 h-4 ${
-                isCheckingWatchlist ||
-                addToWatchlist.isPending ||
-                removeFromWatchlist.isPending
-                  ? "text-gray-300 dark:text-gray-600"
-                  : isWatchlisted
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-400 dark:text-gray-500"
-              }`}
-              fill={isWatchlisted ? "currentColor" : "none"}
-              strokeWidth={2}
-            />
-            <span className="font-medium text-gray-700 dark:text-gray-300">
-              Follow
-            </span>
-          </button>
         </div>
-        <Separator className="my-4 bg-gray-200 dark:bg-slate-700" />
-      </div>
 
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-        {transcriptData.title}
-      </h2>
-
-      <div className="mb-4 space-y-2 text-gray-700 dark:text-gray-300">
-        <p>
-          <strong className="text-gray-900 dark:text-gray-100">Company:</strong>{" "}
-          {transcriptData.company_info.company_name}
-        </p>
-        <p>
-          <strong className="text-gray-900 dark:text-gray-100">Ticker:</strong>{" "}
-          {transcriptData.company_info.ticker_symbol} (
-          {transcriptData.company_info.ticker_change})
-        </p>
-        <p>
-          <strong className="text-gray-900 dark:text-gray-100">Date:</strong>{" "}
-          {transcriptData.company_info.date}
-        </p>
-        <p>
-          <strong className="text-gray-900 dark:text-gray-100">Time:</strong>{" "}
-          {transcriptData.company_info.time}
-        </p>
-      </div>
-
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-          Contents
-        </h3>
-        <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-          {transcriptData.contents.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-          Prepared Remarks
-        </h3>
-        {transcriptData.sections["Prepared Remarks"] ? (
-          <div className="space-y-4">
-            {transcriptData.sections["Prepared Remarks"].map(
-              (remark, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700"
-                >
-                  <p className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
-                    {remark.name}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {remark.text}
-                  </p>
-                </div>
-              )
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400">
-            No prepared remarks available for this transcript.
-          </p>
+        {/* Audio Link if available */}
+        {transcript.audioUrl && (
+          <a
+            href={transcript.audioUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Volume2 className="w-4 h-4" />
+            Listen to Audio Recording
+          </a>
         )}
       </div>
 
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-          Questions and Answers
-        </h3>
-        {transcriptData.sections["Questions and Answers"] ? (
-          <div className="space-y-4">
-            {transcriptData.sections["Questions and Answers"].map(
-              (qa, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700"
-                >
-                  <p className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
-                    {qa.name}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">{qa.text}</p>
-                </div>
-              )
-            )}
+      {/* Financial Results if available */}
+      {(transcript.epsActual ||
+        transcript.epsEstimate ||
+        transcript.revenueActual ||
+        transcript.revenueEstimate) && (
+        <div className="grid grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">EPS</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {transcript.epsActual
+                  ? `$${transcript.epsActual.toFixed(2)}`
+                  : "N/A"}
+              </p>
+              {transcript.epsEstimate && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  vs ${transcript.epsEstimate.toFixed(2)} est.
+                </p>
+              )}
+            </div>
           </div>
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400">
-            No questions and answers available for this transcript.
-          </p>
-        )}
-      </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Revenue</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {transcript.revenueActual
+                  ? `$${transcript.revenueActual.toFixed(2)}M`
+                  : "N/A"}
+              </p>
+              {transcript.revenueEstimate && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  vs ${transcript.revenueEstimate.toFixed(2)}M est.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transcript Content */}
+      {transcript.fullText && (
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Transcript
+          </h3>
+          <div className="prose dark:prose-invert max-w-none space-y-4">
+            {sections.map((section, index) => {
+              const [speaker, ...content] = section.split(":");
+              return (
+                <div key={index} className="space-y-2">
+                  {content.length > 0 ? (
+                    <>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        {speaker.trim()}:
+                      </p>
+                      <p className="text-gray-700 dark:text-gray-300">
+                        {content.join(":").trim()}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {section}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+const TranscriptSkeleton = () => (
+  <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+    <div className="flex items-center gap-4">
+      <Skeleton className="w-8 h-8 rounded-full" />
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-[300px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </div>
+    </div>
+    <Skeleton className="h-[200px] w-full" />
+  </div>
+);
 
 export default EarningsTranscript;

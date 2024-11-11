@@ -13,9 +13,9 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const companyId = parseInt(params.companyId);
+    const companyId = params.companyId;
 
-    if (isNaN(companyId)) {
+    if (!companyId) {
       return new NextResponse("Invalid company ID", { status: 400 });
     }
 
