@@ -25,6 +25,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EarningsTranscript from "./EarningsTranscript";
 // import EnhancedEarnings from "./EnhancedEarnings";
 // import AIEarningsAnalysis from "./AIEarnings";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -242,32 +247,51 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={handleWatchlistClick}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-50"
-                disabled={
-                  isCheckingWatchlist ||
-                  addToWatchlist.isPending ||
-                  removeFromWatchlist.isPending
-                }
-              >
-                <StarIcon
-                  className={`w-4 h-4 ${
-                    isCheckingWatchlist ||
-                    addToWatchlist.isPending ||
-                    removeFromWatchlist.isPending
-                      ? "text-gray-300 dark:text-gray-600"
-                      : isWatchlisted
-                      ? "fill-blue-500 text-blue-500"
-                      : "text-gray-400 dark:text-gray-500"
-                  }`}
-                  fill={isWatchlisted ? "currentColor" : "none"}
-                  strokeWidth={1.5}
-                />
-                <span className="font-medium text-gray-700 dark:text-gray-300">
-                  {isWatchlisted ? "Following" : "Follow"}
-                </span>
-              </button>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <button
+                    onClick={handleWatchlistClick}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    disabled={
+                      isCheckingWatchlist ||
+                      addToWatchlist.isPending ||
+                      removeFromWatchlist.isPending
+                    }
+                  >
+                    <StarIcon
+                      className={`w-4 h-4 ${
+                        isCheckingWatchlist ||
+                        addToWatchlist.isPending ||
+                        removeFromWatchlist.isPending
+                          ? "text-gray-300 dark:text-gray-600"
+                          : isWatchlisted
+                          ? "fill-blue-500 text-blue-500"
+                          : "text-gray-400 dark:text-gray-500"
+                      }`}
+                      fill={isWatchlisted ? "currentColor" : "none"}
+                      strokeWidth={1.5}
+                    />
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                      {isWatchlisted ? "Following" : "Follow"}
+                    </span>
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold">Company Following</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Follow this company to receive notifications about:
+                      <ul className="list-disc list-inside mt-1">
+                        <li>New earnings transcripts</li>
+                        <li>Important company news</li>
+                        <li>Price changes</li>
+                        <li>Market sentiment updates</li>
+                        <li>Financial reports</li>
+                      </ul>
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
               <button
                 onClick={() => setShowSummary(true)}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-slate-700"
