@@ -22,7 +22,7 @@ export const useSearchCompanies = (query: string) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 200); // 200ms delay
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -36,7 +36,7 @@ export const useSearchCompanies = (query: string) => {
       if (!response.ok) throw new Error("Failed to search companies");
       return response.json();
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    enabled: debouncedQuery !== "",
+    staleTime: 1000 * 60 * 5,
+    enabled: true,
   });
 };
