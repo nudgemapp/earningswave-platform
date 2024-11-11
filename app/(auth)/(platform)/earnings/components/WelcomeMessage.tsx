@@ -59,11 +59,19 @@ const WelcomeMessage: React.FC = () => {
         real-time pricing, earnings call transcripts, audio recordings, and more
       </motion.p>
 
-      {showSearch && (
+      {/* <motion.p
+        variants={itemVariants}
+        className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl text-center"
+      >
+        Press <span className="text-md">⌘</span> + K to search any company
+        anywhere.
+      </motion.p> */}
+
+      {/* {showSearch && (
         <motion.div variants={itemVariants} className="w-full max-w-3xl">
           <TickerSearch />
         </motion.div>
-      )}
+      )} */}
 
       <motion.div
         variants={itemVariants}

@@ -7,7 +7,34 @@ export async function GET(request: Request) {
     const query = searchParams.get("q");
 
     if (!query) {
-      return NextResponse.json([]);
+      const companies = await prisma.company.findMany({
+        where: {
+          marketCapitalization: {
+            not: null,
+          },
+        },
+        select: {
+          id: true,
+          symbol: true,
+          name: true,
+          logo: true,
+          mic: true,
+          marketCapitalization: true,
+          country: true,
+          exchange: true,
+          finnhubIndustry: true,
+          _count: {
+            select: {
+              transcripts: true,
+            },
+          },
+        },
+        take: 10,
+        orderBy: {
+          marketCapitalization: "desc",
+        },
+      });
+      return NextResponse.json(companies);
     }
 
     const companies = await prisma.company.findMany({
@@ -23,6 +50,10 @@ export async function GET(request: Request) {
         name: true,
         logo: true,
         mic: true,
+        marketCapitalization: true,
+        country: true,
+        exchange: true,
+        finnhubIndustry: true,
         _count: {
           select: {
             transcripts: true,
