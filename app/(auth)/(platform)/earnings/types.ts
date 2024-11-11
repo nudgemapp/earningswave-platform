@@ -9,16 +9,19 @@ interface Company {
 
 export interface ProcessedTranscript {
   id: string;
-  title: string;
+  title: string | null;
   scheduledAt: Date;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
-  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
-  quarter: number;
-  marketTime: string;
-  totalForDay?: number;
+  status: TranscriptStatus;
+  MarketTime: MarketTime;
+  quarter: number | null;
+  year: number | null;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
   company: Company;
 }
 
-export interface WeekViewResponse {
+export interface DayViewResponse {
   transcripts: ProcessedTranscript[];
 }

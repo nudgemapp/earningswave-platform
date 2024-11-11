@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import EarningsTranscript from "./EarningsTranscript";
+import React, { useState, useEffect, useMemo } from "react";
 import FutureEarnings from "./FutureEarnings";
 import WelcomeMessage from "./WelcomeMessage";
 import { useEarningsStore } from "@/store/EarningsStore";
 import DayView from "./DayView";
 import Watchlist from "./Watchlist";
-import { Loader2 } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useGetTranscriptData } from "@/app/hooks/use-get-transcript-data";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
@@ -18,107 +16,57 @@ interface EarningsTranscriptSheetProps {
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
 }) => {
-  const {
-    selectedCompany,
-    // selectedFutureEarnings,
-    selectedDate,
-    showWatchlist,
-  } = useEarningsStore();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const { data: transcriptData, isLoading: isLoadingTranscript } =
-    useGetTranscriptData(selectedCompany?.transcriptId);
+  const { selectedCompany, selectedDate, showWatchlist } = useEarningsStore();
 
-  console.log(transcriptData);
-
-  const LoadingSpinner = () => (
-    <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-slate-900">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-400" />
-      <p className="mt-4 text-gray-600 dark:text-gray-400 font-semibold">
-        Loading...
-      </p>
-    </div>
+  const content = useMemo(
+    () => (
+      <div
+        className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
+        key={`${showWatchlist}-${selectedCompany?.companyId}`}
+      >
+        {showWatchlist ? (
+          <Watchlist />
+        ) : selectedCompany?.companyId ? (
+          <FutureEarnings
+            SelectedCompany={{
+              companyId: selectedCompany.companyId,
+              transcriptId: selectedCompany.transcriptId || "",
+            }}
+          />
+        ) : selectedDate || isMobile ? (
+          <DayView
+            date={selectedDate || new Date()}
+            onTranscriptClick={(transcript) => {
+              useEarningsStore.setState({
+                selectedCompany: {
+                  companyId: transcript.company.id,
+                  transcriptId: transcript.id,
+                },
+                showWatchlist: false,
+                selectedFutureEarnings: null,
+              });
+            }}
+            // onReportClick={(report) => {
+            //   useEarningsStore.setState({
+            //     selectedFutureEarnings: report,
+            //     showWatchlist: false,
+            //     selectedCompany: null,
+            //   });
+            // }}
+          />
+        ) : (
+          <WelcomeMessage />
+        )}
+      </div>
+    ),
+    [showWatchlist, selectedCompany, selectedDate, isMobile, className]
   );
 
-  const renderContent = () => {
-    if (showWatchlist) {
-      return <Watchlist />;
-    }
-
-    if (selectedCompany?.transcriptId) {
-      if (isLoadingTranscript) {
-        return <LoadingSpinner />;
-      }
-      // return transcriptData ? (
-      //   <EarningsTranscript transcriptData={transcriptData} />
-      // ) : null;
-    }
-
-    console.log(selectedCompany);
-
-    if (selectedCompany?.companyId) {
-      return <FutureEarnings SelectedCompany={selectedCompany} />;
-    }
-
-    if (selectedDate || isMobile) {
-      return (
-        <DayView
-          date={selectedDate || new Date()}
-          onTranscriptClick={(transcript) => {
-            useEarningsStore.setState({
-              selectedCompany: {
-                companyId: transcript.company.id,
-                transcriptId: transcript.id,
-              },
-              showWatchlist: false,
-              selectedFutureEarnings: null,
-            });
-          }}
-          onReportClick={(report) => {
-            useEarningsStore.setState({
-              selectedFutureEarnings: report,
-              showWatchlist: false,
-              selectedCompany: null,
-            });
-          }}
-        />
-      );
-    }
-
-    return <WelcomeMessage />;
-  };
-
-  // Replace the direct window.innerWidth check with state
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // Set initial value
-    setIsMobile(window.innerWidth < 768);
-
-    // Add window resize listener
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const shouldShowSheet = !!(
-    selectedCompany ||
-    // selectedFutureEarnings ||
-    showWatchlist ||
-    (isMobile && selectedDate)
-  );
-
-  const content = (
-    <div
-      className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
-      key={`${showWatchlist}-${selectedCompany?.companyId}`}
-    >
-      {renderContent()}
-    </div>
+  const shouldShowSheet = useMemo(
+    () => !!(selectedCompany || showWatchlist || (isMobile && selectedDate)),
+    [selectedCompany, showWatchlist, isMobile, selectedDate]
   );
 
   if (isMobile) {
@@ -141,4 +89,4 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   );
 };
 
-export default EarningsTranscriptSheet;
+export default React.memo(EarningsTranscriptSheet);

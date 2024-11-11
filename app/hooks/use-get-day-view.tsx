@@ -1,16 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  EarningsCallTranscriptWithCompany,
-  EarningsReportWithCompany,
-  ProcessedReport,
-  ProcessedTranscript,
-} from "@/app/(auth)/(platform)/earnings/types";
 import React from "react";
-
-interface DayViewResponse {
-  transcripts: ProcessedTranscript[];
-  reports: ProcessedReport[];
-}
+import { DayViewResponse } from "@/app/(auth)/(platform)/earnings/types";
 
 export const useGetDayView = (date: Date) => {
   const { startOfDay, endOfDay } = React.useMemo(() => {
@@ -35,42 +25,7 @@ export const useGetDayView = (date: Date) => {
       if (!response.ok) throw new Error("Failed to fetch day view data");
 
       const data = await response.json();
-      return {
-        transcripts: data.transcripts.map(
-          (t: EarningsCallTranscriptWithCompany) => ({
-            ...t,
-            date: new Date(t.date),
-            company: t.company
-              ? {
-                  ...t.company,
-                  logo: t.company.logo?.data
-                    ? `data:image/png;base64,${Buffer.from(
-                        t.company.logo.data
-                      ).toString("base64")}`
-                    : null,
-                }
-              : null,
-          })
-        ),
-        reports: data.reports.map((r: EarningsReportWithCompany) => ({
-          ...r,
-          reportDate: new Date(r.reportDate),
-          fiscalDateEnding: new Date(r.fiscalDateEnding),
-          lastYearReportDate: r.lastYearReportDate
-            ? new Date(r.lastYearReportDate)
-            : null,
-          company: r.company
-            ? {
-                ...r.company,
-                logo: r.company.logo?.data
-                  ? `data:image/png;base64,${Buffer.from(
-                      r.company.logo.data
-                    ).toString("base64")}`
-                  : null,
-              }
-            : null,
-        })),
-      };
+      return data;
     },
     enabled: !!date,
     staleTime: 1000 * 60 * 5, // 5 minutes

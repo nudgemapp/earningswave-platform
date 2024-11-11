@@ -6,9 +6,6 @@ export async function GET(request: Request) {
   const startDate = new Date(searchParams.get("startDate") || "");
   const endDate = new Date(searchParams.get("endDate") || "");
 
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(23, 59, 59, 999);
-
   if (
     !startDate ||
     !endDate ||
@@ -18,98 +15,49 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Date Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
-    const data = await prisma.$transaction(async (tx) => {
-      const [transcripts, reports] = await Promise.all([
-        tx.earningsCallTranscript.findMany({
-          where: {
-            date: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          select: {
-            id: true,
-            date: true,
-            title: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            date: "asc",
-          },
-        }),
-        tx.earningsReport.findMany({
-          where: {
-            reportDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
+    const transcripts = await prisma.transcript.findMany({
+      where: {
+        scheduledAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        scheduledAt: true,
+        quarter: true,
+        year: true,
+        MarketTime: true,
+        epsActual: true,
+        epsEstimate: true,
+        revenueActual: true,
+        revenueEstimate: true,
+        company: {
           select: {
             id: true,
             symbol: true,
             name: true,
-            reportDate: true,
-            fiscalDateEnding: true,
-            estimate: true,
-            currency: true,
-            marketTiming: true,
-            lastYearEPS: true,
-            lastYearReportDate: true,
-            companyId: true,
-            company: {
-              select: {
-                id: true,
-                symbol: true,
-                name: true,
-                logo: {
-                  select: {
-                    data: true,
-                  },
-                },
-              },
-            },
+            logo: true,
           },
-          orderBy: {
-            reportDate: "asc",
-          },
-        }),
-      ]);
-
-      console.log("Date Range Details:", {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        startDateTimestamp: startDate.getTime(),
-        endDateTimestamp: endDate.getTime(),
-        transcriptsFound: transcripts.map((t) => ({
-          date: t.date,
-          title: t.title,
-        })),
-      });
-
-      return {
-        transcripts,
-        reports,
-      };
+        },
+      },
+      orderBy: {
+        scheduledAt: "asc",
+      },
     });
 
-    return NextResponse.json(data);
+    // Process the data
+    const processedTranscripts = transcripts.map((transcript) => ({
+      ...transcript,
+      company: {
+        ...transcript.company,
+        logo: transcript.company.logo || null,
+      },
+    }));
+
+    return NextResponse.json({ transcripts: processedTranscripts });
   } catch (error) {
     console.error("Error fetching day view data:", error);
     return new Response("Failed to fetch day view data", { status: 500 });
