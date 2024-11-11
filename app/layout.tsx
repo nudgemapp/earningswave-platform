@@ -9,6 +9,7 @@ import { Providers } from "./providers";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
+import { SearchCommand } from "@/components/search-command";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -83,6 +84,8 @@ export default function RootLayout({
           >
             <Providers>
               <ModalProvider />
+              <SearchCommand />
+
               {children}
             </Providers>
             <Toaster

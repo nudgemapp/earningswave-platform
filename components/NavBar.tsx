@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MenuIcon, X, ChevronDown } from "lucide-react";
+import { MenuIcon, X, ChevronDown, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
@@ -14,6 +14,7 @@ import NotificationButton from "./NotificationButton";
 import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
 import darkImg from "@/public/images/ew-logo-dark-noBG.png";
+import { useSearch } from "@/hooks/use-search";
 // import TickerSearch from "./tickerSearch";
 
 function useMount() {
@@ -35,6 +36,7 @@ function NavBar() {
   const { setSelectedCompany, setSelectedFutureEarnings } = useEarningsStore();
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
+  const { toggle } = useSearch();
 
   const links = [
     {
@@ -81,6 +83,18 @@ function NavBar() {
       router.push("/sign-up");
     }
   };
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        toggle();
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, [toggle]);
 
   return (
     <AnimatePresence>
@@ -173,12 +187,23 @@ function NavBar() {
 
               {/* Button - Right */}
               <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
-                {/* {showSearch && (
-                  <TickerSearch
-                    handleFutureEarningsClick={handleFutureEarningsClick}
-                  />
-                )} */}
                 <ModeToggle />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggle()}
+                    className="relative"
+                  >
+                    <Search className="h-5 w-5" />
+                    {/* <kbd className="pointer-events-none absolute top-5 right-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                      <span className="text-xs">⌘</span>K
+                    </kbd> */}
+                  </Button>
+                </motion.div>
                 {user && <NotificationButton />}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
