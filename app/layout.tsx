@@ -43,6 +43,21 @@ export const metadata: Metadata = {
     url: "https://www.earningswave.com",
     siteName: "EarningsWave",
     locale: "en_US",
+    images: [
+      {
+        url: "/images/ew-logo.svg",
+        width: 1366,
+        height: 768,
+        alt: "EarningsWave Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EarningsWave - Competitive Edge in Earnings Analysis",
+    description:
+      "Get a competitive edge in earnings analysis with EarningsWave. Real-time insights, advanced analytics, and comprehensive reports for investors and analysts.",
+    images: ["/images/ew-logo.svg"],
   },
   robots: {
     index: true,
