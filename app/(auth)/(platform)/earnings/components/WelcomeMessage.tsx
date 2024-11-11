@@ -1,6 +1,5 @@
 import React from "react";
 import { Calendar, ChartBar, FileText } from "lucide-react";
-import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import { motion } from "framer-motion";
 
@@ -29,8 +28,6 @@ const itemVariants = {
 };
 
 const WelcomeMessage: React.FC = () => {
-  const pathname = usePathname();
-
   return (
     <motion.div
       variants={containerVariants}
