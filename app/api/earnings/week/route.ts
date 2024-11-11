@@ -16,15 +16,34 @@ interface TranscriptRow {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const startDate = new Date(searchParams.get("startDate") || "");
-  const endDate = new Date(searchParams.get("endDate") || "");
+  let startDate = new Date(searchParams.get("startDate") || "");
 
-  if (
-    !startDate ||
-    !endDate ||
-    isNaN(startDate.getTime()) ||
-    isNaN(endDate.getTime())
-  ) {
+  // Ensure we're working with UTC dates
+  startDate = new Date(
+    Date.UTC(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
+  // Adjust to Monday of the current week
+  const day = startDate.getUTCDay();
+  const diff = startDate.getUTCDate() - day + (day === 0 ? -6 : 1);
+  startDate = new Date(
+    Date.UTC(startDate.getFullYear(), startDate.getMonth(), diff, 0, 0, 0, 0)
+  );
+
+  // Set end date to Friday of the same week
+  const endDate = new Date(startDate);
+  endDate.setUTCDate(startDate.getUTCDate() + 4); // Add 4 days to get to Friday
+  endDate.setUTCHours(23, 59, 59, 999);
+
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
@@ -74,6 +93,7 @@ export async function GET(request: Request) {
       firstTranscriptDate: transformedTranscripts[0]?.scheduledAt,
       lastTranscriptDate:
         transformedTranscripts[transformedTranscripts.length - 1]?.scheduledAt,
+
     });
 
     return NextResponse.json({ transcripts: transformedTranscripts });

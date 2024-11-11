@@ -30,6 +30,11 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
+  console.log("API Date Range:", {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
+
   try {
     const currentDate = new Date();
 
