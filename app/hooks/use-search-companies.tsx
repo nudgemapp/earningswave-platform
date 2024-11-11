@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 interface SearchCompany {
   id: string;
@@ -16,15 +17,26 @@ interface SearchCompany {
 }
 
 export const useSearchCompanies = (query: string) => {
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 200); // 200ms delay
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
   return useQuery<SearchCompany[]>({
-    queryKey: ["companies", "search", query],
+    queryKey: ["companies", "search", debouncedQuery],
     queryFn: async () => {
       const response = await fetch(
-        `/api/companies/search?q=${encodeURIComponent(query)}`
+        `/api/companies/search?q=${encodeURIComponent(debouncedQuery)}`
       );
       if (!response.ok) throw new Error("Failed to search companies");
       return response.json();
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    enabled: debouncedQuery !== "",
   });
 };
