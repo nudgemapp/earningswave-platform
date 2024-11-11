@@ -1,49 +1,38 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
-import { ProcessedReport } from "@/app/(auth)/(platform)/earnings/types";
-import { useGetWeekView } from "@/app/hooks/use-get-week-view";
+import { useSearchCompanies } from "@/app/hooks/use-search-companies";
+import { useEarningsStore } from "@/store/EarningsStore";
 
 interface TickerSearchProps {
-  handleFutureEarningsClick: (report: ProcessedReport) => void;
+  onClose?: () => void;
 }
 
-const TickerSearch: React.FC<TickerSearchProps> = ({
-  handleFutureEarningsClick,
-}) => {
+const TickerSearch: React.FC<TickerSearchProps> = ({ onClose }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [filteredReports, setFilteredReports] = useState<ProcessedReport[]>([]);
-  const { data } = useGetWeekView();
+  const { data: companies, isLoading } = useSearchCompanies(value);
+  const { setSelectedCompany } = useEarningsStore();
 
   const handleSearch = (query: string) => {
     setValue(query);
-
-    if (!query.trim()) {
-      setFilteredReports([]);
-      setOpen(false);
-      return;
-    }
-
-    const filtered =
-      data?.reports?.filter(
-        (report: ProcessedReport) =>
-          report.symbol.toLowerCase().includes(query.toLowerCase()) ||
-          report.name.toLowerCase().includes(query.toLowerCase())
-      ) || [];
-
-    setFilteredReports(filtered);
-    setOpen(filtered.length > 0);
+    setOpen(query.length > 0);
   };
 
-  const handleSelect = (report: ProcessedReport) => {
-    console.log("Selected report data:", {
-      symbol: report.symbol,
-      name: report.name,
+  const handleSelect = (company: {
+    id: string;
+    symbol: string;
+    name: string | null;
+  }) => {
+    setValue(company.symbol);
+    setSelectedCompany({
+      companyId: company.id,
+      transcriptId: null,
     });
-    setValue(report.symbol);
-    handleFutureEarningsClick(report);
     setOpen(false);
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -53,7 +42,6 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
         onOpenChange={(isOpen) => {
           if (!isOpen && !value) {
             setValue("");
-            setFilteredReports([]);
           }
           setOpen(isOpen);
         }}
@@ -75,23 +63,30 @@ const TickerSearch: React.FC<TickerSearchProps> = ({
           align="start"
         >
           <div className="max-h-[300px] overflow-y-auto p-2">
-            {filteredReports.length === 0 ? (
+            {isLoading ? (
+              <div className="py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                Searching...
+              </div>
+            ) : companies?.length === 0 ? (
               <div className="py-3 text-center text-sm text-gray-500 dark:text-gray-400">
                 {value ? "No companies found" : "Type to search companies..."}
               </div>
             ) : (
               <div className="space-y-1">
-                {filteredReports.map((report) => (
+                {companies?.map((company) => (
                   <div
-                    key={report.symbol}
-                    onClick={() => handleSelect(report)}
+                    key={company.id}
+                    onClick={() => handleSelect(company)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
                     <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {report.symbol}
+                      {company.symbol}
                     </span>
                     <span className="text-gray-500 dark:text-gray-400 text-sm truncate">
-                      {report.name}
+                      {company.name}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500 text-xs ml-auto">
+                      {company.mic}
                     </span>
                   </div>
                 ))}

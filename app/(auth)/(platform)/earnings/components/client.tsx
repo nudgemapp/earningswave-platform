@@ -30,15 +30,7 @@ export type UserWithSubscription =
     })
   | null;
 
-interface EarningsClientProps {
-  // userInfo: UserWithSubscription;
-}
-
-const EarningsClient: React.FC<EarningsClientProps> = (
-  {
-    // userInfo
-  }
-) => {
+const EarningsClient = () => {
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const { setSelectedCompany } = useEarningsStore();
