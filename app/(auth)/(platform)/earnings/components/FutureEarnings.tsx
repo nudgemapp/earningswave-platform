@@ -306,11 +306,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                     <div className="flex items-baseline gap-2">
                       <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                         {company.marketCapitalization
-                          ? new Intl.NumberFormat("en-US", {
-                              maximumFractionDigits: 2,
-                              notation: "compact",
-                              compactDisplay: "short",
-                            }).format(company.marketCapitalization)
+                          ? `$${company.marketCapitalization.toFixed(2)}M`
                           : "N/A"}
                       </span>
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -319,10 +315,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
                       {company.marketCapitalization
-                        ? new Intl.NumberFormat("en-US", {
+                        ? `${new Intl.NumberFormat("en-US", {
                             style: "decimal",
                             maximumFractionDigits: 0,
-                          }).format(company.marketCapitalization)
+                          }).format(company.marketCapitalization)}M`
                         : "No data"}
                     </span>
                   </div>
