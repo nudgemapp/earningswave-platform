@@ -1,10 +1,7 @@
 import CallToAction from "@/components/CallToAction";
 import FAQsection from "@/components/FAQsection";
-import FooterSection from "@/components/FooterSection";
 import HeroSection from "@/components/HeroSection";
-import NavBar from "@/components/NavBar";
 import PricingSection from "@/components/PricingSection";
-import AlertSection from "@/components/AlertSection";
 // import MarqueeSection from "@/components/MarqueeSection";
 // import ProductSection from "@/components/ProductSection";
 
