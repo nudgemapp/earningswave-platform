@@ -55,7 +55,8 @@ const WelcomeMessage: React.FC = () => {
         variants={itemVariants}
         className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl text-center"
       >
-        Select a company to view earnings transcripts or future earnings reports
+        Select a company to view financial statistics, market sentiment,
+        real-time pricing, earnings call transcripts, audio recordings, and more
       </motion.p>
 
       {showSearch && (
