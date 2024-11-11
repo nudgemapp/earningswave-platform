@@ -4,7 +4,7 @@ import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 
 interface SelectedCompany {
   companyId: string;
-  transcriptId: string;
+  transcriptId?: string | null;
 }
 
 interface EarningsState {

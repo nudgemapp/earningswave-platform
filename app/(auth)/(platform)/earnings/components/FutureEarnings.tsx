@@ -56,7 +56,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
   // Check if company is in watchlist
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
-    useWatchlistCheck(Number(SelectedCompany?.companyId));
+    useWatchlistCheck(SelectedCompany?.companyId);
 
   if (!company || isLoadingCompany) return null;
 
@@ -72,16 +72,16 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
     try {
       if (isWatchlisted) {
-        await removeFromWatchlist.mutateAsync(
-          Number(SelectedCompany.companyId)
-        );
+        await removeFromWatchlist.mutateAsync(SelectedCompany.companyId);
         toast.success("Removed from watchlist");
       } else {
-        await addToWatchlist.mutateAsync(Number(SelectedCompany.companyId));
+        await addToWatchlist.mutateAsync(SelectedCompany.companyId);
         toast.success("Added to watchlist");
       }
-    } catch {
-      toast.error("Failed to update watchlist");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update watchlist"
+      );
     }
   };
 

@@ -11,12 +11,13 @@ import { toast } from "sonner";
 const Watchlist = () => {
   const { data, isLoading, error } = useGetWatchlist();
   const { removeFromWatchlist } = useWatchlistMutations();
+  const { setSelectedCompany } = useEarningsStore();
 
-  const handleRemoveFromWatchlist = async (companyId: number) => {
+  const handleRemoveFromWatchlist = async (companyId: string) => {
     try {
       await removeFromWatchlist.mutateAsync(companyId);
       toast.success("Removed from watchlist");
-    } catch {
+    } catch (error) {
       toast.error("Failed to remove from watchlist");
     }
   };
@@ -71,20 +72,21 @@ const Watchlist = () => {
           {data.entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm dark:shadow-slate-800/50 hover:shadow-md dark:hover:shadow-slate-800/80 transition-all cursor-pointer active:scale-[0.98]"
+              className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm dark:shadow-slate-800/50 hover:shadow-md dark:hover:shadow-slate-800/80 transition-all cursor-pointer"
               onClick={() => {
-                useEarningsStore.setState({
-                  selectedCompany: entry.company,
-                  showWatchlist: false,
+                setSelectedCompany({
+                  companyId: entry.company.id,
+                  transcriptId: null,
                 });
+                useEarningsStore.setState({ showWatchlist: false });
               }}
             >
               <div className="flex items-center space-x-4">
                 <div className="relative h-12 w-12">
                   {entry.company.logo ? (
                     <Image
-                      src={entry.company.logo.data as unknown as string}
-                      alt={entry.company.name}
+                      src={entry.company.logo}
+                      alt={entry.company.name || "Company logo"}
                       layout="fill"
                       objectFit="contain"
                       className="rounded-md"
@@ -101,21 +103,24 @@ const Watchlist = () => {
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     {entry.company.name}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {entry.company.symbol}
-                  </p>
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span>{entry.company.symbol}</span>
+                    <span>•</span>
+                    <span>{entry.company.finnhubIndustry}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   className="bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800"
-                  onClick={() => {
-                    useEarningsStore.setState({
-                      selectedFutureEarnings: null,
-                      selectedCompany: entry.company,
-                      showWatchlist: false,
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedCompany({
+                      companyId: entry.company.id,
+                      transcriptId: null,
                     });
+                    useEarningsStore.setState({ showWatchlist: false });
                   }}
                 >
                   View Details

@@ -1,19 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { WatchlistEntry } from "@prisma/client";
+import { WatchlistEntry, Company } from "@prisma/client";
 
-interface ProcessedWatchlistEntry extends WatchlistEntry {
-  company: {
-    id: number;
-    name: string;
-    symbol: string;
-    logo?: {
-      data: Buffer;
-    } | null;
-  };
+// Define the extended types based on your schema
+interface ExtendedCompany extends Company {
+  logo: string | null;
+}
+
+interface ExtendedWatchlistEntry extends WatchlistEntry {
+  company: ExtendedCompany;
 }
 
 interface WatchlistResponse {
-  entries: ProcessedWatchlistEntry[];
+  entries: ExtendedWatchlistEntry[];
 }
 
 export const useGetWatchlist = () => {
@@ -25,20 +23,12 @@ export const useGetWatchlist = () => {
 
       const data = await response.json();
       return {
-        entries: data.map((entry: ProcessedWatchlistEntry) => ({
+        entries: data.map((entry: ExtendedWatchlistEntry) => ({
           ...entry,
           company: {
             ...entry.company,
-            logo: entry.company.logo
-              ? {
-                  ...entry.company.logo,
-                  data: entry.company.logo.data
-                    ? `data:image/png;base64,${Buffer.from(
-                        entry.company.logo.data
-                      ).toString("base64")}`
-                    : null,
-                }
-              : null,
+            // No need to process logo as it's already a string URL in your schema
+            logo: entry.company.logo || null,
           },
         })),
       };

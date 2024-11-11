@@ -6,8 +6,6 @@ export async function GET() {
   try {
     const { userId } = auth();
 
-    console.log(userId);
-
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -22,13 +20,14 @@ export async function GET() {
             id: true,
             name: true,
             symbol: true,
-            logo: {
-              select: {
-                data: true,
-              },
-            },
-            marketCap: true,
-            price: true,
+            logo: true,
+            description: true,
+            currency: true,
+            mic: true,
+            type: true,
+            finnhubIndustry: true,
+            marketCapitalization: true,
+            // Add any other company fields you need
           },
         },
       },
@@ -36,8 +35,6 @@ export async function GET() {
         addedAt: "desc",
       },
     });
-
-    console.log(watchlist);
 
     return NextResponse.json(watchlist);
   } catch (error) {
