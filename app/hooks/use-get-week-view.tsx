@@ -27,8 +27,13 @@ interface RawTranscript {
   company: Company;
 }
 
+export interface ProcessedTranscript
+  extends Omit<RawTranscript, "scheduledAt"> {
+  scheduledAt: Date;
+}
+
 interface WeekViewResponse {
-  transcripts: RawTranscript[];
+  transcripts: ProcessedTranscript[];
 }
 
 export const useGetWeekView = () => {
