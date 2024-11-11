@@ -63,7 +63,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     (state) => state.selectedTranscript
   );
 
-  if (isLoadingCompany || isCheckingWatchlist) {
+  if (isLoadingCompany) {
     return (
       <div className="space-y-6">
         <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
