@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
-import Spinner from "@/components/ui/Spinner";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
 import { toast } from "sonner";
