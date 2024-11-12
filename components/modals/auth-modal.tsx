@@ -96,7 +96,7 @@ export const AuthModal = () => {
         setCode("");
         setShake(true);
       }
-    } catch (err: unknown) {
+    } catch {
       setError("Invalid verification code");
       setCode("");
       setShake(true);
