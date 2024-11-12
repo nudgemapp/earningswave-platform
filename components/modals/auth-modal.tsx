@@ -111,7 +111,7 @@ export const AuthModal = () => {
       await auth.authenticateWithRedirect({
         strategy,
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/oportunidades",
+        redirectUrlComplete: "/",
       });
     } catch (err: unknown) {
       console.error("OAuth Error:", JSON.stringify(err, null, 2));
