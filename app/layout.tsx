@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/images/ew-logo.svg",
+        url: "https://www.earningswave.com/images/ew-logo.png",
         width: 1366,
         height: 768,
         alt: "EarningsWave Logo",
