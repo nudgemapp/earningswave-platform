@@ -1,8 +1,8 @@
 export const pricingPlans = [
   {
     name: "Trader 🚀 ",
-    monthlyPrice: "$49.99",
-    annualPrice: "$479.90",
+    monthlyPrice: "$29.99",
+    annualPrice: "$299.99",
     features: [
       "Live Earnings Calendar",
       "Earnings Expectations vs. Reported Numbers",
