@@ -46,7 +46,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [timeframe, setTimeframe] = useState("1M");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
-  const { userId, isSignedIn } = useAuth();
+  const { userId } = useAuth();
   const authModal = useAuthModal();
   const { setSelectedCompany } = useEarningsStore();
 
