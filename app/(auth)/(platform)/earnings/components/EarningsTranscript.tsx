@@ -30,7 +30,7 @@ const EarningsTranscript = () => {
   // Add check for scheduled status
   if (transcript.status === "SCHEDULED") {
     return (
-      <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="space-y-4 border-b border-gray-200 dark:border-slate-700 pb-4">
           <div className="flex items-center gap-4">
@@ -58,10 +58,10 @@ const EarningsTranscript = () => {
           </div>
         </div>
 
-        {/* Add Financial Information Section */}
+        {/* Financial Information Section */}
         {(transcript.financials?.epsEstimate ||
           transcript.financials?.revenueEstimate) && (
-          <div className="grid grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
+          <div className="grid grid-cols-2 gap-6">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Estimated EPS
@@ -117,7 +117,7 @@ const EarningsTranscript = () => {
     transcript.fullText?.split("\n").filter((line) => line.trim()) || [];
 
   return (
-    <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4 border-b border-gray-200 dark:border-slate-700 pb-4">
         <div className="flex items-center gap-4">
@@ -163,7 +163,7 @@ const EarningsTranscript = () => {
         transcript.epsEstimate ||
         transcript.revenueActual ||
         transcript.revenueEstimate) && (
-        <div className="grid grid-cols-2 gap-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">EPS</p>
             <div className="flex items-baseline gap-2">
@@ -233,15 +233,59 @@ const EarningsTranscript = () => {
 };
 
 const TranscriptSkeleton = () => (
-  <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 p-6">
-    <div className="flex items-center gap-4">
-      <Skeleton className="w-8 h-8 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-[300px]" />
-        <Skeleton className="h-4 w-[200px]" />
+  <div className="space-y-6">
+    {/* Header Skeleton */}
+    <div className="space-y-4 border-b border-gray-200 dark:border-slate-700 pb-4">
+      <div className="flex items-center gap-4">
+        <div className="p-2">
+          <Skeleton className="w-4 h-4" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-[300px]" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-4 h-4" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-4 h-4" />
+              <Skeleton className="h-4 w-[80px]" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <Skeleton className="h-[200px] w-full" />
+
+    {/* Financial Results Skeleton */}
+    <div className="grid grid-cols-2 gap-6">
+      <div>
+        <Skeleton className="h-4 w-[60px] mb-2" />
+        <div className="flex items-baseline gap-2">
+          <Skeleton className="h-6 w-[100px]" />
+          <Skeleton className="h-4 w-[80px]" />
+        </div>
+      </div>
+      <div>
+        <Skeleton className="h-4 w-[80px] mb-2" />
+        <div className="flex items-baseline gap-2">
+          <Skeleton className="h-6 w-[100px]" />
+          <Skeleton className="h-4 w-[80px]" />
+        </div>
+      </div>
+    </div>
+
+    {/* Transcript Content Skeleton */}
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-[100px]" />
+      <div className="space-y-6">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-[150px]" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 );
 

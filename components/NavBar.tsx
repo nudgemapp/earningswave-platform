@@ -15,6 +15,11 @@ import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
 import darkImg from "@/public/images/ew-logo-dark-noBG.png";
 import { useSearch } from "@/hooks/use-search";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { IconUser } from "@tabler/icons-react";
+import { useAuthModal } from "@/store/AuthModalStore";
+import { dark } from "@clerk/themes";
+
 // import TickerSearch from "./tickerSearch";
 
 function useMount() {
@@ -208,13 +213,27 @@ function NavBar() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  className="flex items-center"
                 >
-                  {user ? (
-                    <UserButton />
+                  {isLoaded ? (
+                    user ? (
+                      <UserButton
+                        appearance={{
+                          baseTheme: theme === "dark" ? dark : undefined,
+                        }}
+                      />
+                    ) : (
+                      <Avatar
+                        onClick={() => useAuthModal.getState().onOpen()}
+                        className="cursor-pointer hover:opacity-80"
+                      >
+                        <AvatarFallback className="flex items-center justify-center">
+                          <IconUser className="h-4 w-4 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )
                   ) : (
-                    <Button onClick={handleAuthAction}>
-                      {!isLoaded ? "Loading..." : "Sign up"}
-                    </Button>
+                    <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse" />
                   )}
                 </motion.div>
               </div>

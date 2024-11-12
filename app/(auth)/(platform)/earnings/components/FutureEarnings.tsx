@@ -46,7 +46,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [timeframe, setTimeframe] = useState("1M");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
-  const { userId } = useAuth();
+  const { userId, isSignedIn } = useAuth();
   const authModal = useAuthModal();
   const { setSelectedCompany } = useEarningsStore();
 
@@ -96,7 +96,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
         </Card>
 
         {/* Transcripts skeleton */}
-        <Card className="w-full">
+        <Card className="w-full dark:bg-slate-900 ">
           <CardHeader>
             <Skeleton className="h-6 w-[150px]" />
           </CardHeader>
@@ -434,7 +434,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full">
+        <Card className="w-full bg-slate-900">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>

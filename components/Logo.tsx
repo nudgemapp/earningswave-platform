@@ -10,9 +10,11 @@ import { useTheme } from "next-themes";
 interface LogoProps {
   dark?: boolean;
   className?: string;
+  width?: number;
+  height?: number;
 }
 
-const Logo: React.FC<LogoProps> = ({ className }) => {
+const Logo: React.FC<LogoProps> = ({ className, width = 80, height = 80 }) => {
   const router = useRouter();
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
@@ -24,15 +26,16 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
   return (
     <div
       className={cn(
-        "w-48 h-12 relative cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105",
+        "font-normal flex space-x-2 items-center text-sm text-black relative z-20",
         className
       )}
       onClick={handleClick}
     >
       <Image
         src={img}
-        alt="logo"
-        fill
+        alt="EarningsWave Logo"
+        width={width}
+        height={height}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className="object-contain"
         priority
