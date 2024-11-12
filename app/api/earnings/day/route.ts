@@ -36,6 +36,8 @@ export async function GET(request: Request) {
     const currentDate = new Date();
     const yesterday = new Date(currentDate);
     yesterday.setDate(yesterday.getDate() - 1);
+    const twoWeeksAgo = new Date(currentDate);
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     console.log("Fetching day view data", currentDate);
 
@@ -61,7 +63,7 @@ export async function GET(request: Request) {
         t."scheduledAt" >= ${startDate}
         AND t."scheduledAt" <= ${endDate}
         AND t.quarter IS NOT NULL
-        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${yesterday}))
+        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${twoWeeksAgo}))
       ORDER BY t."scheduledAt" ASC;
     `;
 
