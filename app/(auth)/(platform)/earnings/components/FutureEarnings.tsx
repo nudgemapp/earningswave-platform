@@ -434,7 +434,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full bg-slate-900">
+        <Card className="w-full dark:bg-slate-900 dark:text-white ">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>
