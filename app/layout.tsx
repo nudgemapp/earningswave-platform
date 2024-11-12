@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     description:
       "Get a competitive edge in earnings analysis with EarningsWave. Real-time insights, advanced analytics, and comprehensive reports for investors and analysts.",
     images: ["https://www.earningswave.com/images/ew-logo.png"],
+    creator: "@EarningsWaves",
   },
   robots: {
     index: true,
