@@ -67,9 +67,16 @@ export const AuthModal = () => {
           onClose();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error:", JSON.stringify(err, null, 2));
-      setError(err.errors?.[0]?.message || "An unexpected error occurred");
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkError = err as { errors?: Array<{ message: string }> };
+        setError(
+          clerkError.errors?.[0]?.message || "An unexpected error occurred"
+        );
+      } else {
+        setError("An unexpected error occurred");
+      }
     }
   };
 
@@ -89,7 +96,7 @@ export const AuthModal = () => {
         setCode("");
         setShake(true);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError("Invalid verification code");
       setCode("");
       setShake(true);
@@ -106,7 +113,7 @@ export const AuthModal = () => {
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/oportunidades",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("OAuth Error:", JSON.stringify(err, null, 2));
     }
   };
