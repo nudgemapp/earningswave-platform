@@ -112,7 +112,7 @@ function NavBar() {
           className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0"
         >
           {/* DESKTOP */}
-          <div className="hidden lg:block bg-white dark:bg-slate-900 p-4">
+          <div className="hidden lg:block bg-white dark:bg-slate-900 p-2">
             <div className="flex items-center mx-4">
               {/* Logo - Left */}
               <motion.div

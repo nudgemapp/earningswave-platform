@@ -11,7 +11,7 @@ const PlatformNavbar = () => {
   const navItems = ["Calendar", "News", "Alerts", "Quote"];
 
   return (
-    <div className="p-4 bg-gray-100">
+    <div className="p-2 bg-gray-100">
       <div className="flex container rounded-lg bg-gray-300 w-full p-2 mx-auto max-w-full ring-1 ring-gray-700/70">
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-row items-center">

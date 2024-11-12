@@ -36,7 +36,7 @@ const WelcomeMessage: React.FC = () => {
       className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 pb-8 max-w-6xl mx-auto bg-white dark:bg-slate-900"
     >
       <motion.div variants={itemVariants}>
-        <Logo className="w-36 h-36 mb-4 -translate-y-[-20px]" />
+        <Logo className=" mb-4 -translate-y-[-20px]" width={240} height={240} />
       </motion.div>
 
       <motion.h2
