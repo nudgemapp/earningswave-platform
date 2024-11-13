@@ -10,6 +10,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
 import { SearchCommand } from "@/components/search-command";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -95,7 +96,6 @@ export default function RootLayout({
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
-            // enableSystem
             disableTransitionOnChange
           >
             <Providers>
@@ -114,6 +114,7 @@ export default function RootLayout({
             />
           </ThemeProvider>
           <Analytics />
+          <GoogleTagManager gtmId="GTM-525F6NV9" />
         </body>
       </html>
     </ClerkProvider>
