@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
+  X,
 } from "lucide-react";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
@@ -22,6 +23,7 @@ import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 type FilterType = "ALL" | "BMO" | "AMC" | "DMH" | "UNKNOWN";
 
@@ -47,11 +49,18 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   );
   const { userId } = useAuth();
   const authModal = useAuthModal();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  console.log(data);
-  const changeDate = (direction: number) => {
-    const newDate = getNextValidDate(date, direction);
-    useEarningsStore.setState({ selectedDate: newDate });
+  const handleDateChange =
+    (direction: number) => (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      const newDate = getNextValidDate(date, direction);
+      useEarningsStore.setState({ selectedDate: newDate });
+    };
+
+  const handleBackClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    useEarningsStore.setState({ selectedDate: null });
   };
 
   const FilterButton = ({
@@ -259,10 +268,6 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     );
   };
 
-  const handleBack = () => {
-    useEarningsStore.setState({ selectedDate: null });
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-6 bg-white dark:bg-slate-900">
@@ -346,20 +351,24 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     <div className="space-y-4">
       <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm">
         <CardHeader className="space-y-4 pb-4 px-4">
-          {/* Back Button - Now separate and above everything */}
-          <button
-            onClick={handleBack}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500/40 w-fit"
-          >
-            <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          </button>
+          {!isDesktop && (
+            <div className="flex justify-end w-full">
+              <button
+                onClick={handleBackClick}
+                onTouchEnd={handleBackClick}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500/40 w-fit touch-manipulation"
+              >
+                <X className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+          )}
 
-          {/* Date Display and Navigation */}
+          {/* Date Navigation with touch handling */}
           <div className="relative flex items-center justify-center">
-            {/* Left Arrow */}
             <button
-              onClick={() => changeDate(-1)}
-              className="absolute left-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              onClick={handleDateChange(-1)}
+              onTouchEnd={handleDateChange(-1)}
+              className="absolute left-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors touch-manipulation"
               aria-label="Previous day"
             >
               <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -372,10 +381,10 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
               </CardTitle>
             </div>
 
-            {/* Right Arrow */}
             <button
-              onClick={() => changeDate(1)}
-              className="absolute right-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              onClick={handleDateChange(1)}
+              onTouchEnd={handleDateChange(1)}
+              className="absolute right-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors touch-manipulation"
               aria-label="Next day"
             >
               <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
