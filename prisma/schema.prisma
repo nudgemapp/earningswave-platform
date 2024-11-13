@@ -142,7 +142,7 @@ enum MIC {
 model Transcript {
   id          String        @id @unique // e.g. "NVDA_3393990"
   companyId   String        
-  title       String?        // Optional: future calls might not have title yet
+  title       String?       @unique
   scheduledAt DateTime      // Store the 'time' field
   quarter     Int?         // Optional: some transcripts don't have this
   year        Int?         // Optional: some transcripts don't have this

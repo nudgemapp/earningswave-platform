@@ -13,7 +13,7 @@ import {
 
 interface StockChartProps {
   symbol: string;
-  timeframe: string;
+  timeframe?: string;
   onTimeframeChange: (tf: string) => void;
 }
 
@@ -35,9 +35,17 @@ interface AlphaVantageDaily {
   "5. volume": string;
 }
 
+interface AlphaVantageIntraday {
+  "1. open": string;
+  "2. high": string;
+  "3. low": string;
+  "4. close": string;
+  "5. volume": string;
+}
+
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
-  timeframe,
+  timeframe = "1D",
   onTimeframeChange,
 }) => {
   const [data, setData] = useState<StockData[]>([]);
@@ -50,15 +58,50 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       try {
         setIsLoading(true);
         const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
-        // Use outputsize=full to get more historical data for 6M and 1Y views
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`
-        );
 
+        const endpoint =
+          timeframe === "1D"
+            ? `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&apikey=${API_KEY}`
+            : `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`;
+
+        const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch stock data");
         const result = await response.json();
 
-        if (result["Time Series (Daily)"]) {
+        if (timeframe === "1D" && result["Time Series (5min)"]) {
+          const estDate = new Date().toLocaleString("en-US", {
+            timeZone: "America/New_York",
+          });
+          const today = new Date(estDate).toISOString().split("T")[0];
+
+          const transformedData = Object.entries(result["Time Series (5min)"])
+            .map(([date, values]) => {
+              const typedValues = values as AlphaVantageIntraday;
+              const open = parseFloat(typedValues["1. open"]);
+              const close = parseFloat(typedValues["4. close"]);
+              return {
+                date,
+                open,
+                close,
+                high: parseFloat(typedValues["2. high"]),
+                low: parseFloat(typedValues["3. low"]),
+                volume: parseFloat(typedValues["5. volume"]),
+                gain: close > open,
+              };
+            })
+            .sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            )
+            .filter((item) => {
+              const itemDate = new Date(item.date);
+              const hours = itemDate.getHours();
+              const minutes = itemDate.getMinutes();
+              const timeInMinutes = hours * 60 + minutes;
+              return timeInMinutes >= 9 * 60 + 30 && timeInMinutes <= 16 * 60;
+            });
+
+          setData(transformedData);
+        } else if (result["Time Series (Daily)"]) {
           const transformedData = Object.entries(result["Time Series (Daily)"])
             .map(([date, values]) => {
               const typedValues = values as AlphaVantageDaily;
@@ -87,38 +130,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     };
 
     fetchStockData();
-  }, [symbol]);
+  }, [symbol, timeframe]);
 
-  // Remove 1D from timeframe buttons since we only have daily data
-  const timeframeButtons = ["1W", "1M", "6M", "1Y"];
-
-  // const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
-  //   active,
-  //   payload,
-  // }) => {
-  //   if (active && payload && payload.length > 0) {
-  //     const data = payload[0].payload as StockData;
-  //     return (
-  //       <div className="bg-white shadow-lg rounded-lg p-3 border">
-  //         <p className="text-gray-600">
-  //           {new Date(data.date).toLocaleDateString()}
-  //         </p>
-  //         <div className={data.gain ? "text-green-600" : "text-red-600"}>
-  //           <p className="font-medium">Open: ${data.open.toFixed(2)}</p>
-  //           <p className="font-medium">Close: ${data.close.toFixed(2)}</p>
-  //           <p className="font-medium">High: ${data.high.toFixed(2)}</p>
-  //           <p className="font-medium">Low: ${data.low.toFixed(2)}</p>
-  //           <p className="font-medium mt-1">
-  //             Volume: {(data.volume / 1e6).toFixed(2)}M
-  //           </p>
-  //         </div>
-  //       </div>
-  //     );
-  //   }
-  //   return null;
-  // };
+  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
 
   const getTimeframeData = () => {
+    if (timeframe === "1D") {
+      return data;
+    }
+
     let tradingDays = 0;
 
     switch (timeframe) {
@@ -138,7 +158,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         tradingDays = 21; // Default to 1M
     }
 
-    // Get the last n trading days
     return data.slice(-tradingDays);
   };
 
@@ -156,8 +175,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Calculate optimal tick interval based on timeframe and data length
   const getTickInterval = () => {
     switch (timeframe) {
+      case "1D":
+        return Math.floor(filteredData.length / 6); // Show ~6 time labels
       case "1W":
-        return 0; // Show all points
+        return 0;
       case "1M":
         return Math.floor(filteredData.length / 5);
       case "6M":
@@ -268,6 +289,12 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 dataKey="date"
                 tickFormatter={(value) => {
                   const date = new Date(value);
+                  if (timeframe === "1D") {
+                    return date.toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                  }
                   return timeframe === "1W"
                     ? date.toLocaleDateString(undefined, { weekday: "short" })
                     : date.toLocaleDateString(undefined, {
