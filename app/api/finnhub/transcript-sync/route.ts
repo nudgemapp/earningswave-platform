@@ -35,6 +35,10 @@ interface TranscriptSpeech {
   session?: string | null;
 }
 
+interface TranscriptSpeechWithIndex extends TranscriptSpeech {
+  idx: number;
+}
+
 interface TranscriptDetail extends TranscriptWithCompanyId {
   fullTranscript: {
     audio?: string;
@@ -264,11 +268,13 @@ export async function GET() {
             MarketTime: marketTime,
             status: "COMPLETED",
             fullText: transcript.fullTranscript.transcript
-              .map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
+              .map((t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`)
               .join("\n"),
-            speakers: JSON.parse(
-              JSON.stringify(transcript.fullTranscript.participant)
-            ),
+            speakers: {
+              value: JSON.parse(
+                JSON.stringify(transcript.fullTranscript.participant)
+              ),
+            },
             participants: {
               deleteMany: {},
               create: transcript.fullTranscript.participant.map(
@@ -300,11 +306,13 @@ export async function GET() {
             MarketTime: marketTime,
             status: "COMPLETED",
             fullText: transcript.fullTranscript.transcript
-              .map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
+              .map((t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`)
               .join("\n"),
-            speakers: JSON.parse(
-              JSON.stringify(transcript.fullTranscript.participant)
-            ),
+            speakers: {
+              value: JSON.parse(
+                JSON.stringify(transcript.fullTranscript.participant)
+              ),
+            },
             participants: {
               create: transcript.fullTranscript.participant.map(
                 (p: TranscriptParticipant) => ({
