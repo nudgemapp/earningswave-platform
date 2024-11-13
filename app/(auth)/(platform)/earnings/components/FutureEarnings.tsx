@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { ChevronLeft, File, Star as StarIcon, Globe } from "lucide-react";
+import { ChevronLeft, Star as StarIcon } from "lucide-react";
 import { useEarningsStore } from "@/store/EarningsStore";
 import StockPriceChart from "./StockPriceChart";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";

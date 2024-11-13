@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import pLimit from "p-limit";
 
@@ -13,6 +13,34 @@ interface FinnhubTranscript {
 
 interface TranscriptWithCompanyId extends FinnhubTranscript {
   companyId: string;
+}
+
+interface TranscriptResults {
+  totalCompaniesChecked: number;
+  upcomingTranscripts: TranscriptWithCompanyId[];
+  transcriptDetails: TranscriptDetail[];
+  errors: string[];
+  apiResponses: number;
+}
+
+interface TranscriptParticipant {
+  name: string;
+  role?: string | null;
+  description?: string | null;
+}
+
+interface TranscriptSpeech {
+  name: string;
+  speech: string[];
+  session?: string | null;
+}
+
+interface TranscriptDetail extends TranscriptWithCompanyId {
+  fullTranscript: {
+    audio?: string;
+    transcript: TranscriptSpeech[];
+    participant: TranscriptParticipant[];
+  };
 }
 
 const prisma = new PrismaClient();
@@ -75,11 +103,11 @@ export async function GET() {
       today: today.toISOString(),
     });
 
-    const results = {
+    const results: TranscriptResults = {
       totalCompaniesChecked: 0,
-      upcomingTranscripts: [] as any[],
-      transcriptDetails: [] as any[],
-      errors: [] as string[],
+      upcomingTranscripts: [],
+      transcriptDetails: [],
+      errors: [],
       apiResponses: 0,
     };
 
@@ -224,7 +252,6 @@ export async function GET() {
         const savedTranscript = await prisma.transcript.upsert({
           where: {
             companyId_scheduledAt: {
-              // Use the unique constraint from schema
               companyId: transcript.companyId,
               scheduledAt: scheduledDate,
             },
@@ -239,23 +266,27 @@ export async function GET() {
             fullText: transcript.fullTranscript.transcript
               .map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
               .join("\n"),
-            speakers: transcript.fullTranscript.participant,
+            speakers: JSON.parse(
+              JSON.stringify(transcript.fullTranscript.participant)
+            ),
             participants: {
               deleteMany: {},
-              create: transcript.fullTranscript.participant.map((p: any) => ({
-                name: p.name,
-                role: p.role || null,
-                description: p.description || null,
-                speeches: {
-                  create: transcript.fullTranscript.transcript
-                    .filter((t: any) => t.name === p.name)
-                    .map((t: any, idx: number) => ({
-                      content: t.speech.join("\n"),
-                      sequence: idx,
-                      sessionType: t.session || null,
-                    })),
-                },
-              })),
+              create: transcript.fullTranscript.participant.map(
+                (p: TranscriptParticipant) => ({
+                  name: p.name,
+                  role: p.role || null,
+                  description: p.description || null,
+                  speeches: {
+                    create: transcript.fullTranscript.transcript
+                      .filter((t: TranscriptSpeech) => t.name === p.name)
+                      .map((t: TranscriptSpeech, idx: number) => ({
+                        content: t.speech.join("\n"),
+                        sequence: idx,
+                        sessionType: t.session || null,
+                      })),
+                  },
+                })
+              ),
             },
           },
           create: {
@@ -271,22 +302,26 @@ export async function GET() {
             fullText: transcript.fullTranscript.transcript
               .map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
               .join("\n"),
-            speakers: transcript.fullTranscript.participant,
+            speakers: JSON.parse(
+              JSON.stringify(transcript.fullTranscript.participant)
+            ),
             participants: {
-              create: transcript.fullTranscript.participant.map((p: any) => ({
-                name: p.name,
-                role: p.role || null,
-                description: p.description || null,
-                speeches: {
-                  create: transcript.fullTranscript.transcript
-                    .filter((t: any) => t.name === p.name)
-                    .map((t: any, idx: number) => ({
-                      content: t.speech.join("\n"),
-                      sequence: idx,
-                      sessionType: t.session || null,
-                    })),
-                },
-              })),
+              create: transcript.fullTranscript.participant.map(
+                (p: TranscriptParticipant) => ({
+                  name: p.name,
+                  role: p.role || null,
+                  description: p.description || null,
+                  speeches: {
+                    create: transcript.fullTranscript.transcript
+                      .filter((t: TranscriptSpeech) => t.name === p.name)
+                      .map((t: TranscriptSpeech, idx: number) => ({
+                        content: t.speech.join("\n"),
+                        sequence: idx,
+                        sessionType: t.session || null,
+                      })),
+                  },
+                })
+              ),
             },
           },
         });

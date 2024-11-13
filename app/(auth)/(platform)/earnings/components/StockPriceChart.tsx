@@ -69,10 +69,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         const result = await response.json();
 
         if (timeframe === "1D" && result["Time Series (5min)"]) {
-          const estDate = new Date().toLocaleString("en-US", {
-            timeZone: "America/New_York",
-          });
-          const today = new Date(estDate).toISOString().split("T")[0];
+          // const estDate = new Date().toLocaleString("en-US", {
+          //   timeZone: "America/New_York",
+          // });
+          // const today = new Date(estDate).toISOString().split("T")[0];
 
           const transformedData = Object.entries(result["Time Series (5min)"])
             .map(([date, values]) => {
