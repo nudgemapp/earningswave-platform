@@ -129,10 +129,9 @@ model Company {
   finnhubIndustry      String?      // Industry classification
 
   @@unique([symbol, mic])  // Symbol must be unique within each exchange
-  @@index([symbol])
-  @@index([mic])
-  @@index([type])
-  @@index([currency])
+  @@index([symbol, type, mic]) // Composite index for filtering
+  @@index([marketCapitalization]) // For sorting by market cap
+  @@index([symbol, name]) // Add this index if you search by these fields
 }
 
 enum MIC {
@@ -141,7 +140,7 @@ enum MIC {
 }
 
 model Transcript {
-  id          String        @id // e.g. "NVDA_3393990"
+  id          String        @id @unique // e.g. "NVDA_3393990"
   companyId   String        
   title       String?        // Optional: future calls might not have title yet
   scheduledAt DateTime      // Store the 'time' field
@@ -169,9 +168,11 @@ model Transcript {
   updatedAt    DateTime     @updatedAt
 
   @@unique([companyId, scheduledAt])  // One transcript per company per time
-  @@index([companyId])
-  @@index([scheduledAt])
-  @@index([status])
+  @@index([scheduledAt, status, quarter]) // Composite index for common query patterns
+  @@index([companyId, scheduledAt])
+  @@index([status, scheduledAt]) // For filtering by status and date range
+  @@index([scheduledAt, status]) // Add this index
+  @@index([companyId, scheduledAt, status]) // Add this index
 }
 
 model Participant {

@@ -68,7 +68,10 @@ export const useGetMonthView = () => {
         endDate: endDate.toISOString(),
       });
 
-      const response = await fetch(`/api/earnings/month?${params}`);
+      const response = await fetch(`/api/earnings/month?${params}`, {
+        next: { revalidate: 300 }, // Cache for 5 minutes
+      });
+
       if (!response.ok) throw new Error("Failed to fetch month view data");
 
       const data = await response.json();
@@ -80,5 +83,7 @@ export const useGetMonthView = () => {
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };

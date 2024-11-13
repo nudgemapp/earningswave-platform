@@ -10,7 +10,6 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  X,
   Star,
 } from "lucide-react";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
@@ -22,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 type FilterType = "ALL" | "BMO" | "AMC" | "DMH" | "UNKNOWN";
 
@@ -29,6 +29,14 @@ interface DayViewProps {
   date: Date;
   onTranscriptClick: (transcript: ProcessedTranscript) => void;
 }
+
+const getNextValidDate = (currentDate: Date, direction: number): Date => {
+  const newDate = new Date(currentDate);
+  do {
+    newDate.setDate(newDate.getDate() + direction);
+  } while (newDate.getDay() === 0 || newDate.getDay() === 6); // Skip Saturday (6) and Sunday (0)
+  return newDate;
+};
 
 const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("ALL");
@@ -40,9 +48,9 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
 
-  const changeDate = (days: number) => {
-    const newDate = new Date(date);
-    newDate.setDate(date.getDate() + days);
+  console.log(data);
+  const changeDate = (direction: number) => {
+    const newDate = getNextValidDate(date, direction);
     useEarningsStore.setState({ selectedDate: newDate });
   };
 
@@ -57,11 +65,12 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   }) => (
     <button
       onClick={() => setActiveFilter(filter)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-        activeFilter === filter
-          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 font-medium"
-          : "hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400"
-      }`}
+      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+        ${
+          activeFilter === filter
+            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+            : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+        } border border-gray-200 dark:border-slate-700`}
     >
       <Icon className="w-4 h-4" />
       <span>{label}</span>
@@ -334,85 +343,98 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   }
 
   return (
-    <div className="space-y-6 bg-white dark:bg-slate-900">
-      <div className="flex flex-col space-y-4">
-        <div className="relative">
+    <div className="space-y-4">
+      <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm">
+        <CardHeader className="space-y-4 pb-4 px-4">
+          {/* Back Button - Now separate and above everything */}
           <button
             onClick={handleBack}
-            className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-            aria-label="Close day view"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500/40 w-fit"
           >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
-        </div>
-        <div className="flex items-center justify-between md:justify-center">
-          <button
-            onClick={() => changeDate(-1)}
-            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
-            aria-label="Previous day"
-          >
-            <ChevronLeft className="w-5 h-5 dark:text-gray-400" />
-          </button>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-200">
-            {formatDate(date)}
-          </h2>
-          <button
-            onClick={() => changeDate(1)}
-            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
-            aria-label="Next day"
-          >
-            <ChevronRight className="w-5 h-5 dark:text-gray-400" />
-          </button>
-        </div>
 
-        {/* Updated Filter Bar */}
-        <div className="flex items-center gap-2 p-1 bg-gray-50 dark:bg-slate-800 rounded-lg w-fit mx-auto">
-          <FilterButton filter="ALL" label="All" icon={Clock} />
-          <FilterButton filter="BMO" label="Pre-Market" icon={Sun} />
-          <FilterButton filter="AMC" label="After Hours" icon={Moon} />
-        </div>
-      </div>
+          {/* Date Display and Navigation */}
+          <div className="relative flex items-center justify-center">
+            {/* Left Arrow */}
+            <button
+              onClick={() => changeDate(-1)}
+              className="absolute left-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </button>
 
-      {!isLoading && !error && filteredData && (
-        <>
-          {filteredData.transcripts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[600px] mt-16 text-gray-500 dark:text-gray-400">
-              <Calendar className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" />
-              <p className="text-lg font-medium">
-                No earnings data for this date
-              </p>
-              <p className="text-sm">Check back later or try another date</p>
+            {/* Center Date */}
+            <div className="text-center">
+              <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {formatDate(date)}
+              </CardTitle>
             </div>
-          ) : (
-            <div className="space-y-6">
-              <MarketTimingGroup
-                title="Pre-Market"
-                icon={Sun}
-                transcripts={groupedTranscripts["BMO"] || []}
-                className="bg-blue-50 p-4 rounded-md"
-              />
-              <MarketTimingGroup
-                title="After Hours"
-                icon={Moon}
-                transcripts={groupedTranscripts["AMC"] || []}
-                className="bg-orange-50 p-4 rounded-md"
-              />
-              <MarketTimingGroup
-                title="During Market"
-                icon={Calendar}
-                transcripts={groupedTranscripts["DMH"] || []}
-                className="bg-green-50 p-4 rounded-md"
-              />
-              <MarketTimingGroup
-                title="Not Specified"
-                icon={Calendar}
-                transcripts={groupedTranscripts["UNKNOWN"] || []}
-                className="bg-gray-50 p-4 rounded-md"
-              />
-            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={() => changeDate(1)}
+              className="absolute right-0 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              aria-label="Next day"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+
+          {/* Filter Bar - Simplified and consistent with FutureEarnings style */}
+          <div className="flex items-center gap-2">
+            <FilterButton filter="ALL" label="All" icon={Clock} />
+            <FilterButton filter="BMO" label="Pre-Market" icon={Sun} />
+            <FilterButton filter="AMC" label="After Hours" icon={Moon} />
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 pb-4">
+          {!isLoading && !error && filteredData && (
+            <>
+              {filteredData.transcripts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" />
+                  <p className="text-lg font-medium">
+                    No earnings data for this date
+                  </p>
+                  <p className="text-sm">
+                    Check back later or try another date
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <MarketTimingGroup
+                    title="Pre-Market"
+                    icon={Sun}
+                    transcripts={groupedTranscripts["BMO"] || []}
+                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
+                  />
+                  <MarketTimingGroup
+                    title="After Hours"
+                    icon={Moon}
+                    transcripts={groupedTranscripts["AMC"] || []}
+                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
+                  />
+                  <MarketTimingGroup
+                    title="During Market"
+                    icon={Calendar}
+                    transcripts={groupedTranscripts["DMH"] || []}
+                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
+                  />
+                  <MarketTimingGroup
+                    title="Not Specified"
+                    icon={Calendar}
+                    transcripts={groupedTranscripts["UNKNOWN"] || []}
+                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
+                  />
+                </div>
+              )}
+            </>
           )}
-        </>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
