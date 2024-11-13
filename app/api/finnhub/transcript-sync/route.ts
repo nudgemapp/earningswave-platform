@@ -35,10 +35,6 @@ interface TranscriptSpeech {
   session?: string | null;
 }
 
-interface TranscriptSpeechWithIndex extends TranscriptSpeech {
-  idx: number;
-}
-
 interface TranscriptDetail extends TranscriptWithCompanyId {
   fullTranscript: {
     audio?: string;
