@@ -1,0 +1,81 @@
+import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
+
+const prisma = new PrismaClient();
+
+export async function GET() {
+  try {
+    // Get today and yesterday's date with time set to midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Fetch transcripts directly from the database
+    // const recentTranscripts = await prisma.transcript.findMany({
+    //   where: {
+    //     scheduledAt: {
+    //       gte: yesterday,
+    //       lte: today,
+    //     },
+    //   },
+    //   include: {
+    //     company: true,
+    //   },
+    // });
+
+    // console.log(recentTranscripts);
+
+    // console.log(
+    //   `Found ${
+    //     recentTranscripts.length
+    //   } transcripts for ${yesterday.toISOString()} to ${today.toISOString()}`
+    // );
+
+    // console.log(recentTranscripts[102].id);
+
+    // const transcriptResponse = await fetch(
+    //   `https://finnhub.io/api/v1/stock/transcripts?id=${recentTranscripts[102].id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    // );
+
+    // const transcriptData = await transcriptResponse.json();
+
+    // console.log(transcriptData);
+
+    const symbol = "MNDY";
+
+    const transcriptListResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+
+    const transcriptListData = await transcriptListResponse.json();
+
+    console.log(transcriptListData?.transcripts);
+
+    const from = "2024-01-10";
+    const to = "2025-12-01";
+
+    const earningsResponse = await fetch(
+      `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+
+    const earningsData = await earningsResponse.json();
+
+    console.log(earningsData);
+
+    return NextResponse.json({
+      message: "Recent transcripts fetched",
+      // transcripts: recentTranscripts,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Failed to fetch transcripts",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

@@ -104,8 +104,19 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     useEarningsStore.setState({ showWatchlist: true });
   };
 
+  // const handleApiClick = async () => {
+  //   try {
+  //     const response = await fetch("/api/finnhub/transcript-sync");
+  //     const data = await response.json();
+  //     console.log("API Response:", data);
+  //   } catch (error) {
+  //     console.error("Error fetching from API:", error);
+  //   }
+  // };
+
   return (
     <div className="bg-white dark:bg-slate-900 shadow-md py-4 px-6">
+      {/* <Button onClick={handleApiClick}>API script</Button> */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button

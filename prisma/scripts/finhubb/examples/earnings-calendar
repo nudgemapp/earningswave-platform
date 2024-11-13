@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  try {
+    const symbol = "RKLB";
+    // Get earnings for the last month and upcoming month
+    const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+    const to = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+
+    const transcriptListResponse = await fetch(
+      `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const transcriptListData = await transcriptListResponse.json();
+    console.log(transcriptListData);
+
+    return NextResponse.json({
+      earningsCalendar: transcriptListData.earningsCalendar,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Failed to fetch data from Finnhub",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}

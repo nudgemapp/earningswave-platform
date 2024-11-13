@@ -43,19 +43,7 @@ export async function GET(request: Request) {
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     const result = await prisma.$queryRaw<TranscriptQueryResult[]>`
-      WITH DailyTranscripts AS (
-        SELECT 
-          DATE("scheduledAt") as date,
-          COUNT(*) as total_for_day
-        FROM "Transcript"
-        WHERE 
-          "scheduledAt" >= ${startDate}
-          AND "scheduledAt" <= ${endDate}
-          AND quarter IS NOT NULL
-          AND (status != 'SCHEDULED' OR ("status" = 'SCHEDULED' AND "scheduledAt" > ${twoWeeksAgo}))
-        GROUP BY DATE("scheduledAt")
-      ),
-      RankedTranscripts AS (
+      WITH RankedTranscripts AS (
         SELECT 
           t.id,
           t.title,
@@ -67,18 +55,13 @@ export async function GET(request: Request) {
           c.symbol,
           c.name as "companyName",
           c.logo,
-          dt.total_for_day,
+          COUNT(*) OVER (PARTITION BY DATE(t."scheduledAt")) as total_for_day,
           ROW_NUMBER() OVER (
             PARTITION BY DATE(t."scheduledAt"), t."MarketTime" 
             ORDER BY t."scheduledAt"
-          ) as market_time_rank,
-          ROW_NUMBER() OVER (
-            PARTITION BY DATE(t."scheduledAt")
-            ORDER BY t."scheduledAt"
-          ) as overall_rank
+          ) as market_time_rank
         FROM "Transcript" t
         JOIN "Company" c ON t."companyId" = c.id
-        JOIN DailyTranscripts dt ON DATE(t."scheduledAt") = dt.date
         WHERE 
           t."scheduledAt" >= ${startDate}
           AND t."scheduledAt" <= ${endDate}
@@ -93,17 +76,6 @@ export async function GET(request: Request) {
         ("MarketTime" = 'AMC' AND market_time_rank <= 4)
         OR ("MarketTime" = 'BMO' AND market_time_rank <= 4)
         OR ("MarketTime" = 'DMH' AND market_time_rank <= 3)
-        OR (overall_rank <= 11 AND NOT EXISTS (
-          SELECT 1 
-          FROM RankedTranscripts r2 
-          WHERE 
-            DATE(r2."scheduledAt") = DATE(RankedTranscripts."scheduledAt")
-            AND (
-              (r2."MarketTime" = 'AMC' AND r2.market_time_rank <= 4)
-              OR (r2."MarketTime" = 'BMO' AND r2.market_time_rank <= 4)
-              OR (r2."MarketTime" = 'DMH' AND r2.market_time_rank <= 3)
-            )
-        ))
       ORDER BY "scheduledAt" ASC;
     `;
 
