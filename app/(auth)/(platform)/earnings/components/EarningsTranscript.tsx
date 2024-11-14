@@ -19,8 +19,7 @@ const EarningsTranscript = () => {
   const { isSignedIn } = useAuth();
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
   const { user } = useUser();
-  const { data: subscription, isLoading: isLoadingSubscription } =
-    useUserSubscription(user?.id);
+  const { data: subscription } = useUserSubscription(user?.id);
   const subscriptionModal = useSubscriptionModal();
 
   console.log(subscription);

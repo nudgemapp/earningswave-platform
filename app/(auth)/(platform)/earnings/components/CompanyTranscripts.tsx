@@ -4,7 +4,6 @@ import { CalendarIcon, CheckCircle, Clock } from "lucide-react";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuth } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
-import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -15,7 +14,6 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
 }) => {
   const { isSignedIn } = useAuth();
   const authModal = useAuthModal();
-  const subscriptionModal = useSubscriptionModal();
   const { setSelectedTranscript } = useEarningsStore();
 
   const formatDate = (dateString: string | Date) => {
