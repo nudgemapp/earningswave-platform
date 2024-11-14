@@ -2,18 +2,28 @@
 
 import { useGetTranscriptData } from "@/app/hooks/use-get-transcript-data";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { ChevronLeft, Volume2, Calendar, Clock } from "lucide-react";
+import { ChevronLeft, Volume2, Calendar, Clock, Lock } from "lucide-react";
 import React from "react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useUserSubscription } from "@/app/hooks/use-user-subscription";
+import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
+import { Button } from "@/components/ui/button";
 
 const EarningsTranscript = () => {
   const transcriptId = useEarningsStore((state) => state.selectedTranscript);
   const setSelectedTranscript = useEarningsStore(
     (state) => state.setSelectedTranscript
   );
+  const { isSignedIn } = useAuth();
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
+  const { user } = useUser();
+  const { data: subscription, isLoading: isLoadingSubscription } =
+    useUserSubscription(user?.id);
+  const subscriptionModal = useSubscriptionModal();
 
+  console.log(subscription);
   console.log(transcript);
   const handleBack = () => {
     setSelectedTranscript(null);
@@ -23,7 +33,7 @@ const EarningsTranscript = () => {
     return <TranscriptSkeleton />;
   }
 
-  if (!transcript) return null;
+  if (!transcript || !isSignedIn) return null;
 
   console.log(transcript);
 
@@ -116,6 +126,12 @@ const EarningsTranscript = () => {
   const sections =
     transcript.fullText?.split("\n").filter((line) => line.trim()) || [];
 
+  console.log(subscription);
+
+  const hasActiveSubscription = subscription?.isActive;
+
+  console.log(hasActiveSubscription);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -144,8 +160,8 @@ const EarningsTranscript = () => {
           </div>
         </div>
 
-        {/* Audio Link if available */}
-        {transcript.audioUrl && (
+        {/* Audio Link - only show if has active subscription */}
+        {hasActiveSubscription && transcript.audioUrl && (
           <a
             href={transcript.audioUrl}
             target="_blank"
@@ -197,35 +213,58 @@ const EarningsTranscript = () => {
         </div>
       )}
 
-      {/* Transcript Content */}
+      {/* Transcript Content - Show subscription CTA if no active subscription */}
       {transcript.fullText && (
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Transcript
           </h3>
-          <div className="prose dark:prose-invert max-w-none space-y-4">
-            {sections.map((section, index) => {
-              const [speaker, ...content] = section.split(":");
-              return (
-                <div key={index} className="space-y-2">
-                  {content.length > 0 ? (
-                    <>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">
-                        {speaker.trim()}:
-                      </p>
+
+          {hasActiveSubscription ? (
+            <div className="prose dark:prose-invert max-w-none space-y-4">
+              {sections.map((section, index) => {
+                const [speaker, ...content] = section.split(":");
+                return (
+                  <div key={index} className="space-y-2">
+                    {content.length > 0 ? (
+                      <>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {speaker.trim()}:
+                        </p>
+                        <p className="text-gray-700 dark:text-gray-300">
+                          {content.join(":").trim()}
+                        </p>
+                      </>
+                    ) : (
                       <p className="text-gray-700 dark:text-gray-300">
-                        {content.join(":").trim()}
+                        {section}
                       </p>
-                    </>
-                  ) : (
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {section}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center space-y-4 bg-gray-50 dark:bg-slate-800 rounded-lg">
+              <Lock className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Premium Content
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                  Subscribe to access full earnings call transcripts and audio
+                  recordings
+                </p>
+              </div>
+              <Button
+                onClick={() => subscriptionModal.onOpen()}
+                className="mt-4"
+                variant="default"
+              >
+                View Subscription Plans
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

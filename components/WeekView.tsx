@@ -317,9 +317,6 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
           const preMarket = dayTranscripts.filter(
             (t) => t.MarketTime === "BMO"
           );
-          const duringMarket = dayTranscripts.filter(
-            (t) => t.MarketTime === "DMH"
-          );
           const afterMarket = dayTranscripts.filter(
             (t) => t.MarketTime === "AMC"
           );
@@ -365,12 +362,6 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
                       icon={Sun}
                       transcripts={preMarket}
                       bgColor="bg-blue-50 dark:bg-blue-950/30"
-                    />
-                    <MarketTimingGroup
-                      title="During Market"
-                      icon={Calendar}
-                      transcripts={duringMarket}
-                      bgColor="bg-gray-50 dark:bg-slate-800/50"
                     />
                     <MarketTimingGroup
                       title="After Hours"

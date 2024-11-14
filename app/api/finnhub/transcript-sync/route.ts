@@ -92,14 +92,14 @@ export async function GET() {
     console.log(`Found ${companies.length} companies to check`);
     console.log("Sample companies:", companies.slice(0, 5));
 
-    // Get today and yesterday's date
+    // Get dates for the past week
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
 
     // Format dates for logging
     console.log("Checking transcripts between:", {
-      yesterday: yesterday.toISOString(),
+      lastWeek: lastWeek.toISOString(),
       today: today.toISOString(),
     });
 
@@ -143,7 +143,7 @@ export async function GET() {
             (t: FinnhubTranscript) => {
               const transcriptDate = new Date(t.time);
               transcriptDate.setHours(0, 0, 0, 0);
-              return transcriptDate >= yesterday && transcriptDate <= today;
+              return transcriptDate >= lastWeek && transcriptDate <= today;
             }
           );
 
@@ -354,7 +354,7 @@ export async function GET() {
       )
     );
     console.log(
-      "Companies with transcripts today/yesterday:",
+      "Companies with transcripts in the past week:",
       companiesWithTranscripts
     );
     console.log(
@@ -371,7 +371,7 @@ export async function GET() {
       transcriptDetailsFetched: results.transcriptDetails.length,
       errors: results.errors.length,
       dateRange: {
-        from: yesterday.toISOString(),
+        from: lastWeek.toISOString(),
         to: today.toISOString(),
       },
     };
