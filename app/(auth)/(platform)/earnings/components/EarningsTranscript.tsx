@@ -11,6 +11,14 @@ import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { Button } from "@/components/ui/button";
 
+const formatUTCDate = (date: string | Date) => {
+  const d = new Date(date);
+  return format(
+    new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
+    "MMMM d, yyyy"
+  );
+};
+
 const EarningsTranscript = () => {
   const transcriptId = useEarningsStore((state) => state.selectedTranscript);
   const setSelectedTranscript = useEarningsStore(
@@ -22,8 +30,9 @@ const EarningsTranscript = () => {
   const { data: subscription } = useUserSubscription(user?.id);
   const subscriptionModal = useSubscriptionModal();
 
-  console.log(subscription);
   console.log(transcript);
+  console.log(subscription);
+
   const handleBack = () => {
     setSelectedTranscript(null);
   };
@@ -34,10 +43,15 @@ const EarningsTranscript = () => {
 
   if (!transcript || !isSignedIn) return null;
 
-  console.log(transcript);
+  const hasActiveSubscription = subscription?.isActive;
+  console.log(hasActiveSubscription);
 
   // Add check for scheduled status
   if (transcript.status === "SCHEDULED") {
+    const scheduledDate = new Date(transcript.scheduledAt);
+    const formattedTime =
+      transcript.MarketTime === "AMC" ? "4:00 PM" : "8:00 AM";
+
     return (
       <div className="space-y-6">
         {/* Header */}
@@ -56,11 +70,11 @@ const EarningsTranscript = () => {
               <div className="flex items-center gap-4 mt-1">
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="w-4 h-4" />
-                  {format(new Date(transcript.scheduledAt), "MMMM d, yyyy")}
+                  {formatUTCDate(scheduledDate)}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Clock className="w-4 h-4" />
-                  {transcript.MarketTime}
+                  {formattedTime}
                 </div>
               </div>
             </div>
@@ -107,15 +121,23 @@ const EarningsTranscript = () => {
             Upcoming Earnings Call
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            This earnings call is scheduled for{" "}
-            {format(
-              new Date(transcript.scheduledAt),
-              "MMMM d, yyyy 'at' h:mm a"
-            )}
+            This earnings call is scheduled for {formatUTCDate(scheduledDate)}{" "}
+            at {formattedTime} ET
           </p>
-          <div className="text-sm text-gray-400 dark:text-gray-600">
+          <div className="text-sm text-gray-400 dark:text-gray-600 mb-6">
             The transcript will be available after the call has concluded
           </div>
+
+          {/* Add subscription CTA if user doesn't have active subscription */}
+          {!hasActiveSubscription && (
+            <Button
+              onClick={() => subscriptionModal.onOpen()}
+              className="mt-4"
+              variant="default"
+            >
+              Subscribe to Access Earnings Calls
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -124,12 +146,6 @@ const EarningsTranscript = () => {
   // Split transcript into sections (this is a basic example - you might want to enhance this)
   const sections =
     transcript.fullText?.split("\n").filter((line) => line.trim()) || [];
-
-  console.log(subscription);
-
-  const hasActiveSubscription = subscription?.isActive;
-
-  console.log(hasActiveSubscription);
 
   return (
     <div className="space-y-6">
@@ -149,7 +165,7 @@ const EarningsTranscript = () => {
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Calendar className="w-4 h-4" />
-                {format(new Date(transcript.scheduledAt), "MMMM d, yyyy")}
+                {formatUTCDate(transcript.scheduledAt)}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="w-4 h-4" />

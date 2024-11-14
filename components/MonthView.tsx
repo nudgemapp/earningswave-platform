@@ -295,14 +295,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                         bgColor="bg-blue-50"
                       />
                       <MarketTimingGroup
-                        title="During Market"
-                        icon={Calendar}
-                        transcripts={dayContent.filter(
-                          (t) => t.MarketTime === "DMH"
-                        )}
-                        bgColor="bg-gray-50"
-                      />
-                      <MarketTimingGroup
                         title="After Hours"
                         icon={Moon}
                         transcripts={dayContent.filter(

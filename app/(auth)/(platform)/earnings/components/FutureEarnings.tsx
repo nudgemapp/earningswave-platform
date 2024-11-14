@@ -55,6 +55,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     SelectedCompany?.companyId
   ) as { data: ExtendedCompany | undefined; isLoading: boolean };
 
+  // console.log(company);
+
   // Check if company is in watchlist
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
@@ -186,11 +188,11 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   <CardTitle className="text-xl font-semibold break-words text-gray-900 dark:text-gray-100">
                     {company.name}
                   </CardTitle>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-col space-y-1">
+                    <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
                       {company.symbol}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       {company.exchange}
                     </span>
                   </div>
@@ -224,7 +226,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                       fill={isWatchlisted ? "currentColor" : "none"}
                       strokeWidth={1.5}
                     />
-                    <span>{isWatchlisted ? "Following" : "Follow"}</span>
+                    {!isWatchlisted && <span>Watch</span>}
                   </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
@@ -233,7 +235,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                       Company Following
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Follow this company to receive notifications about:
+                      Watchlist this company to receive notifications about:
                       <ul className="mt-2 space-y-1 list-none">
                         {[
                           "New earnings transcripts",

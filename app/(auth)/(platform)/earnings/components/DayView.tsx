@@ -175,7 +175,13 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     onWatchlistToggle: (companyId: string) => Promise<void>;
   }) => (
     <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 cursor-pointer group">
-      <div className="flex-1 flex items-center gap-4" onClick={onClick}>
+      <div
+        className="flex-1 flex items-center gap-4"
+        onClick={() => {
+          useEarningsStore.setState({ selectedTranscript: null });
+          onClick();
+        }}
+      >
         <div className="relative h-12 w-12 mr-4">
           {transcript.company.logo ? (
             <Image

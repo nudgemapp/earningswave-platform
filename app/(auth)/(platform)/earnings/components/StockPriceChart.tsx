@@ -191,15 +191,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   return (
     <div className="h-full w-full">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-4">
+        <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
             Price History
           </h3>
           {!isLoading && filteredData.length > 0 && (
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-1.5">
               <span
-                className={`text-lg font-semibold ${
+                className={`text-base font-semibold ${
                   filteredData[filteredData.length - 1].close >
                   filteredData[0].close
                     ? "text-emerald-600 dark:text-emerald-500"
@@ -208,18 +208,18 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               >
                 ${filteredData[filteredData.length - 1].close.toFixed(2)}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-[10px] text-gray-500 dark:text-gray-400">
                 USD
               </span>
             </div>
           )}
         </div>
-        <div className="flex gap-1 p-1 bg-gray-100/80 dark:bg-slate-800/80 rounded-lg">
+        <div className="w-full xs:w-auto grid grid-cols-5 xs:flex gap-0.5 p-0.5 bg-gray-100/80 dark:bg-slate-800/80 rounded-lg">
           {timeframeButtons.map((tf) => (
             <button
               key={tf}
               onClick={() => onTimeframeChange(tf)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+              className={`px-1.5 py-1 rounded-md text-[10px] font-medium transition-all duration-200 ${
                 timeframe === tf
                   ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
