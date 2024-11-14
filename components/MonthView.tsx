@@ -86,7 +86,9 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   const transcripts: GroupedTranscript[] = Object.entries(
     rawTranscripts.reduce((acc, transcript) => {
-      const date = transcript.scheduledAt.toISOString().split("T")[0];
+      const dateObj = new Date(transcript.scheduledAt);
+      const date = dateObj.toISOString().split("T")[0];
+
       if (!acc[date]) {
         acc[date] = {
           date,
