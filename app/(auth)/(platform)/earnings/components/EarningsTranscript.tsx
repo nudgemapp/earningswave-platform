@@ -28,15 +28,6 @@ const formatUTCDate = (date: string | Date) => {
   );
 };
 
-const formatDate = (dateString: string | Date) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
 const EarningsTranscript = () => {
   const transcriptId = useEarningsStore((state) => state.selectedTranscript);
   const setSelectedTranscript = useEarningsStore(
@@ -98,7 +89,8 @@ const EarningsTranscript = () => {
               </h2>
               <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                 <CalendarIcon className="w-3.5 h-3.5" />
-                {formatDate(transcript.scheduledAt)} • {transcript.MarketTime}
+                {formatUTCDate(transcript.scheduledAt)} •{" "}
+                {transcript.MarketTime}
               </div>
             </div>
           </div>
