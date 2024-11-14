@@ -1,36 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
 import React from "react";
-import { MarketTime, TranscriptStatus } from "@prisma/client";
-
-interface Company {
-  id: string;
-  symbol: string;
-  name: string | null;
-  logo: string | null;
-}
-
-interface RawTranscript {
-  id: string;
-  companyId: string;
-  title: string | null;
-  scheduledAt: string;
-  quarter: number | null;
-  year: number | null;
-  audioUrl: string | null;
-  MarketTime: MarketTime;
-  status: TranscriptStatus;
-  epsActual: number | null;
-  epsEstimate: number | null;
-  revenueActual: number | null;
-  revenueEstimate: number | null;
-  company: Company;
-}
-
-export interface ProcessedTranscript
-  extends Omit<RawTranscript, "scheduledAt"> {
-  scheduledAt: Date;
-}
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 
 interface WeekViewResponse {
   transcripts: ProcessedTranscript[];
@@ -70,7 +41,7 @@ export const useGetWeekView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map((t: RawTranscript) => ({
+        transcripts: data.transcripts.map((t: any) => ({
           ...t,
           scheduledAt: new Date(t.scheduledAt),
         })),
