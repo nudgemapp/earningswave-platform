@@ -182,8 +182,28 @@ export async function GET() {
     // After collecting all upcoming transcripts, fetch their details
     console.log("Fetching details for found transcripts...");
 
+    // Add daily summary logging
+    const dailyTranscripts = results.upcomingTranscripts.reduce(
+      (acc: Record<string, string[]>, transcript) => {
+        const date = new Date(transcript.time).toISOString().split("T")[0];
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(`${transcript.symbol}: ${transcript.title}`);
+        return acc;
+      },
+      {}
+    );
+
+    console.log("\n=== DAILY TRANSCRIPT SUMMARY ===");
+    Object.entries(dailyTranscripts)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([date, transcripts]) => {
+        console.log(`\n${date} (${transcripts.length} transcripts):`);
+        transcripts.forEach((t) => console.log(`- ${t}`));
+      });
+    console.log("\n===============================\n");
+
     // Process in smaller batches
-    const BATCH_SIZE = 20; // Process 20 at a time
+    const BATCH_SIZE = 20;
     for (let i = 0; i < results.upcomingTranscripts.length; i += BATCH_SIZE) {
       const batch = results.upcomingTranscripts.slice(i, i + BATCH_SIZE);
 
