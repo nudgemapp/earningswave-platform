@@ -2,7 +2,14 @@
 
 import { useGetTranscriptData } from "@/app/hooks/use-get-transcript-data";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { ChevronLeft, Volume2, Calendar, Clock, Lock } from "lucide-react";
+import {
+  ChevronLeft,
+  Volume2,
+  Calendar,
+  Clock,
+  Lock,
+  CalendarIcon,
+} from "lucide-react";
 import React from "react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +17,8 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
+import Image from "next/image";
 
 const formatUTCDate = (date: string | Date) => {
   const d = new Date(date);
@@ -17,6 +26,15 @@ const formatUTCDate = (date: string | Date) => {
     new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
     "MMMM d, yyyy"
   );
+};
+
+const formatDate = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 };
 
 const EarningsTranscript = () => {
@@ -63,19 +81,24 @@ const EarningsTranscript = () => {
             >
               <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
+            {transcript.company?.logo && (
+              <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
+                <Image
+                  src={transcript.company.logo}
+                  alt={`${transcript.company.name} logo`}
+                  layout="fill"
+                  objectFit="contain"
+                  className="rounded-lg"
+                />
+              </div>
+            )}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {transcript.title}
+                Q{transcript.quarter || "?"} {transcript.year || ""} Earnings
               </h2>
-              <div className="flex items-center gap-4 mt-1">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Calendar className="w-4 h-4" />
-                  {formatUTCDate(scheduledDate)}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <Clock className="w-4 h-4" />
-                  {formattedTime}
-                </div>
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {formatDate(transcript.scheduledAt)} • {transcript.MarketTime}
               </div>
             </div>
           </div>
@@ -92,7 +115,7 @@ const EarningsTranscript = () => {
               <div className="flex items-baseline gap-2">
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {transcript.financials?.epsEstimate
-                    ? `$${transcript.financials.epsEstimate.toFixed(2)}`
+                    ? formatCurrency(transcript.financials.epsEstimate)
                     : "N/A"}
                 </p>
               </div>
@@ -104,9 +127,10 @@ const EarningsTranscript = () => {
               <div className="flex items-baseline gap-2">
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {transcript.financials?.revenueEstimate
-                    ? `$${(transcript.financials.revenueEstimate / 1e9).toFixed(
-                        2
-                      )}B`
+                    ? formatCurrency(
+                        transcript.financials.revenueEstimate,
+                        true
+                      )
                     : "N/A"}
                 </p>
               </div>

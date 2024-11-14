@@ -13,6 +13,8 @@ interface ExtendedTranscript extends Transcript {
     currency: string;
     description: string;
     displaySymbol: string;
+    logo?: string;
+    name?: string;
     // ... other company fields
   };
   participants?: Array<{

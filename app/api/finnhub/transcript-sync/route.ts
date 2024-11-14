@@ -133,6 +133,8 @@ export async function GET() {
 
           const data = await response.json();
 
+          console.log(data);
+
           // Log every 100th response to avoid console spam
           if (results.apiResponses % 100 === 0) {
             console.log(`Processed ${results.apiResponses} companies`);
@@ -185,9 +187,16 @@ export async function GET() {
     // Add daily summary logging
     const dailyTranscripts = results.upcomingTranscripts.reduce(
       (acc: Record<string, string[]>, transcript) => {
-        const date = new Date(transcript.time).toISOString().split("T")[0];
+        // Use the actual time from the transcript without modification
+        const date = transcript.time.split(" ")[0]; // This will get just the date part: '2024-11-13'
         if (!acc[date]) acc[date] = [];
-        acc[date].push(`${transcript.symbol}: ${transcript.title}`);
+        acc[date].push(transcript.symbol);
+
+        // Debug log for actual date
+        console.log(
+          `Transcript for ${transcript.symbol} is scheduled for ${transcript.time}`
+        );
+
         return acc;
       },
       {}
@@ -196,9 +205,9 @@ export async function GET() {
     console.log("\n=== DAILY TRANSCRIPT SUMMARY ===");
     Object.entries(dailyTranscripts)
       .sort(([a], [b]) => a.localeCompare(b))
-      .forEach(([date, transcripts]) => {
-        console.log(`\n${date} (${transcripts.length} transcripts):`);
-        transcripts.forEach((t) => console.log(`- ${t}`));
+      .forEach(([date, symbols]) => {
+        console.log(`\n${date} (${symbols.length} transcripts):`);
+        console.log(symbols.join(", "));
       });
     console.log("\n===============================\n");
 
