@@ -3,6 +3,10 @@ import { useCalendarStore } from "@/store/CalendarStore";
 import React from "react";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 
+interface RawTranscript extends Omit<ProcessedTranscript, "scheduledAt"> {
+  scheduledAt: string;
+}
+
 interface WeekViewResponse {
   transcripts: ProcessedTranscript[];
 }
@@ -41,7 +45,7 @@ export const useGetWeekView = () => {
 
       const data = await response.json();
       return {
-        transcripts: data.transcripts.map((t: any) => ({
+        transcripts: data.transcripts.map((t: RawTranscript) => ({
           ...t,
           scheduledAt: new Date(t.scheduledAt),
         })),
