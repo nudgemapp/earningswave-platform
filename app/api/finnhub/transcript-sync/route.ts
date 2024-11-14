@@ -241,8 +241,7 @@ export async function GET() {
         const marketTime = (() => {
           const hour = new Date(transcript.time).getHours();
           if (hour < 9) return "BMO";
-          if (hour >= 16) return "AMC";
-          return "DMH";
+          return "AMC";
         })();
 
         // Create a date without time component
