@@ -19,7 +19,8 @@ export interface ProcessedTranscript {
   scheduledAt: string;
   quarter: number;
   year: number;
-  MarketTime: string;
+  MarketTime: MarketTime;
+  transcriptStatus: TranscriptStatus;
   epsActual: number | null;
   epsEstimate: number | null;
   revenueActual: number | null;
