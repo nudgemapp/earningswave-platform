@@ -182,6 +182,17 @@ const EarningsTranscript = () => {
           >
             <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
+          {transcript.company?.logo && (
+            <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
+              <Image
+                src={transcript.company.logo}
+                alt={`${transcript.company.name} logo`}
+                layout="fill"
+                objectFit="contain"
+                className="rounded-lg"
+              />
+            </div>
+          )}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {transcript.title}

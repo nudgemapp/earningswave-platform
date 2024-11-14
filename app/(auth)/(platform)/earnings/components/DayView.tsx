@@ -7,7 +7,6 @@ import {
   Sun,
   Moon,
   LucideIcon,
-  Clock,
   ChevronLeft,
   ChevronRight,
   Star,
@@ -25,7 +24,7 @@ import { useAuthModal } from "@/store/AuthModalStore";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-type FilterType = "ALL" | "BMO" | "AMC" | "DMH" | "UNKNOWN";
+type FilterType = "BMO" | "AMC" | "UNKNOWN";
 
 interface DayViewProps {
   date: Date;
@@ -41,7 +40,7 @@ const getNextValidDate = (currentDate: Date, direction: number): Date => {
 };
 
 const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("ALL");
+  const [activeFilter, setActiveFilter] = useState<FilterType>("UNKNOWN");
   const { data, isLoading, error } = useGetDayView(date);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
   const [watchlistedCompanies, setWatchlistedCompanies] = useState<Set<string>>(
@@ -50,6 +49,8 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  console.log(data);
 
   const handleDateChange =
     (direction: number) => (e: React.MouseEvent | React.TouchEvent) => {
@@ -73,13 +74,15 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     icon: LucideIcon;
   }) => (
     <button
-      onClick={() => setActiveFilter(filter)}
+      onClick={() =>
+        setActiveFilter(activeFilter === filter ? "UNKNOWN" : filter)
+      }
       className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
         ${
           activeFilter === filter
             ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-            : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-        } border border-gray-200 dark:border-slate-700`}
+            : "hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300"
+        }`}
     >
       <Icon className="w-4 h-4" />
       <span>{label}</span>
@@ -87,7 +90,7 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   );
 
   const filteredData = React.useMemo(() => {
-    if (!data || activeFilter === "ALL") return data;
+    if (!data || activeFilter === "UNKNOWN") return data;
 
     return {
       ...data,
@@ -174,69 +177,97 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     isWatchlisted: boolean;
     onWatchlistToggle: (companyId: string) => Promise<void>;
   }) => (
-    <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 cursor-pointer group">
+    <div className="group relative flex items-center p-4 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 transition-all">
+      {/* Left Section - Logo & Basic Info */}
       <div
-        className="flex-1 flex items-center gap-4"
+        className="flex-1 flex items-center gap-4 cursor-pointer"
         onClick={() => {
           useEarningsStore.setState({ selectedTranscript: null });
           onClick();
         }}
       >
-        <div className="relative h-12 w-12 mr-4">
+        {/* Logo */}
+        <div className="relative h-10 w-10 flex-shrink-0">
           {transcript.company.logo ? (
             <Image
-              src={transcript.company.logo || ""}
-              alt={transcript.company.name || ""}
+              src={transcript.company.logo}
+              alt={transcript.company.symbol}
               layout="fill"
               objectFit="contain"
               className="rounded-md"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-md">
-              <span className="text-sm font-medium">
+            <div className="h-full w-full flex items-center justify-center bg-gray-50 dark:bg-slate-800 rounded-md">
+              <span className="text-xs font-medium">
                 {transcript.company.symbol}
               </span>
             </div>
           )}
         </div>
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-900 dark:text-gray-200">
-            {transcript.company.name}
-          </h3>
-          <div className="flex gap-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+
+        {/* Company Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-medium text-gray-900 dark:text-gray-200 truncate">
               {transcript.company.symbol}
-            </p>
-            {transcript.epsEstimate !== null && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Est: ${transcript.epsEstimate.toFixed(2)}
-              </p>
+            </h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400 truncate">
+              {transcript.company.finnhubIndustry}
+            </span>
+          </div>
+
+          {/* Earnings Info */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            {/* Date & Time */}
+            <span className="text-gray-600 dark:text-gray-300">
+              {new Date(transcript.scheduledAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+
+            {/* Quarter Info */}
+            {transcript.quarter && (
+              <span className="text-gray-600 dark:text-gray-300">
+                Q{transcript.quarter} {transcript.year}
+              </span>
             )}
-            {transcript.epsActual !== null && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Act: ${transcript.epsActual.toFixed(2)}
-              </p>
+
+            {/* Market Cap */}
+            {transcript.company.marketCapitalization && (
+              <span className="text-gray-500 dark:text-gray-400">
+                Mkt Cap: $
+                {(transcript.company.marketCapitalization / 1000).toFixed(1)}B
+              </span>
             )}
           </div>
         </div>
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onWatchlistToggle(transcript.company.id);
-        }}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-      >
-        <Star
-          className={`w-4 h-4 ${
-            isWatchlisted
-              ? "fill-blue-500 text-blue-500"
-              : "text-gray-400 dark:text-gray-500"
-          }`}
-          fill={isWatchlisted ? "currentColor" : "none"}
-          strokeWidth={1.5}
-        />
-      </button>
+
+      {/* Right Section - Actions */}
+      <div className="flex items-center gap-2">
+        {/* Watchlist Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onWatchlistToggle(transcript.company.id);
+          }}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-all"
+          aria-label={
+            isWatchlisted ? "Remove from watchlist" : "Add to watchlist"
+          }
+        >
+          <Star
+            className={`w-4 h-4 ${
+              isWatchlisted
+                ? "fill-blue-500 text-blue-500"
+                : "text-gray-400 dark:text-gray-500"
+            }`}
+            fill={isWatchlisted ? "currentColor" : "none"}
+            strokeWidth={1.5}
+          />
+        </button>
+      </div>
     </div>
   );
 
@@ -398,10 +429,11 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
           </div>
 
           {/* Filter Bar - Simplified and consistent with FutureEarnings style */}
-          <div className="flex items-center gap-2">
-            <FilterButton filter="ALL" label="All" icon={Clock} />
-            <FilterButton filter="BMO" label="Pre-Market" icon={Sun} />
-            <FilterButton filter="AMC" label="After Hours" icon={Moon} />
+          <div className="flex items-center justify-center gap-2 w-full">
+            <div className="inline-flex items-center gap-2 p-1 bg-gray-50 dark:bg-slate-800 rounded-lg">
+              <FilterButton filter="BMO" label="Pre-Market" icon={Sun} />
+              <FilterButton filter="AMC" label="After Hours" icon={Moon} />
+            </div>
           </div>
         </CardHeader>
 
@@ -430,18 +462,6 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
                     title="After Hours"
                     icon={Moon}
                     transcripts={groupedTranscripts["AMC"] || []}
-                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
-                  />
-                  <MarketTimingGroup
-                    title="During Market"
-                    icon={Calendar}
-                    transcripts={groupedTranscripts["DMH"] || []}
-                    className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
-                  />
-                  <MarketTimingGroup
-                    title="Not Specified"
-                    icon={Calendar}
-                    transcripts={groupedTranscripts["UNKNOWN"] || []}
                     className="bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl"
                   />
                 </div>

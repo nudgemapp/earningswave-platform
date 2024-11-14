@@ -3,18 +3,23 @@ import { MarketTime, TranscriptStatus } from "@prisma/client";
 export interface Company {
   id: string;
   symbol: string;
-  name: string | null;
+  name: string;
   logo: string | null;
+  marketCapitalization?: number | null;
+  finnhubIndustry?: string | null;
+  exchange?: string | null;
+  country?: string | null;
+  weburl?: string | null;
+  sharesOutstanding?: number | null;
 }
 
 export interface ProcessedTranscript {
   id: string;
   title: string | null;
-  scheduledAt: Date;
-  quarter: number | null;
-  year: number | null;
-  MarketTime: MarketTime;
-  status: TranscriptStatus;
+  scheduledAt: string;
+  quarter: number;
+  year: number;
+  MarketTime: string;
   epsActual: number | null;
   epsEstimate: number | null;
   revenueActual: number | null;

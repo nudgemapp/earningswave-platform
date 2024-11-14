@@ -16,6 +16,12 @@ interface TranscriptRow {
   symbol: string;
   companyName: string;
   logo: string | null;
+  marketCapitalization: number | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
+  country: string | null;
+  weburl: string | null;
+  sharesOutstanding: number | null;
 }
 
 export async function GET(request: Request) {
@@ -56,7 +62,13 @@ export async function GET(request: Request) {
         c.id as "companyId",
         c.symbol,
         c.name as "companyName",
-        c.logo
+        c.logo,
+        c."marketCapitalization",
+        c."finnhubIndustry",
+        c.exchange,
+        c.country,
+        c.weburl,
+        c."sharesOutstanding"
       FROM "Transcript" t
       JOIN "Company" c ON t."companyId" = c.id
       WHERE 
@@ -83,6 +95,12 @@ export async function GET(request: Request) {
         symbol: row.symbol,
         name: row.companyName,
         logo: row.logo || null,
+        marketCapitalization: row.marketCapitalization,
+        finnhubIndustry: row.finnhubIndustry,
+        exchange: row.exchange,
+        country: row.country,
+        weburl: row.weburl,
+        sharesOutstanding: row.sharesOutstanding,
       },
     }));
 
