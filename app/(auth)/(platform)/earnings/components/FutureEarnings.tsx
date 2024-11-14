@@ -160,7 +160,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-20 sm:mb-0">
       {!selectedTranscript && (
         <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
           <CardHeader className="space-y-4 pb-4 px-4">
