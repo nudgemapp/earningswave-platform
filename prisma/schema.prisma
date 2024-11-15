@@ -132,6 +132,8 @@ model Company {
   @@index([symbol, type, mic]) // Composite index for filtering
   @@index([marketCapitalization]) // For sorting by market cap
   @@index([symbol, name]) // Add this index if you search by these fields
+  @@index([symbol])
+  @@index([exchange])
 }
 
 enum MIC {
@@ -142,7 +144,7 @@ enum MIC {
 model Transcript {
   id          String        @id @unique // e.g. "NVDA_3393990"
   companyId   String        
-  title       String?       @unique
+  title       String?       //@unique
   scheduledAt DateTime      // Store the 'time' field
   quarter     Int?         // Optional: some transcripts don't have this
   year        Int?         // Optional: some transcripts don't have this

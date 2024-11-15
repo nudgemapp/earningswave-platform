@@ -48,13 +48,6 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
                 selectedFutureEarnings: null,
               });
             }}
-            // onReportClick={(report) => {
-            //   useEarningsStore.setState({
-            //     selectedFutureEarnings: report,
-            //     showWatchlist: false,
-            //     selectedCompany: null,
-            //   });
-            // }}
           />
         ) : (
           <WelcomeMessage />

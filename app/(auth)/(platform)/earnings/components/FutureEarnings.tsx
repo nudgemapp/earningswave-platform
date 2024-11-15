@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -22,8 +22,6 @@ import { Company, Transcript } from "@prisma/client";
 import CompanyTranscripts from "./CompanyTranscripts";
 import { Skeleton } from "@/components/ui/skeleton";
 import EarningsTranscript from "./EarningsTranscript";
-// import EnhancedEarnings from "./EnhancedEarnings";
-// import AIEarningsAnalysis from "./AIEarnings";
 import {
   HoverCard,
   HoverCardContent,
@@ -42,6 +40,144 @@ type ExtendedCompany = Company & {
   recentTranscripts?: Transcript[];
 };
 
+// Update the CompanyHeader props interface
+interface CompanyHeaderProps {
+  company: ExtendedCompany;
+  onBack: () => void;
+  onWatchlistClick: () => void;
+  isWatchlisted: boolean;
+  isCheckingWatchlist: boolean;
+  addToWatchlist: {
+    isPending: boolean;
+    mutateAsync: (companyId: string) => Promise<any>;
+  };
+  removeFromWatchlist: {
+    isPending: boolean;
+    mutateAsync: (companyId: string) => Promise<any>;
+  };
+}
+
+const StockChartSkeleton = () => (
+  <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
+    <div className="h-[400px] w-full bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+  </div>
+);
+
+const TranscriptsSkeleton = () => (
+  <div className="space-y-3">
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      Recent Transcripts
+    </h3>
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="h-20 bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg"
+        />
+      ))}
+    </div>
+  </div>
+);
+
+// Update the CompanyHeader component with the proper type
+const CompanyHeader: React.FC<CompanyHeaderProps> = ({
+  company,
+  onBack,
+  onWatchlistClick,
+  isWatchlisted,
+  isCheckingWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+}) => (
+  <div className="flex justify-between items-start w-full">
+    <div className="flex items-center gap-4 min-w-0">
+      <button
+        onClick={onBack}
+        className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0"
+      >
+        <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+      </button>
+      {company.logo && (
+        <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
+          <Image
+            src={company.logo}
+            alt={`${company.name} logo`}
+            layout="fill"
+            objectFit="contain"
+            className="rounded-lg"
+          />
+        </div>
+      )}
+      <div className="min-w-0">
+        <CardTitle className="text-xl font-semibold break-words text-gray-900 dark:text-gray-100">
+          {company.name}
+        </CardTitle>
+        <div className="flex flex-col space-y-1">
+          <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+            {company.symbol}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {company.exchange}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <HoverCard openDelay={200}>
+      <HoverCardTrigger asChild>
+        <button
+          onClick={onWatchlistClick}
+          className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+            ${
+              isWatchlisted
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300"
+            } 
+            hover:bg-opacity-90 border border-gray-200 dark:border-slate-700`}
+          disabled={
+            isCheckingWatchlist ||
+            addToWatchlist.isPending ||
+            removeFromWatchlist.isPending
+          }
+        >
+          <StarIcon
+            className={`w-4 h-4 ${
+              isWatchlisted ? "fill-blue-500 text-blue-500" : "text-gray-400"
+            }`}
+            fill={isWatchlisted ? "currentColor" : "none"}
+            strokeWidth={1.5}
+          />
+          {!isWatchlisted && <span>Watch</span>}
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80">
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Company Following
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Watchlist this company to receive notifications about:
+            <ul className="mt-2 space-y-1 list-none">
+              {[
+                "New earnings transcripts",
+                "Important company news",
+                "Price changes",
+                "Market sentiment updates",
+                "Financial reports",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-blue-500" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </p>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  </div>
+);
+
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
@@ -49,21 +185,16 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const { setSelectedCompany } = useEarningsStore();
-
-  // Update the type assertion for company
-  const { data: company, isLoading: isLoadingCompany } = useGetCompany(
-    SelectedCompany?.companyId
-  ) as { data: ExtendedCompany | undefined; isLoading: boolean };
-
-  // console.log(company);
-
-  // Check if company is in watchlist
-  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
-    useWatchlistCheck(SelectedCompany?.companyId);
-
   const selectedTranscript = useEarningsStore(
     (state) => state.selectedTranscript
   );
+
+  const { data: company, isLoading: isLoadingCompany } = useGetCompany(
+    SelectedCompany?.companyId
+  );
+
+  const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
+    useWatchlistCheck(SelectedCompany?.companyId);
 
   if (isLoadingCompany) {
     return (
@@ -164,123 +295,47 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
       {!selectedTranscript && (
         <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
           <CardHeader className="space-y-4 pb-4 px-4">
-            {/* Company Header - Reorganized */}
-            <div className="flex justify-between items-start w-full">
-              <div className="flex items-center gap-4 min-w-0">
-                <button
-                  onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors shrink-0"
-                >
-                  <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                </button>
-                {company.logo && (
-                  <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
-                    <Image
-                      src={company.logo}
-                      alt={`${company.name} logo`}
-                      layout="fill"
-                      objectFit="contain"
-                      className="rounded-lg"
-                    />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <CardTitle className="text-xl font-semibold break-words text-gray-900 dark:text-gray-100">
-                    {company.name}
-                  </CardTitle>
-                  <div className="flex flex-col space-y-1">
-                    <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                      {company.symbol}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {company.exchange}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Follow Button - Moved to right */}
-              <HoverCard openDelay={200}>
-                <HoverCardTrigger asChild>
-                  <button
-                    onClick={handleWatchlistClick}
-                    className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                      ${
-                        isWatchlisted
-                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                          : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300"
-                      } 
-                      hover:bg-opacity-90 border border-gray-200 dark:border-slate-700`}
-                    disabled={
-                      isCheckingWatchlist ||
-                      addToWatchlist.isPending ||
-                      removeFromWatchlist.isPending
-                    }
-                  >
-                    <StarIcon
-                      className={`w-4 h-4 ${
-                        isWatchlisted
-                          ? "fill-blue-500 text-blue-500"
-                          : "text-gray-400"
-                      }`}
-                      fill={isWatchlisted ? "currentColor" : "none"}
-                      strokeWidth={1.5}
-                    />
-                    {!isWatchlisted && <span>Watch</span>}
-                  </button>
-                </HoverCardTrigger>
-                <HoverCardContent className="w-80">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      Company Following
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Watchlist this company to receive notifications about:
-                      <ul className="mt-2 space-y-1 list-none">
-                        {[
-                          "New earnings transcripts",
-                          "Important company news",
-                          "Price changes",
-                          "Market sentiment updates",
-                          "Financial reports",
-                        ].map((item) => (
-                          <li key={item} className="flex items-center gap-2">
-                            <div className="w-1 h-1 rounded-full bg-blue-500" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </p>
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
-            </div>
+            <CompanyHeader
+              company={company}
+              onBack={handleBack}
+              onWatchlistClick={handleWatchlistClick}
+              isWatchlisted={isWatchlisted}
+              isCheckingWatchlist={isCheckingWatchlist}
+              addToWatchlist={addToWatchlist}
+              removeFromWatchlist={removeFromWatchlist}
+            />
           </CardHeader>
 
           <CardContent className="space-y-6 px-4 pb-4">
-            {/* Stock Chart */}
-            <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
-              <div className="h-[400px] w-full">
-                <StockPriceChart
-                  symbol={company.symbol}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                />
+            {/* Stock Chart with Suspense */}
+            <Suspense fallback={<StockChartSkeleton />}>
+              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
+                <div className="h-[400px] w-full">
+                  <StockPriceChart
+                    symbol={company.symbol}
+                    timeframe={timeframe}
+                    onTimeframeChange={setTimeframe}
+                  />
+                </div>
               </div>
-            </div>
+            </Suspense>
 
-            {/* Recent Transcripts */}
+            {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&
               company.recentTranscripts.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Recent Transcripts
-                  </h3>
-                  <CompanyTranscripts transcripts={company.recentTranscripts} />
-                </div>
+                <Suspense fallback={<TranscriptsSkeleton />}>
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Recent Transcripts
+                    </h3>
+                    <CompanyTranscripts
+                      transcripts={company.recentTranscripts}
+                    />
+                  </div>
+                </Suspense>
               )}
 
-            {/* Company Stats - Modified to 2x2 grid */}
+            {/* Company Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Market Cap */}
               <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
@@ -404,7 +459,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full dark:bg-slate-900 dark:text-white ">
+        <Card className="w-full dark:bg-slate-900 dark:text-white">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>
@@ -469,4 +524,4 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   );
 };
 
-export default FutureEarnings;
+export default React.memo(FutureEarnings);

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prismadb";
+import { headers } from "next/headers";
 
 export async function GET(
   req: Request,
@@ -19,7 +20,6 @@ export async function GET(
       return new NextResponse("Invalid company ID", { status: 400 });
     }
 
-    // Efficient query using the compound index (userId, companyId)
     const watchlistEntry = await prisma.watchlistEntry.findUnique({
       where: {
         userId_companyId: {
@@ -28,13 +28,21 @@ export async function GET(
         },
       },
       select: {
-        id: true, // Only select what we need
+        id: true,
       },
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       isWatchlisted: !!watchlistEntry,
     });
+
+    // Cache for 1 minute, allow stale data for up to 5 minutes while revalidating
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=300"
+    );
+
+    return response;
   } catch (error) {
     console.error("[WATCHLIST_CHECK]", error);
     return new NextResponse("Internal error", { status: 500 });
