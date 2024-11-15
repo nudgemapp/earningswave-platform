@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prismadb";
 import { headers } from "next/headers";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { companyId: string } }
-) {
+export async function GET({ params }: { params: { companyId: string } }) {
   try {
     const { userId } = auth();
 

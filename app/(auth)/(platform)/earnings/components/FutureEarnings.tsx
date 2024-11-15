@@ -40,6 +40,12 @@ type ExtendedCompany = Company & {
   recentTranscripts?: Transcript[];
 };
 
+// Add this type definition near the top of the file
+type WatchlistMutation = {
+  isPending: boolean;
+  mutateAsync: (companyId: string) => Promise<void>;
+};
+
 // Update the CompanyHeader props interface
 interface CompanyHeaderProps {
   company: ExtendedCompany;
@@ -47,14 +53,8 @@ interface CompanyHeaderProps {
   onWatchlistClick: () => void;
   isWatchlisted: boolean;
   isCheckingWatchlist: boolean;
-  addToWatchlist: {
-    isPending: boolean;
-    mutateAsync: (companyId: string) => Promise<any>;
-  };
-  removeFromWatchlist: {
-    isPending: boolean;
-    mutateAsync: (companyId: string) => Promise<any>;
-  };
+  addToWatchlist: WatchlistMutation;
+  removeFromWatchlist: WatchlistMutation;
 }
 
 const StockChartSkeleton = () => (

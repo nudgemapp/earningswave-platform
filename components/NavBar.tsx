@@ -53,7 +53,6 @@ function NavBar() {
       name: "Company",
       dropdownItems: [
         { name: "Marketing", route: "/marketing" },
-        { name: "Pricing", route: "/pricing" },
         { name: "About Us", route: "/about-us" },
         { name: "Docs", route: "/docs" },
         { name: "Blog", route: "/blog" },
