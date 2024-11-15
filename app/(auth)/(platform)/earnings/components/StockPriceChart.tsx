@@ -63,23 +63,32 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         const endpoint =
           timeframe === "1D"
             ? `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&outputsize=full&extended_hours=true&apikey=${API_KEY}`
-            : `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`;
+            : `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&entitlement=delayed&apikey=${API_KEY}`;
 
         const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch stock data");
         const result = await response.json();
 
         if (timeframe === "1D" && result["Time Series (5min)"]) {
-          // const estDate = new Date().toLocaleString("en-US", {
-          //   timeZone: "America/New_York",
-          // });
-          // const today = new Date(estDate).toISOString().split("T")[0];
-
           const transformedData = Object.entries(result["Time Series (5min)"])
             .map(([date, values]) => {
               const typedValues = values as AlphaVantageIntraday;
+              const dateObj = new Date(date);
               const open = parseFloat(typedValues["1. open"]);
               const close = parseFloat(typedValues["4. close"]);
+
+              // Calculate market session
+              const hours = dateObj.getHours();
+              const minutes = dateObj.getMinutes();
+              const timeInMinutes = hours * 60 + minutes;
+              let marketSession: "pre" | "regular" | "post" = "regular";
+
+              if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
+                marketSession = "pre";
+              } else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
+                marketSession = "post";
+              }
+
               return {
                 date,
                 open,
@@ -88,6 +97,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 low: parseFloat(typedValues["3. low"]),
                 volume: parseFloat(typedValues["5. volume"]),
                 gain: close > open,
+                marketSession,
               };
             })
             .sort(
@@ -98,6 +108,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               const hours = itemDate.getHours();
               const minutes = itemDate.getMinutes();
               const timeInMinutes = hours * 60 + minutes;
+              // Include data from 4 AM to 8 PM ET
               return timeInMinutes >= 4 * 60 && timeInMinutes <= 20 * 60;
             });
 
