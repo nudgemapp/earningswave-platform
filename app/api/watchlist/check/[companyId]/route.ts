@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prismadb";
-import { headers } from "next/headers";
 
 export async function GET({ params }: { params: { companyId: string } }) {
   try {
