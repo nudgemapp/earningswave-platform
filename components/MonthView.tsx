@@ -112,7 +112,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     onClick: () => void;
   }) => (
     <div
-      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+      className="flex flex-col bg-gray-900 dark:bg-black rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:opacity-90 cursor-pointer"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -125,19 +125,17 @@ const MonthView: React.FC<MonthViewProps> = ({
             src={logo}
             alt={`${name} logo`}
             layout="fill"
-            objectFit="contain"
-            className="p-0.5"
+            objectFit="cover"
+            className="p-0"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
-            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-              {symbol}
-            </span>
+          <div className="w-full h-full flex flex-col items-center justify-center">
+            <span className="text-xs font-medium text-white">{symbol}</span>
           </div>
         )}
       </div>
-      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
-        <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
+      <div className="w-full py-0.5">
+        <span className="text-[8px] font-medium text-white block text-center truncate px-0.5">
           {symbol}
         </span>
       </div>
@@ -211,23 +209,39 @@ const MonthView: React.FC<MonthViewProps> = ({
     if (transcripts.length === 0) return null;
 
     return (
-      <div className={`p-0.5 rounded-sm mb-0.5 ${bgColor} dark:bg-opacity-20`}>
-        <div className="flex items-center gap-1 mb-0.5 px-0.5">
-          <Icon className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-          <span className="text-[9px] font-medium text-gray-600 dark:text-gray-400">
-            {title} ({transcripts.length})
-          </span>
+      <div
+        className={`rounded-md overflow-hidden ${bgColor} dark:bg-opacity-20`}
+      >
+        <div className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1 min-w-0">
+              <Icon className="w-3 h-3 flex-shrink-0 text-gray-600 dark:text-gray-300" />
+              <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-200 tracking-tight truncate">
+                {title}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-3 w-[1px] bg-gray-300 dark:bg-gray-600" />
+              <div className="flex items-center">
+                <span className="text-[9px] font-medium bg-black/5 dark:bg-white/10 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
+                  {transcripts.length}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-4 gap-0.5">
-          {transcripts.map((transcript, index) => (
-            <CompanyCard
-              key={`transcript-${index}`}
-              symbol={transcript.company?.symbol || ""}
-              name={transcript.company?.name || ""}
-              logo={transcript.company?.logo || null}
-              onClick={() => handleCompanyClick(transcript)}
-            />
-          ))}
+        <div className="p-1">
+          <div className="grid grid-cols-4 gap-0.5">
+            {transcripts.map((transcript, index) => (
+              <CompanyCard
+                key={`${transcript.company?.symbol}-${index}`}
+                symbol={transcript.company?.symbol || ""}
+                name={transcript.company?.name || ""}
+                logo={transcript.company?.logo || null}
+                onClick={() => handleCompanyClick(transcript)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -235,11 +249,11 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
-      <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+      <div className="sticky top-0 z-10 grid grid-cols-5 bg-black dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounde">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="py-1 text-center text-xs text-gray-600 dark:text-gray-400 font-medium"
+            className="py-2.5 text-center text-xs text-white dark:text-gray-400 font-medium tracking-wider uppercase"
           >
             {day}
           </div>
@@ -294,7 +308,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         transcripts={dayContent.filter(
                           (t) => t.MarketTime === "BMO"
                         )}
-                        bgColor="bg-blue-50"
+                        bgColor="bg-blue-300/40"
                       />
                       <MarketTimingGroup
                         title="After Hours"
@@ -302,7 +316,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         transcripts={dayContent.filter(
                           (t) => t.MarketTime === "AMC"
                         )}
-                        bgColor="bg-orange-50"
+                        bgColor="bg-red-200/50"
                       />
                     </div>
                   )}

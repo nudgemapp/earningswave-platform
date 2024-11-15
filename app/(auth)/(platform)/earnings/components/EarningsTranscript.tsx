@@ -137,8 +137,7 @@ const EarningsTranscript = () => {
             Upcoming Earnings Call
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            This earnings call is scheduled for {formatUTCDate(scheduledDate)}{" "}
-            at {formattedTime} ET
+            This earnings call is scheduled for {formatUTCDate(scheduledDate)}
           </p>
           <div className="text-sm text-gray-400 dark:text-gray-600 mb-6">
             The transcript will be available after the call has concluded

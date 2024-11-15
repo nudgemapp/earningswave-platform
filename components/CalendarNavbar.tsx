@@ -16,6 +16,14 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -52,10 +60,10 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     "December",
   ];
 
-  const years = Array.from(
-    { length: 10 },
-    (_, i) => currentDate.getFullYear() - 5 + i
-  );
+  const years = React.useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 3 }, (_, i) => currentYear - 1 + i);
+  }, []);
 
   const monthParam = searchParams.get("month");
   const yearParam = searchParams.get("year");
@@ -115,71 +123,94 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   // };
 
   return (
-    <div className="bg-white dark:bg-slate-900 shadow-md py-4 px-6">
-      {/* {<Button onClick={handleApiClick}>API script</Button>} */}
+    <div className="bg-white-300/50 dark:bg-slate-900 pb-2 px-6 rounded-xl shadow-sm">
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-2">
           <Button
             onClick={() => handleNavigation(-1)}
             variant="ghost"
             size="icon"
-            className="hover:text-primary transition-colors duration-200"
+            className="h-9 w-9 hover:text-primary hover:bg-secondary/80 transition-colors duration-200"
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800 rounded-md p-1">
-            <select
-              value={currentDate.getMonth()}
-              onChange={(e) => {
-                const newDate = new Date(currentDate);
-                newDate.setMonth(parseInt(e.target.value));
-                updateURL(newDate);
-                setCurrentDate(newDate);
-              }}
-              className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none"
-            >
-              {months.map((month, index) => (
-                <option key={month} value={index}>
+
+          <Select
+            value={months[currentDate.getMonth()]}
+            onValueChange={(month) => {
+              const newDate = new Date(currentDate);
+              newDate.setMonth(months.indexOf(month));
+              updateURL(newDate);
+              setCurrentDate(newDate);
+            }}
+          >
+            <SelectTrigger className="h-9 w-[120px] font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map((month) => (
+                <SelectItem key={month} value={month}>
                   {month}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <select
-              value={currentDate.getFullYear()}
-              onChange={(e) => {
-                const newDate = new Date(currentDate);
-                newDate.setFullYear(parseInt(e.target.value));
-                updateURL(newDate);
-                setCurrentDate(newDate);
-              }}
-              className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none"
-            >
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={currentDate.getFullYear().toString()}
+            onValueChange={(year) => {
+              const newDate = new Date(currentDate);
+              newDate.setFullYear(parseInt(year));
+              updateURL(newDate);
+              setCurrentDate(newDate);
+            }}
+          >
+            <SelectTrigger className="h-9 w-[100px] font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
               {years.map((year) => (
-                <option key={year} value={year}>
+                <SelectItem key={year} value={year.toString()}>
                   {year}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
+
           <Button
             onClick={() => handleNavigation(1)}
             variant="ghost"
             size="icon"
-            className="hover:text-primary transition-colors duration-200"
+            className="h-9 w-9 hover:text-primary hover:bg-secondary/80 transition-colors duration-200"
           >
             <ChevronRightIcon className="h-5 w-5" />
           </Button>
+
+          <Button
+            variant="ghost"
+            size="default"
+            onClick={() => {
+              const today = new Date();
+              updateURL(today);
+              setCurrentDate(today);
+            }}
+            className="h-9 px-4 font-medium hover:bg-secondary/80 ml-1"
+          >
+            Today
+          </Button>
         </div>
-        <div className="flex items-center space-x-2">
+
+        <div className="flex items-center gap-3">
           <HoverCard>
             <HoverCardTrigger asChild>
               <Button
-                variant="outline"
-                className="bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary transition-colors duration-200"
+                variant="ghost"
+                size="default"
+                className="h-9 px-4 font-medium hover:bg-secondary/80 hover:text-primary transition-colors duration-200"
                 onClick={handleWatchlistClick}
               >
                 <StarIcon className="h-5 w-5 mr-2" />
-                <span>Watchlist</span>
+                Watchlist
               </Button>
             </HoverCardTrigger>
             <HoverCardContent className="w-80">
@@ -199,38 +230,43 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               </div>
             </HoverCardContent>
           </HoverCard>
-          <Button
-            onClick={() => setView("month")}
-            variant={view === "month" ? "default" : "outline"}
-            className={`px-4 py-2 transition-colors duration-200 ${
-              view === "month"
-                ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
-            }`}
-          >
-            {view === "month" ? (
-              <CalendarCheckIcon className="w-4 h-4 mr-2" />
-            ) : (
-              <Calendar className="w-4 h-4 mr-2" />
-            )}
-            <span>Month</span>
-          </Button>
-          <Button
-            onClick={() => setView("week")}
-            variant={view === "week" ? "default" : "outline"}
-            className={`px-4 py-2 transition-colors duration-200 ${
-              view === "week"
-                ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
-            }`}
-          >
-            {view === "week" ? (
-              <CalendarCheckIcon className="w-4 h-4 mr-2" />
-            ) : (
-              <Calendar className="w-4 h-4 mr-2" />
-            )}
-            <span>Week</span>
-          </Button>
+
+          <div className="bg-secondary/20 rounded-lg p-1">
+            <div className="flex gap-1">
+              <Button
+                onClick={() => setView("month")}
+                variant="ghost"
+                size="default"
+                className={cn(
+                  "h-9 px-4 font-medium relative",
+                  "hover:bg-secondary/80 hover:text-primary",
+                  view === "month" && [
+                    "bg-white dark:bg-slate-800",
+                    "shadow-sm",
+                    "text-primary dark:text-primary",
+                  ]
+                )}
+              >
+                Month
+              </Button>
+              <Button
+                onClick={() => setView("week")}
+                variant="ghost"
+                size="default"
+                className={cn(
+                  "h-9 px-4 font-medium relative",
+                  "hover:bg-secondary/80 hover:text-primary",
+                  view === "week" && [
+                    "bg-white dark:bg-slate-800",
+                    "shadow-sm",
+                    "text-primary dark:text-primary",
+                  ]
+                )}
+              >
+                Week
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

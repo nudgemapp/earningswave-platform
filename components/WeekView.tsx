@@ -1,6 +1,14 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar, Sun, Moon, LucideIcon, Star } from "lucide-react";
+import {
+  Calendar,
+  Sun,
+  Moon,
+  LucideIcon,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
@@ -17,6 +25,19 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const currentDate = useCalendarStore((state) => state.currentDate);
+  const setCurrentDate = useCalendarStore((state) => state.setCurrentDate);
+
+  const handlePreviousWeek = React.useCallback(() => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 7);
+    setCurrentDate(newDate);
+  }, [currentDate, setCurrentDate]);
+
+  const handleNextWeek = React.useCallback(() => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 7);
+    setCurrentDate(newDate);
+  }, [currentDate, setCurrentDate]);
 
   const { weekDates } = React.useMemo(() => {
     // Create date and set to midnight in local timezone
@@ -274,18 +295,49 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
 
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-lg shadow-sm dark:shadow-slate-800/50 overflow-hidden h-full">
-      {/* Add mobile header with watchlist button */}
-      <div className="md:hidden flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 mt-2">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Earnings Calendar
-        </h1>
-        <button
-          onClick={handleWatchlistClick}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95"
-        >
-          <Star className="w-4 h-4" />
-          <span>Watchlist</span>
-        </button>
+      {/* Updated mobile header with navigation */}
+      <div className="md:hidden flex flex-col bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 mt-2">
+        <div className="flex items-center justify-between p-3">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Earnings Calendar
+          </h1>
+          <button
+            onClick={handleWatchlistClick}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-full transition-all hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95"
+          >
+            <Star className="w-4 h-4" />
+            <span>Watchlist</span>
+          </button>
+        </div>
+
+        {/* Add week navigation controls */}
+        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-slate-700">
+          <button
+            onClick={handlePreviousWeek}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </button>
+
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            {weekDates[0].toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
+            {" - "}
+            {weekDates[4].toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+
+          <button
+            onClick={handleNextWeek}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </button>
+        </div>
       </div>
 
       {/* Header row - hide on mobile */}
@@ -313,15 +365,12 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
         {weekDays.map((day, index) => {
           const { dayTranscripts, isEmpty } = getDateContent[index];
 
-          // Group transcripts by market timing
+          // Group transcripts by market timing (only BMO and AMC)
           const preMarket = dayTranscripts.filter(
             (t) => t.MarketTime === "BMO"
           );
           const afterMarket = dayTranscripts.filter(
             (t) => t.MarketTime === "AMC"
-          );
-          const unspecified = dayTranscripts.filter(
-            (t) => t.MarketTime === "UNKNOWN"
           );
 
           return (
@@ -367,13 +416,7 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
                       title="After Hours"
                       icon={Moon}
                       transcripts={afterMarket}
-                      bgColor="bg-orange-50 dark:bg-orange-950/30"
-                    />
-                    <MarketTimingGroup
-                      title="Not Specified"
-                      icon={Calendar}
-                      transcripts={unspecified}
-                      bgColor="bg-gray-50 dark:bg-slate-800/50"
+                      bgColor="bg-red-50/80 dark:bg-red-950/40"
                     />
                   </div>
                 )}

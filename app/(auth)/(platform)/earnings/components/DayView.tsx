@@ -218,14 +218,6 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
 
           {/* Earnings Info */}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            {/* Date & Time */}
-            <span className="text-gray-600 dark:text-gray-300">
-              {new Date(transcript.scheduledAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-
             {/* Quarter Info */}
             {transcript.quarter && (
               <span className="text-gray-600 dark:text-gray-300">
