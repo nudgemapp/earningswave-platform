@@ -31,7 +31,7 @@ export async function GET() {
 
     const from = "2023-02-01";
     const to = "2026-03-01";
-    const symbol = "DIS";
+    const symbol = "BABA";
 
     // Add earnings calendar fetch
     const earningsResponse = await fetch(

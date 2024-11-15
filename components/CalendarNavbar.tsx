@@ -16,7 +16,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectTrigger,
@@ -134,7 +133,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-
+          {/* <Button onClick={handleApiClick}>Sync</Button> */}
           <Select
             value={months[currentDate.getMonth()]}
             onValueChange={(month) => {
@@ -185,19 +184,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           >
             <ChevronRightIcon className="h-5 w-5" />
           </Button>
-
-          <Button
-            variant="ghost"
-            size="default"
-            onClick={() => {
-              const today = new Date();
-              updateURL(today);
-              setCurrentDate(today);
-            }}
-            className="h-9 px-4 font-medium hover:bg-secondary/80 ml-1"
-          >
-            Today
-          </Button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -235,35 +221,35 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             <div className="flex gap-1">
               <Button
                 onClick={() => setView("month")}
-                variant="ghost"
-                size="default"
-                className={cn(
-                  "h-9 px-4 font-medium relative",
-                  "hover:bg-secondary/80 hover:text-primary",
-                  view === "month" && [
-                    "bg-white dark:bg-slate-800",
-                    "shadow-sm",
-                    "text-primary dark:text-primary",
-                  ]
-                )}
+                variant={view === "month" ? "default" : "outline"}
+                className={`px-4 py-2 transition-colors duration-200 ${
+                  view === "month"
+                    ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
+                    : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                }`}
               >
-                Month
+                {view === "month" ? (
+                  <CalendarCheckIcon className="w-4 h-4 mr-2" />
+                ) : (
+                  <Calendar className="w-4 h-4 mr-2" />
+                )}
+                <span>Month</span>
               </Button>
               <Button
                 onClick={() => setView("week")}
-                variant="ghost"
-                size="default"
-                className={cn(
-                  "h-9 px-4 font-medium relative",
-                  "hover:bg-secondary/80 hover:text-primary",
-                  view === "week" && [
-                    "bg-white dark:bg-slate-800",
-                    "shadow-sm",
-                    "text-primary dark:text-primary",
-                  ]
-                )}
+                variant={view === "week" ? "default" : "outline"}
+                className={`px-4 py-2 transition-colors duration-200 ${
+                  view === "week"
+                    ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
+                    : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                }`}
               >
-                Week
+                {view === "week" ? (
+                  <CalendarCheckIcon className="w-4 h-4 mr-2" />
+                ) : (
+                  <Calendar className="w-4 h-4 mr-2" />
+                )}
+                <span>Week</span>
               </Button>
             </div>
           </div>

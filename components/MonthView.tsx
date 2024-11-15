@@ -112,7 +112,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     onClick: () => void;
   }) => (
     <div
-      className="flex flex-col bg-gray-900 dark:bg-black rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:opacity-90 cursor-pointer"
+      className="flex flex-col bg-white dark:bg-black border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -129,13 +129,15 @@ const MonthView: React.FC<MonthViewProps> = ({
             className="p-0"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <span className="text-xs font-medium text-white">{symbol}</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+              {symbol}
+            </span>
           </div>
         )}
       </div>
-      <div className="w-full py-0.5">
-        <span className="text-[8px] font-medium text-white block text-center truncate px-0.5">
+      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+        <span className="text-[8px] font-medium text-gray-800 dark:text-white block text-center truncate px-0.5">
           {symbol}
         </span>
       </div>
@@ -249,11 +251,11 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
-      <div className="sticky top-0 z-10 grid grid-cols-5 bg-black dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounde">
+      <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounde">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="py-2.5 text-center text-xs text-white dark:text-gray-400 font-medium tracking-wider uppercase"
+            className="py-2.5 text-center text-xs text-black dark:text-gray-400 font-medium tracking-wider uppercase"
           >
             {day}
           </div>
@@ -308,7 +310,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         transcripts={dayContent.filter(
                           (t) => t.MarketTime === "BMO"
                         )}
-                        bgColor="bg-blue-300/40"
+                        bgColor="bg-blue-200/40"
                       />
                       <MarketTimingGroup
                         title="After Hours"
@@ -316,7 +318,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                         transcripts={dayContent.filter(
                           (t) => t.MarketTime === "AMC"
                         )}
-                        bgColor="bg-red-200/50"
+                        bgColor="bg-orange-50"
                       />
                     </div>
                   )}
