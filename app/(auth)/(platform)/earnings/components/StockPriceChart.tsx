@@ -25,7 +25,7 @@ interface StockData {
   low: number;
   volume: number;
   gain: boolean;
-  marketSession?: "pre" | "regular" | "post";
+  marketSession: "pre" | "regular" | "post";
 }
 
 interface AlphaVantageDaily {
@@ -51,6 +51,19 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 }) => {
   const [data, setData] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [todayPrices, setTodayPrices] = useState<{
+    preMarket: number | null;
+    regular: number | null;
+    afterHours: number | null;
+    regularOpen: number | null;
+    percentChange: number | null;
+  }>({
+    preMarket: null,
+    regular: null,
+    afterHours: null,
+    regularOpen: null,
+    percentChange: null,
+  });
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -63,28 +76,39 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         const endpoint =
           timeframe === "1D"
             ? `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&outputsize=full&extended_hours=true&apikey=${API_KEY}`
-            : `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&entitlement=delayed&apikey=${API_KEY}`;
+            : `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`;
 
         const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch stock data");
         const result = await response.json();
 
         if (timeframe === "1D" && result["Time Series (5min)"]) {
-          const transformedData = Object.entries(result["Time Series (5min)"])
-            .map(([date, values]) => {
+          const entries = Object.entries(result["Time Series (5min)"]);
+          const mostRecentDate = entries[0][0].split(" ")[0];
+
+          const transformedData = entries
+            .map(([date, values]): StockData | null => {
               const typedValues = values as AlphaVantageIntraday;
+              const dateStr = date.split(" ")[0];
+
+              if (dateStr !== mostRecentDate) return null;
+
               const dateObj = new Date(date);
               const open = parseFloat(typedValues["1. open"]);
               const close = parseFloat(typedValues["4. close"]);
-
-              // Calculate market session
               const hours = dateObj.getHours();
               const minutes = dateObj.getMinutes();
               const timeInMinutes = hours * 60 + minutes;
-              let marketSession: "pre" | "regular" | "post" = "regular";
+
+              let marketSession: StockData["marketSession"] = "regular";
 
               if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
                 marketSession = "pre";
+              } else if (
+                timeInMinutes >= 9 * 60 + 30 &&
+                timeInMinutes < 16 * 60
+              ) {
+                marketSession = "regular";
               } else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
                 marketSession = "post";
               }
@@ -100,38 +124,45 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 marketSession,
               };
             })
+            .filter((item): item is StockData => item !== null)
             .sort(
               (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-            )
-            .filter((item) => {
-              const itemDate = new Date(item.date);
-              const hours = itemDate.getHours();
-              const minutes = itemDate.getMinutes();
-              const timeInMinutes = hours * 60 + minutes;
-              // Include data from 4 AM to 8 PM ET
-              return timeInMinutes >= 4 * 60 && timeInMinutes <= 20 * 60;
-            });
+            );
 
           setData(transformedData);
         } else if (result["Time Series (Daily)"]) {
-          const transformedData = Object.entries(result["Time Series (Daily)"])
+          const entries = Object.entries(result["Time Series (Daily)"]);
+          const transformedData: StockData[] = entries
             .map(([date, values]) => {
               const typedValues = values as AlphaVantageDaily;
               const open = parseFloat(typedValues["1. open"]);
               const close = parseFloat(typedValues["4. close"]);
+              const high = parseFloat(typedValues["2. high"]);
+              const low = parseFloat(typedValues["3. low"]);
+
+              let marketSession: StockData["marketSession"] = "regular";
+
+              if (open < low) {
+                marketSession = "pre";
+              } else if (close > high) {
+                marketSession = "post";
+              }
+
               return {
                 date,
                 open,
                 close,
-                high: parseFloat(typedValues["2. high"]),
-                low: parseFloat(typedValues["3. low"]),
+                high,
+                low,
                 volume: parseFloat(typedValues["5. volume"]),
                 gain: close > open,
+                marketSession,
               };
             })
             .reverse();
 
-          setData(transformedData);
+          const dataPoints = getTimeframeDataPoints(timeframe);
+          setData(transformedData.slice(-dataPoints));
         }
       } catch (error) {
         console.error("Error fetching stock data:", error);
@@ -143,6 +174,79 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
     fetchStockData();
   }, [symbol, timeframe]);
+
+  useEffect(() => {
+    const fetchTodayPrices = async () => {
+      if (!symbol) return;
+
+      try {
+        const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
+        const endpoint = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&outputsize=full&extended_hours=true&apikey=${API_KEY}`;
+
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error("Failed to fetch today's prices");
+        const result = await response.json();
+
+        if (result["Time Series (5min)"]) {
+          const entries = Object.entries(result["Time Series (5min)"]);
+          const mostRecentDate = entries[0][0].split(" ")[0];
+
+          let preMarketPrice = null;
+          let regularPrice = null;
+          let afterHoursPrice = null;
+          let regularOpenPrice = null;
+
+          // Process entries for the most recent day only
+          const todayEntries = entries.filter(
+            ([date]) => date.split(" ")[0] === mostRecentDate
+          );
+
+          for (const [date, values] of todayEntries) {
+            const typedValues = values as AlphaVantageIntraday;
+            const dateObj = new Date(date);
+            const hours = dateObj.getHours();
+            const minutes = dateObj.getMinutes();
+            const timeInMinutes = hours * 60 + minutes;
+            const close = parseFloat(typedValues["4. close"]);
+
+            // Pre-market (4:00 AM - 9:30 AM ET)
+            if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
+              preMarketPrice = close;
+            }
+            // Regular market (9:30 AM - 4:00 PM ET)
+            else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes < 16 * 60) {
+              regularPrice = close;
+              if (!regularOpenPrice) {
+                regularOpenPrice = parseFloat(typedValues["1. open"]);
+              }
+            }
+            // After-hours (4:00 PM - 8:00 PM ET)
+            else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
+              afterHoursPrice = close;
+            }
+          }
+
+          // Calculate percent change
+          const percentChange =
+            regularOpenPrice && regularPrice
+              ? ((regularPrice - regularOpenPrice) / regularOpenPrice) * 100
+              : null;
+
+          setTodayPrices({
+            preMarket: preMarketPrice,
+            regular: regularPrice,
+            afterHours: afterHoursPrice,
+            regularOpen: regularOpenPrice,
+            percentChange,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching today's prices:", error);
+      }
+    };
+
+    fetchTodayPrices();
+  }, [symbol]); // Only fetch when symbol changes
 
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
 
@@ -216,102 +320,88 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     return "post"; // Default for any other time
   };
 
+  const getTimeframeDataPoints = (tf: string): number => {
+    switch (tf) {
+      case "1W":
+        return 5; // 5 trading days
+      case "1M":
+        return 21; // ~
+      case "6M":
+        return 126; // ~
+      case "1Y":
+        return 252; // ~
+      default:
+        return 21; // Default to 1M
+    }
+  };
+
   return (
     <div className="h-full w-full">
       <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-4">
         <div className="flex items-center gap-2">
-          {/* <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            Price History
-          </h3> */}
-          {!isLoading && filteredData.length > 0 && (
+          {!isLoading && (
             <div className="flex items-center gap-6">
-              {timeframe === "1D" && (
-                <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
-                  {/* Pre-market price */}
-                  <div className="pr-6">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-                        Pre-Market
+              <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
+                {/* Pre-market price */}
+                <div className="pr-6">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+                      Pre-Market
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        ${todayPrices.preMarket?.toFixed(2) || "-"}
                       </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          $
-                          {filteredData
-                            .find((d) => {
-                              const date = new Date(d.date);
-                              return getMarketSession(date) === "pre";
-                            })
-                            ?.close.toFixed(2) || "-"}
-                        </span>
-                        {/* Show change from previous close if available */}
-                        {/* <span className="text-xs text-emerald-600">+1.23%</span> */}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Regular Market Price */}
-                  <div className="px-6">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-                        Regular Market
-                      </span>
-                      <div className="flex items-baseline gap-1">
-                        <span
-                          className={`text-base font-bold ${
-                            filteredData[filteredData.length - 1].close >
-                            filteredData[0].close
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}
-                        >
-                          $
-                          {filteredData[filteredData.length - 1].close.toFixed(
-                            2
-                          )}
-                        </span>
-                        <span
-                          className={`text-xs font-medium ${
-                            filteredData[filteredData.length - 1].close >
-                            filteredData[0].close
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}
-                        >
-                          {(
-                            ((filteredData[filteredData.length - 1].close -
-                              filteredData[0].close) /
-                              filteredData[0].close) *
-                            100
-                          ).toFixed(2)}
-                          %
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Post-market price */}
-                  <div className="pl-6">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-                        After Hours
-                      </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          $
-                          {filteredData
-                            .findLast((d) => {
-                              const date = new Date(d.date);
-                              return getMarketSession(date) === "post";
-                            })
-                            ?.close.toFixed(2) || "-"}
-                        </span>
-                        {/* Show change from regular close if available */}
-                        {/* <span className="text-xs text-red-600">-0.45%</span> */}
-                      </div>
                     </div>
                   </div>
                 </div>
-              )}
+
+                {/* Regular Market Price */}
+                <div className="px-6">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+                      Regular Market
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span
+                        className={`text-base font-bold ${
+                          todayPrices.percentChange &&
+                          todayPrices.percentChange > 0
+                            ? "text-emerald-600 dark:text-emerald-500"
+                            : "text-red-600 dark:text-red-500"
+                        }`}
+                      >
+                        ${todayPrices.regular?.toFixed(2) || "-"}
+                      </span>
+                      {todayPrices.percentChange && (
+                        <span
+                          className={`text-xs font-medium ${
+                            todayPrices.percentChange > 0
+                              ? "text-emerald-600 dark:text-emerald-500"
+                              : "text-red-600 dark:text-red-500"
+                          }`}
+                        >
+                          {todayPrices.percentChange.toFixed(2)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* After-hours price */}
+                <div className="pl-6">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+                      After Hours
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        ${todayPrices.afterHours?.toFixed(2) || "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Currency indicator */}
               <div className="flex items-center">
