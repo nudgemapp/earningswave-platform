@@ -58,8 +58,6 @@ const EarningsTranscript = () => {
   // Add check for scheduled status
   if (transcript.status === "SCHEDULED") {
     const scheduledDate = new Date(transcript.scheduledAt);
-    const formattedTime =
-      transcript.MarketTime === "AMC" ? "4:00 PM" : "8:00 AM";
 
     return (
       <div className="space-y-6">

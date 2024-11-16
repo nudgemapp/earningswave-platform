@@ -305,21 +305,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     }
   };
 
-  const getMarketSession = (date: Date): "pre" | "regular" | "post" => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const timeInMinutes = hours * 60 + minutes;
-
-    if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
-      return "pre";
-    } else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes < 16 * 60) {
-      return "regular";
-    } else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
-      return "post";
-    }
-    return "post"; // Default for any other time
-  };
-
   const getTimeframeDataPoints = (tf: string): number => {
     switch (tf) {
       case "1W":
