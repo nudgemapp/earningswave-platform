@@ -42,6 +42,7 @@ function NavBar() {
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
   const { toggle } = useSearch();
+  const { onOpen: openAuthModal } = useAuthModal();
 
   const links = [
     {
@@ -223,7 +224,7 @@ function NavBar() {
                       />
                     ) : (
                       <Avatar
-                        onClick={() => useAuthModal.getState().onOpen()}
+                        onClick={() => openAuthModal()}
                         className="cursor-pointer hover:opacity-80"
                       >
                         <AvatarFallback className="flex items-center justify-center">
@@ -327,13 +328,19 @@ function NavBar() {
                     <>
                       <Button
                         className="w-full mb-4 bg-white dark:bg-slate-900 text-primary dark:text-primary border-2 border-primary dark:border-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 text-xl py-4"
-                        onClick={() => router.push("/sign-up")}
+                        onClick={() => {
+                          openAuthModal();
+                          setMenu(false);
+                        }}
                       >
                         Sign in
                       </Button>
                       <Button
                         className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
-                        onClick={() => router.push("/sign-up")}
+                        onClick={() => {
+                          openAuthModal();
+                          setMenu(false);
+                        }}
                       >
                         Sign up
                       </Button>
