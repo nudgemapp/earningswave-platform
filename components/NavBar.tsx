@@ -266,10 +266,12 @@ function NavBar() {
               </div>
               {!menu && (
                 <Button
-                  className="text-base px-6 py-3 rounded-full font-bold"
-                  onClick={handleAuthAction}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => toggle()}
+                  className="relative"
                 >
-                  {!isLoaded ? "Loading..." : user ? "Logout" : "Sign up"}
+                  <Search className="h-5 w-5" />
                 </Button>
               )}
             </div>

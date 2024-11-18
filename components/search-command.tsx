@@ -67,7 +67,7 @@ export const SearchCommand = () => {
       onOpenChange={onClose}
       style={{
         position: "fixed",
-        top: "40vh",
+        top: "50vh",
         maxWidth: "90%",
         width: "1000px",
         borderRadius: "0.5rem",
@@ -80,7 +80,7 @@ export const SearchCommand = () => {
         onValueChange={setQuery}
         className="h-14 text-lg px-4"
       />
-      <CommandList className="max-h-[500px]">
+      <CommandList className="max-h-[750px]">
         <CommandEmpty>
           {isLoading ? (
             <div className="flex items-center justify-center py-6">
@@ -102,36 +102,44 @@ export const SearchCommand = () => {
                 <img
                   src={company.logo}
                   alt={company.symbol}
-                  className="mr-3 h-8 w-8"
+                  className="mr-3 h-8 w-8 flex-shrink-0"
                 />
               ) : (
-                <Building2 className="mr-3 h-8 w-8" />
+                <Building2 className="mr-3 h-8 w-8 flex-shrink-0" />
               )}
-              <div className="flex flex-col flex-1">
-                <div className="flex items-center">
-                  <span className="font-semibold text-lg">
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center flex-wrap gap-2">
+                  <span className="font-semibold text-lg truncate">
                     {company.symbol}
                   </span>
                   {company.name && (
-                    <span className="ml-3 text-base text-muted-foreground">
+                    <span className="text-sm text-muted-foreground truncate">
                       {company.name}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   {company._count.transcripts > 0 && (
-                    <span>{company._count.transcripts} transcripts</span>
+                    <span className="whitespace-nowrap">
+                      {company._count.transcripts} transcripts
+                    </span>
                   )}
                   {company.marketCapitalization && (
-                    <span>
+                    <span className="whitespace-nowrap">
                       • MCap: $
                       {(company.marketCapitalization / 1000).toFixed(1)}B
                     </span>
                   )}
                   {company.finnhubIndustry && (
-                    <span>• {company.finnhubIndustry}</span>
+                    <span className="whitespace-nowrap">
+                      • {company.finnhubIndustry}
+                    </span>
                   )}
-                  {company.country && <span>• {company.country}</span>}
+                  {company.country && (
+                    <span className="whitespace-nowrap">
+                      • {company.country}
+                    </span>
+                  )}
                 </div>
               </div>
             </CommandItem>
