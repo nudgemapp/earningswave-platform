@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const prisma = new PrismaClient();
+const { userId } = useAuth();
 
 export async function POST(req: NextRequest) {
   console.log("Webhook received");
@@ -36,8 +37,6 @@ async function handleSubscriptionEvent(
   const subscription = event.data.object as Stripe.Subscription;
   const customerEmail = await getCustomerEmail(subscription.customer as string);
 
-  console.log(customerEmail);
-
   if (!customerEmail) {
     console.error("Customer email could not be fetched");
     return NextResponse.json({
@@ -60,8 +59,6 @@ async function handleSubscriptionEvent(
 
   try {
     let result;
-    const { userId } = useAuth();
-
     if (!userId) throw new Error("User not found");
 
     if (type === "deleted") {
@@ -126,8 +123,6 @@ async function handleInvoiceEvent(
     // const user = await prisma.user.findUnique({
     //   where: { email: customerEmail },
     // });
-    const { userId } = useAuth();
-
     if (!userId) throw new Error("User not found");
 
     console.log("Finding subscription");
@@ -185,7 +180,6 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
       await stripe.subscriptions.update(subscriptionId as string, { metadata });
 
       console.log("Finding user");
-      const { userId } = useAuth();
 
       if (!userId) throw new Error("User not found");
 
@@ -229,7 +223,6 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
     const dateTime = new Date(session.created * 1000);
     try {
       console.log("Finding user");
-      const { userId } = useAuth();
 
       if (!userId) throw new Error("User not found");
 
