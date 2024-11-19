@@ -47,7 +47,7 @@ function NavBar() {
   const links = [
     {
       route: "/",
-      name: "Earnings",
+      name: "Calendar",
       badgeCount: 0,
     },
     {
