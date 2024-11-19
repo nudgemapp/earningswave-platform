@@ -24,28 +24,23 @@ export async function GET() {
     // let amcCount = 0;
 
     for (let i = 0; i < transcriptsToUpdate.length; i += BATCH_SIZE) {
-      const batch = transcriptsToUpdate.slice(i, i + BATCH_SIZE);
-
+      //   const batch = transcriptsToUpdate.slice(i, i + BATCH_SIZE);
       // Process each transcript in the batch
       //   const updates = batch.map((transcript) => {
       //     const utcHour = transcript.scheduledAt.getUTCHours();
       //     const utcMinutes = transcript.scheduledAt.getUTCMinutes();
       //     const timeInUTC = utcHour + utcMinutes / 60;
       //     const newMarketTime = timeInUTC < 16 ? "BMO" : "AMC";
-
       //     if (newMarketTime === "BMO") bmoCount++;
       //     else amcCount++;
-
       //     // Return the prisma update operation
       //     return prisma.transcript.update({
       //       where: { id: transcript.id },
       //       data: { MarketTime: newMarketTime },
       //     });
       //   });
-
       //   // Execute all updates in this batch
       //   await prisma.$transaction(updates);
-
       //   updatedCount += batch.length;
       //   console.log(
       //     `Progress: ${updatedCount}/${transcriptsToUpdate.length} records processed`
