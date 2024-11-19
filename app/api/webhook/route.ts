@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
-import { useAuth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const prisma = new PrismaClient();
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const reqText = await req.text();
   return webhooksHandler(reqText, req);
 }
-const { userId } = useAuth();
+const { userId } = auth();
 
 async function getCustomerEmail(customerId: string): Promise<string | null> {
   console.log(`Fetching customer email for ID: ${customerId}`);
