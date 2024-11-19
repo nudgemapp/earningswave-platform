@@ -496,15 +496,23 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload as StockData;
+                    const date = new Date(data.date);
                     return (
                       <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-4 border border-gray-100 dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                          {new Date(data.date).toLocaleDateString(undefined, {
+                          {date.toLocaleDateString(undefined, {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
                             day: "numeric",
-                          })}
+                          })}{" "}
+                          <span className="text-gray-500 dark:text-gray-400">
+                            {date.toLocaleTimeString(undefined, {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </span>
                         </p>
                         <div
                           className={`space-y-1 ${
@@ -514,14 +522,14 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                           }`}
                         >
                           <p className="text-sm font-semibold">
-                            Close: ${data.close.toFixed(2)}
+                            ${data.close.toFixed(2)}
                           </p>
                           <div className="text-xs space-y-0.5 pt-1 border-t border-gray-100 dark:border-gray-700">
-                            <p>Open: ${data.open.toFixed(2)}</p>
-                            <p>High: ${data.high.toFixed(2)}</p>
-                            <p>Low: ${data.low.toFixed(2)}</p>
-                            <p className="text-gray-500 dark:text-gray-400 pt-1">
-                              Volume: {(data.volume / 1e6).toFixed(2)}M
+                            <p>O: ${data.open.toFixed(2)}</p>
+                            <p>H: ${data.high.toFixed(2)}</p>
+                            <p>L: ${data.low.toFixed(2)}</p>
+                            <p className="text-gray-500 dark:text-gray-400">
+                              Vol: {(data.volume / 1e6).toFixed(2)}M
                             </p>
                           </div>
                         </div>
