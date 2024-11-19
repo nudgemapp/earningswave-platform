@@ -87,8 +87,6 @@ model Payment {
 enum MarketTime {
   BMO      // Before Market Open (equivalent to PRE_MARKET)
   AMC      // After Market Close (equivalent to AFTER_HOURS)
-  DMH      // During Market Hours (this is missing from your original enum)
-  UNKNOWN  // When timing is not supplied (better name than NOT_SUPPLIED)
 }
 
 enum TranscriptStatus {

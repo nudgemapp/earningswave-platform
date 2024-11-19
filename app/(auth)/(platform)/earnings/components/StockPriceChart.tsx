@@ -194,11 +194,20 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           let regularPrice = null;
           let afterHoursPrice = null;
           let regularOpenPrice = null;
+          let latestPrice = null;
 
           // Process entries for the most recent day only
           const todayEntries = entries.filter(
             ([date]) => date.split(" ")[0] === mostRecentDate
           );
+
+          // Get the latest price first
+          if (todayEntries.length > 0) {
+            const [_, latestValues] = todayEntries[0];
+            latestPrice = parseFloat(
+              (latestValues as AlphaVantageIntraday)["4. close"]
+            );
+          }
 
           for (const [date, values] of todayEntries) {
             const typedValues = values as AlphaVantageIntraday;
@@ -210,7 +219,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
             // Pre-market (4:00 AM - 9:30 AM ET)
             if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
-              preMarketPrice = close;
+              if (!preMarketPrice) preMarketPrice = close;
             }
             // Regular market (9:30 AM - 4:00 PM ET)
             else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes < 16 * 60) {
@@ -225,7 +234,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             }
           }
 
-          // Calculate percent change
+          // Calculate percent change using the latest regular market price
           const percentChange =
             regularOpenPrice && regularPrice
               ? ((regularPrice - regularOpenPrice) / regularOpenPrice) * 100
@@ -233,7 +242,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
           setTodayPrices({
             preMarket: preMarketPrice,
-            regular: regularPrice,
+            regular: latestPrice, // Use the latest price here
             afterHours: afterHoursPrice,
             regularOpen: regularOpenPrice,
             percentChange,
@@ -245,7 +254,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     };
 
     fetchTodayPrices();
-  }, [symbol]); // Only fetch when symbol changes
+  }, [symbol]);
 
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
 

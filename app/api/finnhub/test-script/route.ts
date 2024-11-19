@@ -4,72 +4,75 @@ import { PrismaClient } from "@prisma/client";
 
 export async function GET() {
   const prisma = new PrismaClient();
-  //   const limit = pLimit(20); // Reduced to 20 concurrent requests (safe margin below 30/sec)
-  //   const RETRY_DELAY = 100; // 100ms delay between retries
+  const BATCH_SIZE = 100; // Process 100 records at a time
 
   try {
-    const companies = await prisma.company.findMany({
+    // Find all transcripts with MarketTime DMH or UNKNOWN
+    const transcriptsToUpdate = await prisma.transcript.findMany({
       select: {
-        symbol: true,
         id: true,
-        mic: true,
+        MarketTime: true,
+        scheduledAt: true,
       },
     });
 
-    console.log(`Found ${companies.length} companies to check`);
-    console.log("Sample companies:", companies.slice(0, 5));
+    console.log(`Found ${transcriptsToUpdate.length} transcripts to update`);
 
-    const from = "2023-02-01";
-    const to = "2026-03-01";
-    const symbol = "SYM";
+    // Process in batches
+    let updatedCount = 0;
+    let bmoCount = 0;
+    let amcCount = 0;
 
-    // Add earnings calendar fetch
-    const earningsResponse = await fetch(
-      `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-    );
-    const earningsData = await earningsResponse.json();
-    console.log("Earnings Calendar Data:", earningsData);
+    for (let i = 0; i < transcriptsToUpdate.length; i += BATCH_SIZE) {
+      const batch = transcriptsToUpdate.slice(i, i + BATCH_SIZE);
 
-    // Combine all results
-    // const combinedData = [...nyseData, ...nasdaqData];
+      // Process each transcript in the batch
+      //   const updates = batch.map((transcript) => {
+      //     const utcHour = transcript.scheduledAt.getUTCHours();
+      //     const utcMinutes = transcript.scheduledAt.getUTCMinutes();
+      //     const timeInUTC = utcHour + utcMinutes / 60;
+      //     const newMarketTime = timeInUTC < 16 ? "BMO" : "AMC";
 
-    // console.log("all companies in NYSE and NASDAQ", combinedData);
+      //     if (newMarketTime === "BMO") bmoCount++;
+      //     else amcCount++;
 
-    // Fetch transcript list for
-    const transcriptListResponse = await fetch(
-      `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-    );
-    const transcriptListData = await transcriptListResponse.json();
-    console.log(transcriptListData);
+      //     // Return the prisma update operation
+      //     return prisma.transcript.update({
+      //       where: { id: transcript.id },
+      //       data: { MarketTime: newMarketTime },
+      //     });
+      //   });
 
-    // Get the most recent transcript ID from the list
-    const mostRecentTranscriptId = transcriptListData.transcripts?.[0]?.id;
-    console.log(mostRecentTranscriptId);
+      //   // Execute all updates in this batch
+      //   await prisma.$transaction(updates);
 
-    // Fetch the full transcript using the most recent ID
-    // Add transcript fetch if ID is provided
-    const transcriptId = "SYM_3409268";
+      updatedCount += batch.length;
+      console.log(
+        `Progress: ${updatedCount}/${transcriptsToUpdate.length} records processed`
+      );
+    }
 
-    const transcriptResponse = await fetch(
-      `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptId}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-    );
-    const transcriptData = await transcriptResponse.json();
-
-    console.log(transcriptData);
+    console.log("\nUpdate Summary:");
+    console.log(`Total transcripts updated: ${updatedCount}`);
+    console.log(`Changed to BMO: ${bmoCount}`);
+    console.log(`Changed to AMC: ${amcCount}`);
 
     return NextResponse.json({
-      // symbolsData: combinedData,
-      earningsCalendar: earningsData.earningsCalendar,
-      transcript: transcriptData,
-      transcriptList: transcriptListData.transcripts,
+      message: "Update complete",
+      totalUpdated: updatedCount,
+      bmoCount,
+      amcCount,
     });
   } catch (error) {
+    console.error("Error updating transcripts:", error);
     return NextResponse.json(
       {
-        error: "Failed to fetch data from Finnhub",
+        error: "Failed to update transcripts",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
