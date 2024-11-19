@@ -5,22 +5,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { FaYoutube, FaXTwitter } from "react-icons/fa6";
+import { MdEmail } from "react-icons/md";
+import { useEmailModal } from "@/store/EmailModalStore";
 
 import img from "@/public/images/ew-logo-dark-noBG.png";
 
 function FooterSection() {
   const router = useRouter();
+  const emailModal = useEmailModal();
 
   const data = {
     company: [
       { name: "About", url: "/about-us" },
-      { name: "Careers", url: "#" },
       { name: "Blog", url: "/blog" },
-      { name: "Startup program", url: "#" },
     ],
     support: [
       { name: "Help Center", url: "#" },
-      { name: "Talk to support", url: "#" },
       { name: "API docs", url: "/api" },
       { name: "System status", url: "#" },
     ],
@@ -82,6 +83,39 @@ function FooterSection() {
               Sign up
             </Button>
           </div>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-200 dark:border-slate-700 pt-6">
+        <div className="flex justify-center space-x-6">
+          <Link
+            href="https://www.youtube.com/@Earnings-Wave"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors duration-200"
+          >
+            <FaYoutube className="w-6 h-6" />
+            <span className="sr-only">YouTube</span>
+          </Link>
+          <Link
+            href="https://x.com/EarningsWaves"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+          >
+            <FaXTwitter className="w-6 h-6" />
+            <span className="sr-only">X (Twitter)</span>
+          </Link>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              emailModal.onOpen();
+            }}
+            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors duration-200"
+          >
+            <MdEmail className="w-6 h-6" />
+            <span className="sr-only">Email</span>
+          </button>
         </div>
       </div>
     </section>

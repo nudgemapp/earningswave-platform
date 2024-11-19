@@ -6,6 +6,8 @@ const publicRoutes = [
   "/",
   "/about-us",
   "/pricing",
+  "/docs",
+  "/blog(.*)",
   "/sso-callback(.*)",
   "/api(.*)",
 ];
