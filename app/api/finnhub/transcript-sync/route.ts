@@ -144,8 +144,12 @@ export async function GET() {
           const recentTranscripts = data.transcripts?.filter(
             (t: FinnhubTranscript) => {
               const transcriptDate = new Date(t.time);
+              const todayWithBuffer = new Date(today);
+              todayWithBuffer.setDate(todayWithBuffer.getDate() + 30); // Look ahead 30 days
               transcriptDate.setHours(0, 0, 0, 0);
-              return transcriptDate >= lastWeek && transcriptDate <= today;
+              return (
+                transcriptDate >= lastWeek && transcriptDate <= todayWithBuffer
+              );
             }
           );
 

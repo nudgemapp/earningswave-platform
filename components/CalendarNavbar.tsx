@@ -113,7 +113,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
   // const handleApiClick = async () => {
   //   try {
-  //     const response = await fetch("/api/finnhub");
+  //     const response = await fetch("/api/finnhub/transcript-sync");
   //     const data = await response.json();
   //     console.log("API Response:", data);
   //   } catch (error) {

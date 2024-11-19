@@ -266,14 +266,36 @@ function NavBar() {
                 </div>
               </div>
               {!menu && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => toggle()}
-                  className="relative"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggle()}
+                    className="relative"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
+                  {isLoaded ? (
+                    user ? (
+                      <UserButton
+                        appearance={{
+                          baseTheme: theme === "dark" ? dark : undefined,
+                        }}
+                      />
+                    ) : (
+                      <Avatar
+                        onClick={() => openAuthModal()}
+                        className="cursor-pointer hover:opacity-80"
+                      >
+                        <AvatarFallback className="flex items-center justify-center">
+                          <IconUser className="h-4 w-4 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse" />
+                  )}
+                </div>
               )}
             </div>
             {menu && (
