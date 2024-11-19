@@ -18,10 +18,10 @@ export async function GET() {
 
     console.log(`Found ${transcriptsToUpdate.length} transcripts to update`);
 
-    // Process in batches
-    let updatedCount = 0;
-    let bmoCount = 0;
-    let amcCount = 0;
+    // // Process in batches
+    // let updatedCount = 0;
+    // let bmoCount = 0;
+    // let amcCount = 0;
 
     for (let i = 0; i < transcriptsToUpdate.length; i += BATCH_SIZE) {
       const batch = transcriptsToUpdate.slice(i, i + BATCH_SIZE);
@@ -46,22 +46,22 @@ export async function GET() {
       //   // Execute all updates in this batch
       //   await prisma.$transaction(updates);
 
-      updatedCount += batch.length;
-      console.log(
-        `Progress: ${updatedCount}/${transcriptsToUpdate.length} records processed`
-      );
+      //   updatedCount += batch.length;
+      //   console.log(
+      //     `Progress: ${updatedCount}/${transcriptsToUpdate.length} records processed`
+      //   );
     }
 
     console.log("\nUpdate Summary:");
-    console.log(`Total transcripts updated: ${updatedCount}`);
-    console.log(`Changed to BMO: ${bmoCount}`);
-    console.log(`Changed to AMC: ${amcCount}`);
+    // console.log(`Total transcripts updated: ${updatedCount}`);
+    // console.log(`Changed to BMO: ${bmoCount}`);
+    // console.log(`Changed to AMC: ${amcCount}`);
 
     return NextResponse.json({
       message: "Update complete",
-      totalUpdated: updatedCount,
-      bmoCount,
-      amcCount,
+      //   totalUpdated: updatedCount,
+      //   bmoCount,
+      //   amcCount,
     });
   } catch (error) {
     console.error("Error updating transcripts:", error);

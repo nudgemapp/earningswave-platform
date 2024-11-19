@@ -203,7 +203,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
           // Get the latest price first
           if (todayEntries.length > 0) {
-            const [_, latestValues] = todayEntries[0];
+            const [, latestValues] = todayEntries[0];
             latestPrice = parseFloat(
               (latestValues as AlphaVantageIntraday)["4. close"]
             );
