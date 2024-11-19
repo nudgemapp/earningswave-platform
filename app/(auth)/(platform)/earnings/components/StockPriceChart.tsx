@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
-  XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
@@ -289,21 +288,21 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       : ["auto", "auto"];
 
   // Calculate optimal tick interval based on timeframe and data length
-  const getTickInterval = () => {
-    switch (timeframe) {
-      case "1D":
-        return Math.floor(filteredData.length / 6); // Show ~6 time labels
-      case "1W":
-        return 0;
-      case "1M":
-        return Math.floor(filteredData.length / 5);
-      case "6M":
-      case "1Y":
-        return Math.floor(filteredData.length / 6);
-      default:
-        return "preserveStartEnd";
-    }
-  };
+  // const getTickInterval = () => {
+  //   switch (timeframe) {
+  //     case "1D":
+  //       return Math.floor(filteredData.length / 6); // Show ~6 time labels
+  //     case "1W":
+  //       return 0;
+  //     case "1M":
+  //       return Math.floor(filteredData.length / 5);
+  //     case "6M":
+  //     case "1Y":
+  //       return Math.floor(filteredData.length / 6);
+  //     default:
+  //       return "preserveStartEnd";
+  //   }
+  // };
 
   const getTimeframeDataPoints = (tf: string): number => {
     switch (tf) {
