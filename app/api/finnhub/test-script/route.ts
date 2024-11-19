@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import pLimit from "p-limit";
+// import pLimit from "p-limit";
 
 export async function GET() {
   const prisma = new PrismaClient();
-  const limit = pLimit(20); // Reduced to 20 concurrent requests (safe margin below 30/sec)
-  const RETRY_DELAY = 100; // 100ms delay between retries
+  //   const limit = pLimit(20); // Reduced to 20 concurrent requests (safe margin below 30/sec)
+  //   const RETRY_DELAY = 100; // 100ms delay between retries
 
   try {
     const companies = await prisma.company.findMany({
