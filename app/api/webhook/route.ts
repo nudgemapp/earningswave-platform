@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
-import { useAuth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const prisma = new PrismaClient();
@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
   const reqText = await req.text();
   return webhooksHandler(reqText, req);
 }
-const { userId } = useAuth();
 
 async function getCustomerEmail(customerId: string): Promise<string | null> {
   console.log(`Fetching customer email for ID: ${customerId}`);
@@ -36,6 +35,13 @@ async function handleSubscriptionEvent(
   console.log(`Handling ${type} subscription event`);
   const subscription = event.data.object as Stripe.Subscription;
   const customerEmail = await getCustomerEmail(subscription.customer as string);
+  const session = event.data.object as Stripe.Checkout.Session;
+  console.log(session);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const metadata: any = session?.metadata;
+  console.log(metadata);
+  const userId = metadata?.userId;
+  console.log(userId);
 
   if (!customerEmail) {
     console.error("Customer email could not be fetched");
@@ -109,6 +115,10 @@ async function handleInvoiceEvent(
   console.log(`Handling invoice ${status} event`);
   const invoice = event.data.object as Stripe.Invoice;
   const customerEmail = await getCustomerEmail(invoice.customer as string);
+  const session = event.data.object as Stripe.Checkout.Session;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const metadata: any = session?.metadata;
+  const userId = metadata?.userId;
 
   if (!customerEmail) {
     console.error("Customer email could not be fetched");
@@ -119,12 +129,6 @@ async function handleInvoiceEvent(
   }
 
   try {
-    console.log("Finding user");
-    // const user = await prisma.user.findUnique({
-    //   where: { email: customerEmail },
-    // });
-    if (!userId) throw new Error("User not found");
-
     console.log("Finding subscription");
     const subscription = await prisma.subscription.findUnique({
       where: { subscription_id: invoice.subscription as string },
@@ -170,19 +174,28 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
   const session = event.data.object as Stripe.Checkout.Session;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const metadata: any = session?.metadata;
+  const userId = metadata?.userId;
+
+  console.log(metadata);
+
+  console.log(userId);
+
+  if (!userId) {
+    console.error("No userId found in session metadata");
+    return NextResponse.json({
+      status: 400,
+      error: "No userId found in session metadata",
+    });
+  }
 
   if (metadata?.subscription === "true") {
     console.log("Processing subscription payment");
-    // This is for subscription payments
     const subscriptionId = session.subscription;
     try {
       console.log("Updating subscription metadata");
       await stripe.subscriptions.update(subscriptionId as string, { metadata });
 
       console.log("Finding user");
-
-      if (!userId) throw new Error("User not found");
-
       const user = await prisma.user.findUnique({
         where: { id: userId },
       });
