@@ -9,6 +9,8 @@ export async function GET(
   try {
     const { userId: authenticatedUserId } = auth();
 
+    console.log(params.userId);
+
     if (!authenticatedUserId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -26,6 +28,8 @@ export async function GET(
         },
       },
     });
+
+    console.log(subscription);
 
     if (!subscription) {
       return NextResponse.json({

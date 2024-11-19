@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
+import { useAuth } from "@clerk/nextjs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const prisma = new PrismaClient();
@@ -59,6 +60,10 @@ async function handleSubscriptionEvent(
 
   try {
     let result;
+    const { userId } = useAuth();
+
+    if (!userId) throw new Error("User not found");
+
     if (type === "deleted") {
       console.log("Updating subscription status to cancelled");
       result = await prisma.subscription.update({
@@ -67,13 +72,13 @@ async function handleSubscriptionEvent(
       });
       console.log("Disconnecting subscription from user");
       await prisma.user.update({
-        where: { email: customerEmail },
+        where: { id: userId },
         data: { subscription: { disconnect: true } },
       });
     } else {
       console.log("Finding user");
       const user = await prisma.user.findUnique({
-        where: { email: customerEmail },
+        where: { id: userId },
       });
       if (!user) throw new Error("User not found");
 
@@ -118,10 +123,12 @@ async function handleInvoiceEvent(
 
   try {
     console.log("Finding user");
-    const user = await prisma.user.findUnique({
-      where: { email: customerEmail },
-    });
-    if (!user) throw new Error("User not found");
+    // const user = await prisma.user.findUnique({
+    //   where: { email: customerEmail },
+    // });
+    const { userId } = useAuth();
+
+    if (!userId) throw new Error("User not found");
 
     console.log("Finding subscription");
     const subscription = await prisma.subscription.findUnique({
@@ -136,7 +143,7 @@ async function handleInvoiceEvent(
       currency: invoice.currency,
       status,
       email: customerEmail,
-      user_id: user.id,
+      user_id: userId,
       period_start: new Date(invoice.period_start * 1000),
       period_end: new Date(invoice.period_end * 1000),
     };
@@ -178,15 +185,20 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
       await stripe.subscriptions.update(subscriptionId as string, { metadata });
 
       console.log("Finding user");
+      const { userId } = useAuth();
+
+      if (!userId) throw new Error("User not found");
+
       const user = await prisma.user.findUnique({
-        where: { id: metadata?.userId },
+        where: { id: userId },
       });
+
       if (!user) throw new Error("User not found");
 
       console.log("Updating invoices with user ID");
       await prisma.invoice.updateMany({
         where: { email: user.email! },
-        data: { user_id: user.id },
+        data: { user_id: userId },
       });
 
       console.log("Connecting subscription to user");
@@ -217,8 +229,12 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
     const dateTime = new Date(session.created * 1000);
     try {
       console.log("Finding user");
+      const { userId } = useAuth();
+
+      if (!userId) throw new Error("User not found");
+
       const user = await prisma.user.findUnique({
-        where: { id: metadata?.userId },
+        where: { id: userId },
       });
 
       if (!user) {
