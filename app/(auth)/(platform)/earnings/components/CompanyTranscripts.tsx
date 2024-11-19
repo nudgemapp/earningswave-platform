@@ -66,7 +66,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
               <div className="text-right text-xs">
                 <div className="space-y-0.5">
                   <div className="text-gray-500 dark:text-gray-400">
-                    EPS:{" "}
+                    (Est.) EPS:{" "}
                     <span className="text-gray-900 dark:text-gray-100">
                       {transcript.epsEstimate
                         ? formatCurrency(transcript.epsEstimate)
@@ -74,7 +74,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                     </span>
                   </div>
                   <div className="text-gray-500 dark:text-gray-400">
-                    Rev:{" "}
+                    (Est.) Rev:{" "}
                     <span className="text-gray-900 dark:text-gray-100">
                       {transcript.revenueEstimate
                         ? formatCurrency(transcript.revenueEstimate, true)

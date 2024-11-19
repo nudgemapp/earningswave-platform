@@ -468,7 +468,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 dx={-5}
                 className="text-gray-500 dark:text-gray-400"
               />
-              <XAxis
+              {/* <XAxis
                 dataKey="date"
                 tickFormatter={(value) => {
                   const date = new Date(value);
@@ -492,7 +492,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 tick={{ fontSize: 11 }}
                 dy={10}
                 className="text-gray-500 dark:text-gray-400"
-              />
+              /> */}
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
