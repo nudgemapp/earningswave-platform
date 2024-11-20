@@ -8,6 +8,7 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { User, Subscription } from "@prisma/client";
 import { ProcessedTranscript } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
+import { useAuthModal } from "@/store/AuthModalStore";
 // import { Button } from "@/components/ui/button";
 // import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 // import { useAuthModal } from "@/store/AuthModalStore";
@@ -37,19 +38,19 @@ const EarningsClient = () => {
   const { setSelectedCompany, setSelectedTranscript } = useEarningsStore();
 
   // const { onOpen: openAuthModal } = useAuthModal();
-  // const { onOpen: openSubscriptionModal } = useSubscriptionModal();
+  const { onOpen: openAuthModal } = useAuthModal();
   const emailModal = useEmailModal();
 
   useEffect(() => {
-    const hasModalBeenShown = localStorage.getItem("emailModalShown");
+    const hasModalBeenShown = localStorage.getItem("authModalShown");
     if (!hasModalBeenShown) {
       const timer = setTimeout(() => {
-        emailModal.onOpen();
-        localStorage.setItem("emailModalShown", "true");
+        openAuthModal();
+        localStorage.setItem("authModalShown", "true");
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [emailModal]);
+  }, [openAuthModal]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
