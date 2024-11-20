@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { useEmailModal } from "@/store/EmailModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { User, Subscription } from "@prisma/client";
 import { ProcessedTranscript } from "../types";
@@ -39,7 +38,6 @@ const EarningsClient = () => {
 
   // const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openAuthModal } = useAuthModal();
-  const emailModal = useEmailModal();
 
   useEffect(() => {
     const hasModalBeenShown = localStorage.getItem("authModalShown");
