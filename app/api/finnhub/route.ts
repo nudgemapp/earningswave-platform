@@ -58,7 +58,7 @@ export async function GET() {
 
     // Fetch the full transcript using the most recent ID
     // Add transcript fetch if ID is provided
-    const transcriptId = "SYM_3409268";
+    const transcriptId = "NIO_3409561";
 
     const transcriptResponse = await fetch(
       `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptId}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`

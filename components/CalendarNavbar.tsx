@@ -111,15 +111,15 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     useEarningsStore.setState({ showWatchlist: true });
   };
 
-  const handleApiClick = async () => {
-    try {
-      const response = await fetch("/api/finnhub/transcript-sync");
-      const data = await response.json();
-      console.log("API Response:", data);
-    } catch (error) {
-      console.error("Error fetching from API:", error);
-    }
-  };
+  // const handleApiClick = async () => {
+  //   try {
+  //     const response = await fetch("/api/finnhub");
+  //     const data = await response.json();
+  //     console.log("API Response:", data);
+  //   } catch (error) {
+  //     console.error("Error fetching from API:", error);
+  //   }
+  // };
 
   return (
     <div className="bg-white-300/50 dark:bg-slate-900 pb-2 px-6 rounded-xl shadow-sm mt-5 lg:mt-0">
@@ -133,7 +133,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-          <Button onClick={handleApiClick}>Sync</Button>
+          {/* <Button onClick={handleApiClick}>Sync</Button> */}
           <Select
             value={months[currentDate.getMonth()]}
             onValueChange={(month) => {
