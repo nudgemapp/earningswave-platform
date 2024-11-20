@@ -1,0 +1,180 @@
+// import { NextResponse } from "next/server";
+// import { PrismaClient } from "@prisma/client";
+
+// const BATCH_SIZE = 50;
+
+// // Define interfaces for our transcript types
+// interface TranscriptData {
+//   id: string;
+//   companyId: string;
+//   quarter: number | null;
+//   year: number | null;
+//   epsEstimate: number | null;
+//   revenueEstimate: number | null;
+//   company: {
+//     symbol: string;
+//   };
+// }
+
+// // Define interface for our grouped transcripts
+// interface GroupedTranscripts {
+//   [key: string]: TranscriptData[];
+// }
+
+// export async function GET() {
+//   const prisma = new PrismaClient();
+
+//   try {
+//     const companies = await prisma.company.findMany({
+//       select: {
+//         id: true,
+//         symbol: true,
+//       },
+//     });
+
+//     let totalUpdates = 0;
+//     const updates = [];
+
+//     for (let i = 0; i < companies.length; i += BATCH_SIZE) {
+//       const companyBatch = companies.slice(i, i + BATCH_SIZE);
+//       const companyIds = companyBatch.map((c) => c.id);
+
+//       const [completedTranscripts, scheduledTranscripts] = await Promise.all([
+//         prisma.transcript.findMany({
+//           where: {
+//             AND: [{ status: "COMPLETED" }, { companyId: { in: companyIds } }],
+//           },
+//           select: {
+//             id: true,
+//             companyId: true,
+//             quarter: true,
+//             year: true,
+//             epsEstimate: true,
+//             revenueEstimate: true,
+//             company: {
+//               select: {
+//                 symbol: true,
+//               },
+//             },
+//           },
+//         }),
+//         prisma.transcript.findMany({
+//           where: {
+//             AND: [
+//               { status: "SCHEDULED" },
+//               { companyId: { in: companyIds } },
+//               { scheduledAt: { lte: new Date() } },
+//             ],
+//           },
+//           select: {
+//             id: true,
+//             companyId: true,
+//             quarter: true,
+//             year: true,
+//             epsEstimate: true,
+//             revenueEstimate: true,
+//             company: {
+//               select: {
+//                 symbol: true,
+//               },
+//             },
+//           },
+//         }),
+//       ]);
+
+//       const completedByCompany =
+//         completedTranscripts.reduce<GroupedTranscripts>((acc, transcript) => {
+//           if (!acc[transcript.companyId]) {
+//             acc[transcript.companyId] = [];
+//           }
+//           acc[transcript.companyId].push(transcript);
+//           return acc;
+//         }, {});
+
+//       // Collect updates to be performed
+//       const updateData = scheduledTranscripts
+//         .map((scheduled: TranscriptData) => {
+//           const companyCompleted =
+//             completedByCompany[scheduled.companyId] || [];
+
+//           const completed = companyCompleted.find(
+//             (comp) =>
+//               comp.quarter === scheduled.quarter && comp.year === scheduled.year
+//           );
+
+//           if (
+//             completed &&
+//             (completed.epsEstimate !== scheduled.epsEstimate ||
+//               completed.revenueEstimate !== scheduled.revenueEstimate)
+//           ) {
+//             totalUpdates++;
+
+//             console.log(`\n=== Updating ${scheduled.company.symbol} ===`);
+//             console.log(`Quarter: Q${scheduled.quarter} ${scheduled.year}`);
+//             console.log("Old values:", {
+//               epsEstimate: completed.epsEstimate,
+//               revenueEstimate: completed.revenueEstimate,
+//             });
+//             console.log("New values:", {
+//               epsEstimate: scheduled.epsEstimate,
+//               revenueEstimate: scheduled.revenueEstimate,
+//             });
+
+//             return {
+//               completedId: completed.id,
+//               updates: {
+//                 epsEstimate: scheduled.epsEstimate,
+//                 revenueEstimate: scheduled.revenueEstimate,
+//               },
+//             };
+//           }
+//           return null;
+//         })
+//         .filter(
+//           (
+//             update
+//           ): update is {
+//             completedId: string;
+//             updates: {
+//               epsEstimate: number | null;
+//               revenueEstimate: number | null;
+//             };
+//           } => update !== null
+//         );
+
+//       // Perform the batch update using transaction
+//       if (updateData.length > 0) {
+//         const results = await prisma.$transaction(
+//           updateData.map(({ completedId, updates: updateValues }) =>
+//             prisma.transcript.update({
+//               where: { id: completedId },
+//               data: {
+//                 epsEstimate: updateValues.epsEstimate,
+//                 revenueEstimate: updateValues.revenueEstimate,
+//               },
+//             })
+//           )
+//         );
+//         updates.push(...results);
+//       }
+//     }
+
+//     return NextResponse.json({
+//       totalCompaniesProcessed: companies.length,
+//       totalUpdatesPerformed: totalUpdates,
+//       updatedTranscripts: updates.map((u) => ({
+//         id: u.id,
+//         epsEstimate: u.epsEstimate,
+//         revenueEstimate: u.revenueEstimate,
+//       })),
+//     });
+//   } catch (error) {
+//     console.error("Error updating transcripts:", error);
+//     return NextResponse.json(
+//       { error: "Failed to update transcripts" },
+//       { status: 500 }
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }

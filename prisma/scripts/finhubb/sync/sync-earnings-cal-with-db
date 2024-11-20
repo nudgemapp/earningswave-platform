@@ -1,0 +1,142 @@
+// import { NextResponse } from "next/server";
+// import { PrismaClient, MarketTime, TranscriptStatus } from "@prisma/client";
+
+// const BATCH_SIZE = 10;
+// const API_DELAY = 50;
+
+// async function processBatch(companies: any[], from: string, to: string) {
+//   const promises = companies.map((company) =>
+//     fetch(
+//       `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//     )
+//       .then((res) => res.json())
+//       .then((data) => ({
+//         company,
+//         earnings: data.earningsCalendar || [],
+//       }))
+//   );
+
+//   return Promise.all(promises);
+// }
+
+// export async function GET() {
+//   const prisma = new PrismaClient();
+
+//   try {
+//     const today = new Date();
+//     today.setUTCHours(0, 0, 0, 0);
+//     const from = today.toISOString().split("T")[0];
+//     const to = "2026-03-01";
+
+//     // Get companies and existing transcripts
+//     const [companies, existingTranscripts] = await Promise.all([
+//       prisma.company.findMany(),
+//       prisma.transcript.findMany({
+//         where: {
+//           scheduledAt: {
+//             gte: today,
+//           },
+//           status: "SCHEDULED",
+//         },
+//         include: {
+//           company: true,
+//         },
+//       }),
+//     ]);
+
+//     // Create lookup map for existing transcripts
+//     const existingTranscriptMap = new Map(
+//       existingTranscripts.map((transcript) => [
+//         `${transcript.company.symbol}_${
+//           transcript.scheduledAt.toISOString().split("T")[0]
+//         }`,
+//         transcript,
+//       ])
+//     );
+
+//     // Create lookup map for companies
+//     const companyMap = new Map(
+//       companies.map((company) => [company.symbol, company])
+//     );
+
+//     const transcriptsToCreate: any[] = [];
+
+//     // Process companies in batches
+//     for (let i = 0; i < companies.length; i += BATCH_SIZE) {
+//       const batch = companies.slice(i, i + BATCH_SIZE);
+//       const batchResults = await processBatch(batch, from, to);
+
+//       batchResults.forEach((result) => {
+//         result.earnings.forEach((earning: any) => {
+//           const key = `${result.company.symbol}_${earning.date}`;
+//           if (!existingTranscriptMap.has(key)) {
+//             const company = companyMap.get(result.company.symbol);
+//             if (company) {
+//               transcriptsToCreate.push({
+//                 id: `${result.company.symbol}_${earning.date}`,
+//                 companyId: company.id,
+//                 scheduledAt: new Date(earning.date),
+//                 quarter: earning.quarter,
+//                 year: earning.year,
+//                 MarketTime:
+//                   earning.hour.toUpperCase() === "BMO" ? "BMO" : "AMC",
+//                 status: "SCHEDULED",
+//                 epsEstimate: earning.epsEstimate,
+//                 revenueEstimate: earning.revenueEstimate,
+//               });
+//             }
+//           }
+//         });
+//       });
+
+//       // Progress logging
+//       if (i % (BATCH_SIZE * 10) === 0) {
+//         console.log(`Processed ${i}/${companies.length} companies...`);
+//       }
+
+//       await new Promise((resolve) => setTimeout(resolve, API_DELAY));
+//     }
+
+//     console.log(
+//       `Found ${transcriptsToCreate.length} new transcripts to create`
+//     );
+
+//     // Create all new transcripts in a transaction
+//     const createdTranscripts = await prisma.$transaction(
+//       transcriptsToCreate.map((transcript) =>
+//         prisma.transcript.create({
+//           data: transcript,
+//         })
+//       )
+//     );
+
+//     console.log("\n=== Creation Summary ===");
+//     console.log(
+//       `Successfully created ${createdTranscripts.length} new transcripts`
+//     );
+//     console.log("\n=== First 5 Created Transcripts ===");
+//     createdTranscripts.slice(0, 5).forEach((transcript) => {
+//       console.log(
+//         `${transcript.id} - ${
+//           transcript.scheduledAt.toISOString().split("T")[0]
+//         } (${transcript.MarketTime})`
+//       );
+//     });
+
+//     return NextResponse.json({
+//       message: "Transcript creation complete",
+//       createdCount: createdTranscripts.length,
+//     });
+//   } catch (error) {
+//     console.error("Error creating transcripts:", error);
+//     return NextResponse.json(
+//       {
+//         error: "Failed to create transcripts",
+//         details: error instanceof Error ? error.message : String(error),
+//       },
+//       { status: 500 }
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }

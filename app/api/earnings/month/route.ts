@@ -66,6 +66,7 @@ export async function GET(request: Request) {
           t."scheduledAt" >= ${startDate}
           AND t."scheduledAt" <= ${endDate}
           AND t.quarter IS NOT NULL
+          AND t.year IS NOT NULL
           AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${twoWeeksAgo}))
       )
       SELECT 
