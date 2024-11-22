@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -27,6 +27,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import Tabs from "./Tabs";
+import { Button } from "@/components/ui/button";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -34,6 +36,14 @@ interface FutureEarningsProps {
     transcriptId: string;
   };
 }
+const formatDate = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 // Define an extended Company type that includes recentTranscripts
 type ExtendedCompany = Company & {
@@ -179,6 +189,23 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
+  const [todayPrices, setTodayPrices] = useState<{
+    preMarket: number | null;
+    regular: number | null;
+    afterHours: number | null;
+    regularOpen: number | null;
+    percentChange: number | null;
+    priceDifference: number | null;
+    mostRecentDate: string | null;
+  }>({
+    preMarket: null,
+    regular: null,
+    afterHours: null,
+    regularOpen: null,
+    percentChange: null,
+    priceDifference: null,
+    mostRecentDate: null,
+  });
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
@@ -192,7 +219,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: company, isLoading: isLoadingCompany } = useGetCompany(
     SelectedCompany?.companyId
   );
-
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
@@ -292,8 +318,11 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
   return (
     <div className="space-y-4 mb-20 sm:mb-0">
+      
       {!selectedTranscript && (
+        
         <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
+          
           <CardHeader className="space-y-4 pb-4 px-4">
             <CompanyHeader
               company={company}
@@ -305,155 +334,84 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               removeFromWatchlist={removeFromWatchlist}
             />
           </CardHeader>
-
           <CardContent className="space-y-6 px-4 pb-4">
-            {/* Stock Chart with Suspense */}
-            <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4 pb-8">
-                <div className="h-[400px] w-full">
-                  <StockPriceChart
-                    symbol={company.symbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                  />
-                </div>
-              </div>
-            </Suspense>
+             
+             {/* Stock Chart with Suspense */}
+             <Suspense fallback={<StockChartSkeleton />}>
+               <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4 pb-8">
+                 <div className="h-[400px] w-full">
+                   <StockPriceChart
+                   todayData={(data)=>{
+                     setTodayPrices(data)
 
-            {/* Recent Transcripts with Suspense */}
-            {company.recentTranscripts &&
-              company.recentTranscripts.length > 0 && (
-                <Suspense fallback={<TranscriptsSkeleton />}>
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      Recent Transcripts
-                    </h3>
-                    <CompanyTranscripts
-                      transcripts={company.recentTranscripts}
-                    />
-                  </div>
-                </Suspense>
-              )}
+                   }}
+                     symbol={company.symbol}
+                     timeframe={timeframe}
+                     onTimeframeChange={setTimeframe}
+                   />
+                 </div>
+               </div>
+             </Suspense>
 
-            {/* Company Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Market Cap */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
-                <div className="flex flex-col h-full">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                    Market Cap
-                  </span>
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {company.marketCapitalization
-                          ? `$${company.marketCapitalization.toFixed(2)}M`
-                          : "N/A"}
-                      </span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        USD
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                      {company.marketCapitalization
-                        ? `${new Intl.NumberFormat("en-US", {
-                            style: "decimal",
-                            maximumFractionDigits: 0,
-                          }).format(company.marketCapitalization)}M`
-                        : "No data"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+             <div className="flex flex-row items-center  gap-4">
+               <div className="flex flex-row justify-center w-full gap-4 ">
+                 <Button className="w-full border border-gray-200 dark:border-slate-700" variant="ghost" onClick={() => 
+                   company.weburl ? window.open(company.weburl, "_blank") : null
+                 }>{`${company.symbol} Website`}</Button>
+               </div>
+             </div>
 
-              {/* Industry */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
-                <div className="flex flex-col h-full">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                    Industry
-                  </span>
-                  <div className="mt-auto">
-                    <HoverCard openDelay={200}>
-                      <HoverCardTrigger asChild>
-                        <span className="text-xl font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 hover:cursor-help">
-                          {company.finnhubIndustry || "N/A"}
-                        </span>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-auto max-w-sm">
-                        {company.finnhubIndustry}
-                      </HoverCardContent>
-                    </HoverCard>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                      Listed on {company.exchange}
-                    </span>
-                  </div>
-                </div>
-              </div>
+             {/* New Company Info Table */}
+             <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
+               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                 {company.name}
+               </h3>
+               <p className="text-sm text-gray-600 dark:text-gray-400">
+                 {company.description}
+               </p>
+               <table className="w-full mt-4 text-sm text-left text-gray-500 dark:text-gray-400">
+                 <tbody>
+                   <tr>
+                     <th className="py-2">Current Price</th>
+                     <td className="py-2">${todayPrices.regular?.toFixed(2) || "-"}</td>
+                   </tr>
+                   <tr>
+                     <th className="py-2">Previous Close</th>
+                     <td className="py-2">{`$${todayPrices.preMarket?.toFixed(2) || "-"}`}</td>
+                   </tr>
+                   <tr>
+                     <th className="py-2">Next Earnings</th>
+                     <td className="py-2">{company.recentTranscripts?.[0]?.scheduledAt ? formatDate(company.recentTranscripts[0].scheduledAt) : "-"}</td>
+                   </tr>
+                  
+                   
+                  
+                 </tbody>
+               </table>
+             </div>
 
-              {/* IPO Date */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
-                <div className="flex flex-col h-full">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                    IPO Date
-                  </span>
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {company.ipo
-                          ? new Date(company.ipo).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                      {company.ipo
-                        ? `${Math.abs(
-                            new Date(company.ipo).getFullYear() -
-                              new Date().getFullYear()
-                          )} years ago`
-                        : "No data"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+             
 
-              {/* Shares Outstanding */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
-                <div className="flex flex-col h-full">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
-                    Shares Outstanding
-                  </span>
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        {company.sharesOutstanding
-                          ? new Intl.NumberFormat("en-US", {
-                              maximumFractionDigits: 1,
-                              notation: "compact",
-                              compactDisplay: "short",
-                            }).format(company.sharesOutstanding)
-                          : "N/A"}
-                      </span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        shares
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
-                      {company.sharesOutstanding
-                        ? `${new Intl.NumberFormat("en-US", {
-                            style: "decimal",
-                            maximumFractionDigits: 0,
-                          }).format(company.sharesOutstanding)} total shares`
-                        : "No data"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
+
+ 
+             {/* Recent Transcripts with Suspense */}
+             {company.recentTranscripts &&
+               company.recentTranscripts.length > 0 && (
+                 <Suspense fallback={<TranscriptsSkeleton />}>
+                   <div className="space-y-3">
+                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                       Recent Transcripts
+                     </h3>
+                     <CompanyTranscripts
+                       transcripts={company.recentTranscripts}
+                     />
+                   </div>
+                 </Suspense>
+               )}
+ 
+           </CardContent>  
+
+         
         </Card>
       )}
 

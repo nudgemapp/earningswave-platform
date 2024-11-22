@@ -251,28 +251,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
         <div className="flex items-center gap-3">
        <div>
-       <Tabs
-        items={[
-          {
-            title: "Chart",
-            content: (
-              <div>Chart content will go here</div>
-            )
-          },
-          {
-            title: "Statistics", 
-            content: (
-              <div>Statistics content will go here</div>
-            )
-          },
-          {
-            title: "News",
-            content: (
-              <div>News content will go here</div>
-            )
-          }
-        ]}
-      />
+      
        </div>
           <div>
             <audio ref={audioRef} controls className="h-9">
