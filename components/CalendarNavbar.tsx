@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Calendar,
   CalendarCheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   StarIcon,
+  Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,6 +24,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import Hls from "hls.js";
+import Tabs from "@/app/(auth)/(platform)/earnings/components/Tabs";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -30,6 +33,13 @@ interface CalendarNavbarProps {
   setCurrentDate: (date: Date) => void;
   view: "month" | "week";
   setView: (view: "month" | "week") => void;
+  onFilter: (filters: FilterState) => void;
+}
+
+interface FilterState {
+  sectors: string[];
+  marketCap: string[];
+  watchlist: string[];
 }
 
 const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
@@ -38,6 +48,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   setCurrentDate,
   view,
   setView,
+  onFilter
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -110,16 +121,68 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
     useEarningsStore.setState({ showWatchlist: true });
   };
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  // const handleApiClick = async () => {
-  //   try {
-  //     const response = await fetch("/api/finnhub/transcript-sync");
-  //     const data = await response.json();
-  //     console.log("API Response:", data);
-  //   } catch (error) {
-  //     console.error("Error fetching from API:", error);
-  //   }
-  // };
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audioUrl = "https://media.main.pro2.mas.media-server.com/c9cca3f025114016bae3b0816b901d94/ypvix9r9_en_enc1_audio_part1.m3u8";
+  
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(audioUrl);
+      hls.attachMedia(audioRef.current);
+    } else if (audioRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+      audioRef.current.src = audioUrl;
+    } else {
+      console.error("HLS is not supported in this browser.");
+    }
+  }, []);
+
+  const handleApiClick = async () => {
+    try {
+      const response = await fetch("/api/finnhub/transcript-sync");
+      const data = await response.json();
+      console.log("API Response:", data);
+    } catch (error) {
+      console.error("Error fetching from API:", error);
+    }
+  };
+
+  const [filters, setFilters] = useState<FilterState>({
+    sectors: [],
+    marketCap: [],
+    watchlist: [],
+  });
+
+  const handleFilterChange = (category: keyof FilterState, value: string) => {
+    setFilters(prev => {
+      const currentValues = prev[category];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value];
+      
+      return {
+        ...prev,
+        [category]: newValues
+      };
+    });
+  };
+
+  useEffect(() => {
+    // Load filters from localStorage on mount
+    const savedFilters = localStorage.getItem('earnings-filters');
+    if (savedFilters) {
+      setFilters(JSON.parse(savedFilters));
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save filters to localStorage whenever they change
+    localStorage.setItem('earnings-filters', JSON.stringify(filters));
+  }, [filters]);
 
   return (
     <div className="bg-white-300/50 dark:bg-slate-900 pb-2 px-6 rounded-xl shadow-sm mt-5 lg:mt-0">
@@ -187,6 +250,145 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+       <div>
+       <Tabs
+        items={[
+          {
+            title: "Chart",
+            content: (
+              <div>Chart content will go here</div>
+            )
+          },
+          {
+            title: "Statistics", 
+            content: (
+              <div>Statistics content will go here</div>
+            )
+          },
+          {
+            title: "News",
+            content: (
+              <div>News content will go here</div>
+            )
+          }
+        ]}
+      />
+       </div>
+          <div>
+            <audio ref={audioRef} controls className="h-9">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+          <div> 
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="default"
+                  className="h-9 px-4 font-medium hover:bg-secondary/80 hover:text-primary transition-colors duration-200"
+                >
+                  <Filter className="h-5 w-5 mr-2" />
+                  Filter {Object.values(filters).flat().length > 0 && `(${Object.values(filters).flat().length})`}
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b pb-2">
+                    <h4 className="text-sm font-semibold">Filter Earnings</h4>
+                    {Object.values(filters).flat().length > 0 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setFilters({ sectors: [], marketCap: [], watchlist: [] })}
+                      >
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Sector Section */}
+                  <div className="space-y-2">
+                    <h5 className="text-sm font-medium">Sector</h5>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        "Retail", "Automotive", "Software", "Insurance",
+                        "Real Estate", "Telecomm", "Technology", "Healthcare",
+                        "Finance", "Energy"
+                      ].map((sector) => (
+                        <label key={sector} className="flex items-center space-x-2 text-sm">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300"
+                            checked={filters.sectors.includes(sector)}
+                            onChange={() => handleFilterChange('sectors', sector)}
+                          />
+                          <span>{sector}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Market Cap Section */}
+                  <div className="space-y-2">
+                    <h5 className="text-sm font-medium">Market Cap</h5>
+                    <div className="space-y-1">
+                      {[
+                        "Large Cap ($10B+)",
+                        "Mid Cap ($2B-$10B)",
+                        "Small Cap ($300M-$2B)"
+                      ].map((cap) => (
+                        <label key={cap} className="flex items-center space-x-2 text-sm">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300"
+                            checked={filters.marketCap.includes(cap)}
+                            onChange={() => handleFilterChange('marketCap', cap)}
+                          />
+                          <span>{cap}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Watchlist Section */}
+                  <div className="space-y-2">
+                    <h5 className="text-sm font-medium">Watchlist</h5>
+                    <div className="space-y-1">
+                      {[
+                        "Show only watchlist",
+                        "Include watchlist alerts"
+                      ].map((option) => (
+                        <label key={option} className="flex items-center space-x-2 text-sm">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300"
+                            checked={filters.watchlist.includes(option)}
+                            onChange={() => handleFilterChange('watchlist', option)}
+                          />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Apply Button */}
+                  <Button 
+                    className="w-full mt-2" 
+                    size="sm"
+                    onClick={() => {
+                      
+                        onFilter(filters);
+                        console.log(filters)
+                      
+                    }}
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+            
+          </div>
           <HoverCard>
             <HoverCardTrigger asChild>
               <Button

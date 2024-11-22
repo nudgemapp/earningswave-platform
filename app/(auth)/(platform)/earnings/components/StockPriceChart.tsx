@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import Tabs from "./Tabs";
 
 interface StockChartProps {
   symbol: string;
@@ -179,15 +180,17 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       if (!symbol) return;
 
       try {
+        
         const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
-        const endpoint = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&outputsize=full&extended_hours=true&entitlement=delayed&apikey=${API_KEY}`;
+        const endpoint = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=1min&outputsize=full&extended_hours=true&apikey=${API_KEY}`;
 
         const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch today's prices");
         const result = await response.json();
+        console.log('result', result);
 
-        if (result["Time Series (5min)"]) {
-          const entries = Object.entries(result["Time Series (5min)"]);
+        if (result["Time Series (1min)"]) {
+          const entries = Object.entries(result["Time Series (1min)"]);
           const mostRecentDate = entries[0][0].split(" ")[0];
 
           let preMarketPrice = null;
@@ -199,7 +202,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           // Process entries for the most recent day only
           const todayEntries = entries.filter(
             ([date]) => date.split(" ")[0] === mostRecentDate
-          );
+          ).reverse();
 
           // Get the latest price first
           if (todayEntries.length > 0) {
@@ -217,12 +220,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             const timeInMinutes = hours * 60 + minutes;
             const close = parseFloat(typedValues["4. close"]);
 
+
             // Pre-market (4:00 AM - 9:30 AM ET)
             if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
               if (!preMarketPrice) preMarketPrice = close;
             }
             // Regular market (9:30 AM - 4:00 PM ET)
-            else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes < 16 * 60) {
+            else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes <= 16 * 60) {
+          
+
               regularPrice = close;
               if (!regularOpenPrice) {
                 regularOpenPrice = parseFloat(typedValues["1. open"]);
@@ -330,6 +336,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   return (
     <div className="h-full w-full">
+    
       <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-4">
         <div className="flex items-center gap-2">
           {!isLoading && (

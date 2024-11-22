@@ -14,6 +14,12 @@ interface TranscriptQueryResult {
   logo: string | null;
   total_for_day: bigint;
   remaining_count: bigint;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
 }
 
 export async function GET(request: Request) {
@@ -55,6 +61,12 @@ export async function GET(request: Request) {
           c.symbol,
           c.name as "companyName",
           c.logo,
+          c.description,
+          c.currency,
+          c."marketCapitalization",
+          c.weburl,
+          c."finnhubIndustry",
+          c.exchange,
           COUNT(*) OVER (PARTITION BY DATE(t."scheduledAt")) as total_for_day,
           ROW_NUMBER() OVER (
             PARTITION BY DATE(t."scheduledAt"), t."MarketTime" 
@@ -93,6 +105,12 @@ export async function GET(request: Request) {
         symbol: row.symbol,
         name: row.companyName,
         logo: row.logo,
+        description: row.description,
+        currency: row.currency,
+        marketCapitalization: row.marketCapitalization,
+        weburl: row.weburl,
+        finnhubIndustry: row.finnhubIndustry,
+        exchange: row.exchange,
       },
     }));
 

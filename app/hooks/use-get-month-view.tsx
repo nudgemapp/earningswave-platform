@@ -25,6 +25,12 @@ interface RawTranscript {
     symbol: string;
     name?: string;
     logo?: string;
+    marketCapitalization?: number | null;
+  finnhubIndustry?: string | null;
+  exchange?: string | null;
+  country?: string | null;
+  weburl?: string | null;
+  sharesOutstanding?: number | null;
   };
 }
 
@@ -73,6 +79,7 @@ export const useGetMonthView = () => {
       });
 
       if (!response.ok) throw new Error("Failed to fetch month view data");
+      
 
       const data = await response.json();
       return {

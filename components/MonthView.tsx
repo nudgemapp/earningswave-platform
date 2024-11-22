@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
@@ -20,11 +20,14 @@ interface MonthViewProps {
   handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
 }
 
+
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   handleCompanyClick,
 }) => {
   const { data, isLoading, error } = useGetMonthView();
+ 
+  
 
   if (isLoading) {
     return (

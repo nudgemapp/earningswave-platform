@@ -104,6 +104,7 @@ const EarningsClient = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
+      onFilter={()=>{}}
         currentDate={currentDate}
         setCurrentDate={handleDateChange}
         navigateMonth={(direction: number) =>
