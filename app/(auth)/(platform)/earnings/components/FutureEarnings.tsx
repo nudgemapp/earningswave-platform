@@ -27,6 +27,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { ShadowNoneIcon } from "@radix-ui/react-icons";
+// import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -66,7 +68,7 @@ const StockChartSkeleton = () => (
 const TranscriptsSkeleton = () => (
   <div className="space-y-3">
     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-      Recent Transcripts
+      Recent Earnings
     </h3>
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
@@ -78,6 +80,9 @@ const TranscriptsSkeleton = () => (
     </div>
   </div>
 );
+
+// ???
+// use scrollarea here form ShadowNoneIcon
 
 // Update the CompanyHeader component with the proper type
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({
@@ -193,15 +198,13 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     SelectedCompany?.companyId
   );
 
-  console.log(company);
-
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
   if (isLoadingCompany) {
     return (
       <div className="space-y-6">
-        <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+        <Card className="w-full shadow-sm dark:shadow-neutral-900/50 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800">
           <CardHeader className="space-y-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
@@ -295,7 +298,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   return (
     <div className="space-y-4 mb-20 sm:mb-0">
       {!selectedTranscript && (
-        <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
+        <Card className="w-full bg-white dark:bg-neutral-950 border-gray-200/50 dark:border-neutral-800/50 shadow-sm dark:shadow-neutral-900/30">
           <CardHeader className="space-y-4 pb-4 px-4">
             <CompanyHeader
               company={company}
@@ -311,7 +314,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           <CardContent className="space-y-6 px-4 pb-4">
             {/* Stock Chart with Suspense */}
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4 pb-8">
+              <div className="bg-gray-50/50 dark:bg-neutral-900/50 rounded-lg border border-gray-100 dark:border-neutral-800 p-4 pb-8">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
                     symbol={company.symbol}
@@ -322,13 +325,15 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
             </Suspense>
 
+            {/* <AIEarningsAnalysis company={company} /> */}
+
             {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&
               company.recentTranscripts.length > 0 && (
                 <Suspense fallback={<TranscriptsSkeleton />}>
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      Recent Transcripts
+                      Recent Earnings
                     </h3>
                     <CompanyTranscripts
                       transcripts={company.recentTranscripts}
@@ -340,7 +345,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             {/* Company Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Market Cap */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 transition-colors hover:bg-gray-100/50 dark:hover:bg-neutral-800/50">
                 <div className="flex flex-col h-full">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
                     Market Cap
@@ -369,7 +374,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
 
               {/* Industry */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 transition-colors hover:bg-gray-100/50 dark:hover:bg-neutral-800/50">
                 <div className="flex flex-col h-full">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
                     Industry
@@ -393,7 +398,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
 
               {/* IPO Date */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 transition-colors hover:bg-gray-100/50 dark:hover:bg-neutral-800/50">
                 <div className="flex flex-col h-full">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
                     IPO Date
@@ -423,7 +428,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
 
               {/* Shares Outstanding */}
-              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-slate-700/50">
+              <div className="relative p-5 rounded-xl bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 transition-colors hover:bg-gray-100/50 dark:hover:bg-neutral-800/50">
                 <div className="flex flex-col h-full">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
                     Shares Outstanding
@@ -461,7 +466,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full dark:bg-slate-900 dark:text-white">
+        <Card className="w-full dark:bg-neutral-950 dark:text-white">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>
@@ -470,7 +475,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-4">
+        <DialogContent className="sm:max-w-2xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 p-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {company.name} ({company.symbol}) - Company Summary

@@ -31,3 +31,36 @@ export interface ProcessedTranscript {
 export interface DayViewResponse {
   transcripts: ProcessedTranscript[];
 }
+
+export interface StockData {
+  date: string;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  volume: number;
+  gain: boolean;
+  marketSession: "pre" | "regular" | "post";
+}
+
+export interface AlphaVantageDaily {
+  "1. open": string;
+  "2. high": string;
+  "3. low": string;
+  "4. close": string;
+  "5. volume": string;
+}
+
+export interface AlphaVantageIntraday extends AlphaVantageDaily {}
+
+export interface FinnhubTrade {
+  p: number; // Last price
+  s: string; // Symbol
+  t: number; // Timestamp
+  v: number; // Volume
+}
+
+export interface WebSocketMessage {
+  data: FinnhubTrade[];
+  type: string;
+}

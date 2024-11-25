@@ -111,18 +111,18 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     useEarningsStore.setState({ showWatchlist: true });
   };
 
-  // const handleApiClick = async () => {
-  //   try {
-  //     const response = await fetch("/api/finnhub");
-  //     const data = await response.json();
-  //     console.log("API Response:", data);
-  //   } catch (error) {
-  //     console.error("Error fetching from API:", error);
-  //   }
-  // };
+  const handleApiClick = async () => {
+    try {
+      const response = await fetch("/api/finnhub/transcript-sync");
+      const data = await response.json();
+      console.log("API Response:", data);
+    } catch (error) {
+      console.error("Error fetching from API:", error);
+    }
+  };
 
   return (
-    <div className="bg-white-300/50 dark:bg-slate-900 pb-2 px-6 rounded-xl shadow-sm mt-5 lg:mt-0">
+    <div className="bg-white-300/50 dark:bg-neutral-950 pb-2 px-6 rounded-xl shadow-sm mt-5 lg:mt-0">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Button
@@ -133,7 +133,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-          {/* <Button onClick={handleApiClick}>Sync</Button> */}
+          <Button onClick={handleApiClick}>Sync</Button>
           <Select
             value={months[currentDate.getMonth()]}
             onValueChange={(month) => {
@@ -225,7 +225,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 className={`px-4 py-2 transition-colors duration-200 ${
                   view === "month"
                     ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                    : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                    : "bg-white dark:bg-neutral-950 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
                 }`}
               >
                 {view === "month" ? (
@@ -241,7 +241,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 className={`px-4 py-2 transition-colors duration-200 ${
                   view === "week"
                     ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                    : "bg-white dark:bg-slate-900 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                    : "bg-white dark:bg-neutral-950 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
                 }`}
               >
                 {view === "week" ? (

@@ -87,6 +87,8 @@ model Payment {
 enum MarketTime {
   BMO      // Before Market Open (equivalent to PRE_MARKET)
   AMC      // After Market Close (equivalent to AFTER_HOURS)
+  DMH      // During Market Hours
+  UNKNOWN  // Unknown
 }
 
 enum TranscriptStatus {
@@ -155,6 +157,12 @@ model Transcript {
   epsEstimate     Float?
   revenueActual   Float?
   revenueEstimate Float?
+
+    // AI Summary fields
+  aiSummary           String?      @db.Text  // Store the main AI-generated summary
+  aiKeyPoints         Json?        // Store structured key points/insights
+  aiSentimentAnalysis Json?        // Optional: store sentiment analysis results
+  aiLastUpdated       DateTime?    // Track when the AI summary was last generated
   
   // Full transcript data (only for completed calls)
   fullText    String?      @db.Text  // Complete transcript text
@@ -173,6 +181,7 @@ model Transcript {
   @@index([status, scheduledAt]) // For filtering by status and date range
   @@index([scheduledAt, status]) // Add this index
   @@index([companyId, scheduledAt, status]) // Add this index
+
 }
 
 model Participant {

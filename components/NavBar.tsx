@@ -112,7 +112,7 @@ function NavBar() {
           className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0"
         >
           {/* DESKTOP */}
-          <div className="hidden lg:block bg-white dark:bg-slate-900 p-2">
+          <div className="hidden lg:block bg-white dark:bg-neutral-950 p-2">
             <div className="flex items-center mx-4">
               {/* Logo - Left */}
               <motion.div
@@ -147,7 +147,7 @@ function NavBar() {
                             transition={{ duration: 0.2 }}
                           />
                         </p>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-slate-900 shadow-lg dark:shadow-slate-800/50 rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-neutral-900 shadow-lg dark:shadow-slate-800/50 rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
                           <div className="py-2">
                             {item.dropdownItems.map(
                               (dropdownItem, dropdownIndex) => (
@@ -241,8 +241,8 @@ function NavBar() {
           </div>
 
           {/* MOBILE */}
-          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-slate-900">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-neutral-950">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-neutral-900 bg-white dark:bg-neutral-950">
               <div className="flex items-center gap-2">
                 <button onClick={toggleMenu} className="p-2 z-10">
                   {menu ? (
@@ -299,7 +299,7 @@ function NavBar() {
               )}
             </div>
             {menu && (
-              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white dark:bg-slate-900 overflow-hidden">
+              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white dark:bg-neutral-950 overflow-hidden">
                 <nav className="flex-grow flex flex-col justify-center items-center px-6">
                   {links.map((item, index) => (
                     <div key={index} className="text-center w-full">
@@ -338,7 +338,7 @@ function NavBar() {
                     </div>
                   ))}
                 </nav>
-                <div className="px-6 py-6 bg-gray-50 dark:bg-slate-800">
+                <div className="px-6 py-6 bg-gray-50 dark:bg-neutral-900">
                   {user ? (
                     <Button
                       className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
@@ -349,7 +349,7 @@ function NavBar() {
                   ) : (
                     <>
                       <Button
-                        className="w-full mb-4 bg-white dark:bg-slate-900 text-primary dark:text-primary border-2 border-primary dark:border-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 text-xl py-4"
+                        className="w-full mb-4 bg-white dark:bg-neutral-950 text-primary dark:text-primary border-2 border-primary dark:border-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 text-xl py-4"
                         onClick={() => {
                           openAuthModal();
                           setMenu(false);

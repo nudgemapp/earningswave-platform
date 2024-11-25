@@ -241,6 +241,7 @@ export async function GET() {
               symbol: transcript.symbol,
               time: transcript.time,
               data: transcriptData,
+              marketTime: transcriptData.marketTime,
             });
 
             results.transcriptDetails.push({
