@@ -28,7 +28,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ShadowNoneIcon } from "@radix-ui/react-icons";
-// import AIEarningsAnalysis from "./AIEarnings";
+import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   SelectedCompany: {
