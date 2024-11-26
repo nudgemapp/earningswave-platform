@@ -108,8 +108,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     percentChange: number | null;
     priceDifference: number | null;
     mostRecentDate?: string | null;
+    atClose?:number|null
   }>({
     prevClose:null,
+    atClose:null,
     preMarket: null,
     regular: null,
     afterHours: null,
@@ -363,6 +365,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           setTodayPrices({
             preMarket: preMarketPrice,
             regular: (new Date().getHours() >= 9 && new Date().getMinutes() >= 30 && new Date().getHours() < 16) ? regularPrice : latestPrice,
+            atClose: new Date().getHours() >= 16 ? regularPrice : null,
             afterHours: afterHoursPrice,
             regularOpen: regularOpenPrice,
             percentChange,
@@ -529,6 +532,23 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     }
   }, [realtimeData?.realtimePrice]);
 
+  // Add state to track current time
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Add useEffect for time updates
+  useEffect(() => {
+    // Update time every minute
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // 60000ms = 1 minute
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
+
+  // Use currentTime instead of new Date()
+  const isAfterHours = currentTime.getHours() >= 16;
+
   return (
     <div className="h-full w-full">
     
@@ -585,7 +605,9 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                             : "text-red-600 dark:text-red-500"
                         }`}
                       >
-                        ${(new Date().getHours() >= 16 ? todayPrices.regular : todayPrices.regular) && todayPrices.regular&& todayPrices.regular < 0 ? "-" : ""}{Math.abs((new Date().getHours() >= 16 ? todayPrices.regular : todayPrices.regular) || 0).toFixed(2)}
+                        
+                        
+                        ${(isAfterHours ? todayPrices.atClose : todayPrices.regular) && todayPrices.regular && todayPrices.regular < 0 ? "-" : ""}{Math.abs((isAfterHours ? todayPrices.atClose : todayPrices.regular) || 0).toFixed(2)}
                       </span>
                     </div>
                      
