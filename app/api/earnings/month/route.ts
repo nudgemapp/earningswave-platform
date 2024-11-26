@@ -1,25 +1,26 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-interface TranscriptQueryResult {
+interface EarningsQueryResult {
   id: string;
-  title: string | null;
-  scheduledAt: Date;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
-  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
-  quarter: number;
-  companyId: string;
   symbol: string;
+  quarter: number;
+  year: number;
+  earningsDate: Date;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  companyId: string;
   companyName: string | null;
   logo: string | null;
-  total_for_day: bigint;
-  remaining_count: bigint;
   description: string;
   currency: string;
   marketCapitalization: number | null;
   weburl: string | null;
   finnhubIndustry: string | null;
   exchange: string | null;
+  total_for_day: bigint;
+  remaining_count: bigint;
 }
 
 export async function GET(request: Request) {
@@ -42,23 +43,18 @@ export async function GET(request: Request) {
   });
 
   try {
-    const currentDate = new Date();
-    const yesterday = new Date(currentDate);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const twoWeeksAgo = new Date(currentDate);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-    const result = await prisma.$queryRaw<TranscriptQueryResult[]>`
-      WITH RankedTranscripts AS (
+    const result = await prisma.$queryRaw<EarningsQueryResult[]>`
+      WITH DailyEarnings AS (
         SELECT 
-          t.id,
-          t.title,
-          t."scheduledAt",
-          t.status,
-          t."MarketTime",
-          t.quarter,
+          e.id,
+          e.symbol,
+          e.quarter,
+          e.year,
+          e."earningsDate",
+          e."earningsTime",
+          e."isDateConfirmed",
+          e."marketCap",
           c.id as "companyId",
-          c.symbol,
           c.name as "companyName",
           c.logo,
           c.description,
@@ -67,37 +63,29 @@ export async function GET(request: Request) {
           c.weburl,
           c."finnhubIndustry",
           c.exchange,
-          COUNT(*) OVER (PARTITION BY DATE(t."scheduledAt")) as total_for_day,
-          ROW_NUMBER() OVER (
-            PARTITION BY DATE(t."scheduledAt"), t."MarketTime" 
-            ORDER BY t."scheduledAt"
-          ) as market_time_rank
-        FROM "Transcript" t
-        JOIN "Company" c ON t."companyId" = c.id
+          COUNT(*) OVER (PARTITION BY DATE(e."earningsDate")) as total_for_day
+        FROM "Earnings" e
+        LEFT JOIN "Company" c ON e.symbol = c.symbol
         WHERE 
-          t."scheduledAt" >= ${startDate}
-          AND t."scheduledAt" <= ${endDate}
-          AND t.quarter IS NOT NULL
-          AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${twoWeeksAgo}))
+          e."earningsDate" >= ${startDate}
+          AND e."earningsDate" <= ${endDate}
       )
       SELECT 
         *,
-        (total_for_day - 11) as remaining_count
-      FROM RankedTranscripts
-      WHERE 
-        ("MarketTime" = 'AMC' AND market_time_rank <= 4)
-        OR ("MarketTime" = 'BMO' AND market_time_rank <= 4)
-        OR ("MarketTime" = 'DMH' AND market_time_rank <= 3)
-      ORDER BY "scheduledAt" ASC;
+        (total_for_day - 1) as remaining_count
+      FROM DailyEarnings
+      ORDER BY "earningsDate" ASC;
     `;
 
-    const transformedTranscripts = result.map((row) => ({
+    const transformedEarnings = result.map((row) => ({
       id: row.id,
-      title: row.title,
-      scheduledAt: row.scheduledAt,
-      status: row.status,
-      MarketTime: row.MarketTime,
+      symbol: row.symbol,
       quarter: row.quarter,
+      year: row.year,
+      earningsDate: row.earningsDate,
+      earningsTime: row.earningsTime,
+      isDateConfirmed: row.isDateConfirmed,
+      marketCap: row.marketCap,
       totalForDay: Number(row.total_for_day),
       remainingCount: Math.max(0, Number(row.remaining_count)),
       company: {
@@ -114,8 +102,10 @@ export async function GET(request: Request) {
       },
     }));
 
+    console.log("Total earnings count:", transformedEarnings.length);
+
     return NextResponse.json({
-      transcripts: transformedTranscripts,
+      earnings: transformedEarnings,
     });
   } catch (error) {
     console.error("Error fetching month view data:", error);

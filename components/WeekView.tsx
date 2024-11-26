@@ -10,18 +10,62 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
+import { FilterState, ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useAuth } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface WeekViewProps {
-  handleCompanyClick: (transcript: ProcessedTranscript) => void;
+interface Company {
+  id: string;
+  symbol: string;
+  name: string | null;
+  logo: string | null;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
+interface EarningsEntry {
+  id: string;
+  symbol: string;
+  quarter: number;
+  year: number;
+  earningsDate: string;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  totalForDay: number;
+  remainingCount: number;
+  company: Company;
+}
+
+interface WeekViewProps {
+  filters: FilterState;
+  handleCompanyClick: (transcript: EarningsEntry) => void;
+}
+
+
+const MoreCard = ({ count, onClick }: { count: number, onClick: () => void }) => (
+  <div 
+    className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick();
+    }}
+  >
+    <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
+      + {count}
+    </div>
+  </div>
+);
+
+
+const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const currentDate = useCalendarStore((state) => state.currentDate);
@@ -69,6 +113,34 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
 
   // Fetch data for the week
   const { data, isLoading, error } = useGetWeekView();
+
+  const filterEarnings = (earnings: EarningsEntry[]) => {
+    return earnings.filter(entry => {
+      // Market Cap filtering
+      if (filters.marketCap.length > 0) {
+        const marketCapValue = entry.marketCap || 0;
+        const matchesMarketCap = filters.marketCap.some(cap => {
+          if (cap === "Large Cap ($10B+)" && marketCapValue >= 10000000000) return true;
+          if (cap === "Mid Cap ($2B-$10B)" && marketCapValue >= 2000000000 && marketCapValue < 10000000000) return true;
+          if (cap === "Small Cap ($300M-$2B)" && marketCapValue >= 300000000 && marketCapValue < 2000000000) return true;
+          return false;
+        });
+        if (!matchesMarketCap) return false;
+      }
+
+      // Sector filtering
+      if (filters.sectors.length > 0) {
+        if (!filters.sectors.includes(entry.company.finnhubIndustry || "")) return false;
+      }
+
+      // // Exchange filtering
+      // if (filters.exchanges.length > 0) {
+      //   if (!filters.exchanges.includes(entry.company.exchange || "")) return false;
+      // }
+
+      return true;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -141,14 +213,15 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts } = data;
+  const { earnings } = data;
+  const filteredEarnings = filterEarnings(earnings);
 
   // Pre-process data for each day
   const getDateContent = weekDates.map((date) => {
     const currentDay = date.toISOString().split("T")[0];
 
-    const dayTranscripts = transcripts.filter((transcript) => {
-      const transcriptDate = new Date(transcript.scheduledAt)
+    const dayTranscripts = filteredEarnings.filter((transcript) => {
+      const transcriptDate = new Date(transcript.earningsDate)
         .toISOString()
         .split("T")[0];
       return transcriptDate === currentDay;
@@ -222,22 +295,24 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
   );
 
   const MarketTimingGroup = ({
+    date,
     title,
     icon: Icon,
     transcripts,
     bgColor,
   }: {
     title: string;
+    date:Date,
     icon: LucideIcon;
-    transcripts: ProcessedTranscript[];
+    transcripts: EarningsEntry[];
     bgColor: string;
   }) => {
     if (transcripts.length === 0) return null;
 
-    const displayedTranscripts = transcripts.slice(
-      0,
-      window.innerWidth < 768 ? 12 : transcripts.length
-    );
+
+    const displayedTranscripts = transcripts.slice(0, 7);
+    const remainingCount = transcripts.length - 7;
+
     const hasMore = window.innerWidth < 768 && transcripts.length > 12;
 
     return (
@@ -265,7 +340,18 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
               onClick={() => handleCompanyClick(transcript)}
             />
           ))}
+          {remainingCount > 0 && (
+              <MoreCard count={remainingCount} onClick={() => {
+                useEarningsStore.setState({
+                  selectedDate: date,
+                  selectedCompany: null,
+                  selectedFutureEarnings: null,
+                  showWatchlist: false
+                });
+              }} />
+            )}
         </div>
+        
       </div>
     );
   };
@@ -365,12 +451,21 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
         {weekDays.map((day, index) => {
           const { dayTranscripts, isEmpty } = getDateContent[index];
 
+          // Get the date from the earnings date field
+          const date =  weekDates[index];
+
           // Group transcripts by market timing (only BMO and AMC)
           const preMarket = dayTranscripts.filter(
-            (t) => t.MarketTime === "BMO"
+            (t) => {
+              const time = t.earningsTime.split(':')[0];
+              return parseInt(time) < 9; // Before 9am is pre-market
+            }
           );
           const afterMarket = dayTranscripts.filter(
-            (t) => t.MarketTime === "AMC"
+            (t) => {
+              const time = t.earningsTime.split(':')[0];
+              return parseInt(time) >= 16; // 4pm or later is after-market
+            }
           );
 
           return (
@@ -407,12 +502,14 @@ const WeekView: React.FC<WeekViewProps> = ({ handleCompanyClick }) => {
                 ) : (
                   <div className="flex flex-col space-y-2">
                     <MarketTimingGroup
+                      date={date}
                       title="Pre-Market"
                       icon={Sun}
                       transcripts={preMarket}
                       bgColor="bg-blue-50 dark:bg-blue-950/30"
                     />
                     <MarketTimingGroup
+                      date={date}
                       title="After Hours"
                       icon={Moon}
                       transcripts={afterMarket}

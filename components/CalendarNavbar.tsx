@@ -121,25 +121,25 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
     useEarningsStore.setState({ showWatchlist: true });
   };
-  const audioRef = useRef<HTMLAudioElement>(null);
+  // const audioRef = useRef<HTMLAudioElement>(null);
 
 
-  useEffect(() => {
-    if (!audioRef.current) return;
+  // useEffect(() => {
+  //   if (!audioRef.current) return;
 
-    const audioUrl = "https://media.main.pro2.mas.media-server.com/c9cca3f025114016bae3b0816b901d94/ypvix9r9_en_enc1_audio_part1.m3u8";
+  //   const audioUrl = "https://media.main.pro2.mas.media-server.com/c9cca3f025114016bae3b0816b901d94/ypvix9r9_en_enc1_audio_part1.m3u8";
   
 
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(audioUrl);
-      hls.attachMedia(audioRef.current);
-    } else if (audioRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-      audioRef.current.src = audioUrl;
-    } else {
-      console.error("HLS is not supported in this browser.");
-    }
-  }, []);
+  //   if (Hls.isSupported()) {
+  //     const hls = new Hls();
+  //     hls.loadSource(audioUrl);
+  //     hls.attachMedia(audioRef.current);
+  //   } else if (audioRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+  //     audioRef.current.src = audioUrl;
+  //   } else {
+  //     console.error("HLS is not supported in this browser.");
+  //   }
+  // }, []);
 
   const handleApiClick = async () => {
     try {
@@ -253,11 +253,11 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
        <div>
       
        </div>
-          <div>
+          {/* <div>
             <audio ref={audioRef} controls className="h-9">
               Your browser does not support the audio element.
             </audio>
-          </div>
+          </div> */}
           <div> 
             <HoverCard>
               <HoverCardTrigger asChild>
@@ -350,19 +350,37 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                     </div>
                   </div>
 
-                  {/* Apply Button */}
-                  <Button 
-                    className="w-full mt-2" 
-                    size="sm"
-                    onClick={() => {
-                      
+                  {/* Filter Buttons */}
+                  <div className="flex gap-2 mt-2">
+                  <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Reset all filters to empty arrays
+                        const clearedFilters = {
+                          marketCap: [],
+                          sectors: [], 
+                          watchlist: []
+                        };
+                        // Update UI state to clear checkboxes
+                        setFilters(clearedFilters);
+                        // Apply cleared filters
+                        onFilter(clearedFilters);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button 
+                      className="flex-1" 
+                      size="sm"
+                      onClick={() => {
                         onFilter(filters);
-                        console.log(filters)
-                      
-                    }}
-                  >
-                    Apply Filters
-                  </Button>
+                      }}
+                    >
+                      Apply Filters
+                    </Button>
+                    
+                  </div>
                 </div>
               </HoverCardContent>
             </HoverCard>

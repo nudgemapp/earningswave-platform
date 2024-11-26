@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEmailModal } from "@/store/EmailModalStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { User, Subscription } from "@prisma/client";
-import { ProcessedTranscript } from "../types";
+import { EarningsEntry, ProcessedTranscript } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
 // import { Button } from "@/components/ui/button";
 // import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 // import { useAuthModal } from "@/store/AuthModalStore";
+interface FilterState {
+  sectors: string[];
+  marketCap: string[];
+  watchlist: string[];
+}
 
 const CalendarNavbar = dynamic(() => import("@/components/CalendarNavbar"), {
   ssr: false,
@@ -32,6 +37,11 @@ export type UserWithSubscription =
   | null;
 
 const EarningsClient = () => {
+  const [filters, setFilters] = useState<FilterState>({
+    sectors: [],
+    marketCap: [],
+    watchlist: [],
+  });
   const { currentDate, view, setCurrentDate, setView, navigateMonth } =
     useCalendarStore();
   const { setSelectedCompany, setSelectedTranscript } = useEarningsStore();
@@ -82,7 +92,7 @@ const EarningsClient = () => {
     // }
   };
 
-  const handleCompanyClick = (transcriptInfo: ProcessedTranscript) => {
+  const handleCompanyClick = (transcriptInfo: EarningsEntry) => {
     if (!transcriptInfo.company) {
       console.error("Company information is missing from transcript");
       return;
@@ -104,7 +114,10 @@ const EarningsClient = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
-      onFilter={()=>{}}
+      onFilter={(filters) => {
+        console.log(filters);
+        setFilters(filters);
+      }}
         currentDate={currentDate}
         setCurrentDate={handleDateChange}
         navigateMonth={(direction: number) =>
@@ -116,11 +129,12 @@ const EarningsClient = () => {
       {/* <Button onClick={fetchEarningsCalendar}>Fetch Earnings Calendar</Button> */}
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
-          <WeekView handleCompanyClick={handleCompanyClick} />
+          <WeekView handleCompanyClick={handleCompanyClick} filters={filters} />
         ) : (
           <MonthView
             currentDate={currentDate}
             handleCompanyClick={handleCompanyClick}
+            filters={filters}
           />
         )}
       </div>

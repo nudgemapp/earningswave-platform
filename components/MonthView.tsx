@@ -3,11 +3,37 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
-import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
+import { Calendar, Sun, Moon, LucideIcon, MoreHorizontal } from "lucide-react";
+import { FilterState, ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEarningsStore } from "@/store/EarningsStore";
+interface Company {
+  id: string;
+  symbol: string;
+  name: string | null;
+  logo: string | null;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
+}
+
+interface EarningsEntry {
+  id: string;
+  symbol: string;
+  quarter: number;
+  year: number;
+  earningsDate: string;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  totalForDay: number;
+  remainingCount: number;
+  company: Company;
+}
 
 // First, let's define proper interfaces for our data structure
 interface GroupedTranscript {
@@ -17,14 +43,45 @@ interface GroupedTranscript {
 
 interface MonthViewProps {
   currentDate: Date;
-  handleCompanyClick: (transcriptInfo: ProcessedTranscript) => void;
+  filters: FilterState; 
+  handleCompanyClick: (transcriptInfo: EarningsEntry) => void;
 }
 
 
 const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
+  filters,
   handleCompanyClick,
 }) => {
+  const filterEarnings = (earnings: EarningsEntry[]) => {
+    return earnings.filter(entry => {
+      // Market Cap filtering
+      if (filters.marketCap.length > 0) {
+        const marketCapValue = entry.marketCap || 0;
+        const matchesMarketCap = filters.marketCap.some(cap => {
+          if (cap === "Large Cap ($10B+)" && marketCapValue >= 10000000000) return true;
+          if (cap === "Mid Cap ($2B-$10B)" && marketCapValue >= 2000000000 && marketCapValue < 10000000000) return true;
+          if (cap === "Small Cap ($300M-$2B)" && marketCapValue >= 300000000 && marketCapValue < 2000000000) return true;
+          return false;
+        });
+        if (!matchesMarketCap) return false;
+      }
+
+      // Sector filtering
+      if (filters.sectors.length > 0) {
+        if (!filters.sectors.includes(entry.company.finnhubIndustry || "")) return false;
+      }
+
+      // Watchlist filtering
+      if (filters.watchlist.length > 0) {
+        // Implement watchlist filtering logic here when needed
+        // For example:
+        // if (filters.watchlist.includes("Show only watchlist") && !entry.isWatchlisted) return false;
+      }
+
+      return true;
+    });
+  };
   const { data, isLoading, error } = useGetMonthView();
  
   
@@ -85,23 +142,37 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  const { transcripts: rawTranscripts } = data;
+  const { earnings:EarningsEntry } = data;
 
-  const transcripts: GroupedTranscript[] = Object.entries(
-    rawTranscripts.reduce((acc, transcript) => {
-      const dateObj = new Date(transcript.scheduledAt);
+  // Apply filters to earnings data
+  const filteredEarnings = filterEarnings(data.data.earnings);
+
+  const transcripts = Object.entries(
+    filteredEarnings.reduce((acc: Record<string, EarningsEntry[]>, entry: EarningsEntry) => {
+      const dateObj = new Date(entry.earningsDate);
       const date = dateObj.toISOString().split("T")[0];
 
       if (!acc[date]) {
-        acc[date] = {
-          date,
-          items: [],
-        };
+        acc[date] = [];
       }
-      acc[date].items.push(transcript);
+      acc[date].push(entry);
       return acc;
-    }, {} as Record<string, GroupedTranscript>)
-  ).map(([, group]) => group);
+    }, {})
+  ).flatMap(([, entries]) => entries) as EarningsEntry[];
+
+  const MoreCard = ({ count, onClick }: { count: number, onClick: () => void }) => (
+    <div 
+      className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
+      <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
+        + {count}
+      </div>
+    </div>
+  );
 
   const CompanyCard = ({
     symbol,
@@ -176,16 +247,17 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  
 
-  const getLogosForDate = (date: Date, transcriptData: GroupedTranscript[]) => {
+  const getLogosForDate = (date: Date, transcriptData: EarningsEntry[]) => {
     const formattedDate = date.toISOString().split("T")[0];
-    const dateEntry = transcriptData.find(
-      (entry) => entry.date === formattedDate
+    const dateEntries = transcriptData.filter(
+      (entry) => entry.earningsDate.split("T")[0] === formattedDate
     );
 
     return {
-      items: dateEntry?.items || [],
-      totalCount: dateEntry?.items.length || 0,
+      items: dateEntries,
+      totalCount: dateEntries.length,
     };
   };
 
@@ -201,6 +273,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   );
 
   const MarketTimingGroup = ({
+    date,
     title,
     icon: Icon,
     transcripts,
@@ -208,10 +281,14 @@ const MonthView: React.FC<MonthViewProps> = ({
   }: {
     title: string;
     icon: LucideIcon;
-    transcripts: ProcessedTranscript[];
+    transcripts: EarningsEntry[];
     bgColor: string;
+    date: Date;
   }) => {
     if (transcripts.length === 0) return null;
+
+    const displayTranscripts = transcripts.slice(0, 7);
+    const remainingCount = transcripts.length - 7;
 
     return (
       <div
@@ -237,7 +314,7 @@ const MonthView: React.FC<MonthViewProps> = ({
         </div>
         <div className="p-1">
           <div className="grid grid-cols-4 gap-0.5">
-            {transcripts.map((transcript, index) => (
+            {displayTranscripts.map((transcript, index) => (
               <CompanyCard
                 key={`${transcript.company?.symbol}-${index}`}
                 symbol={transcript.company?.symbol || ""}
@@ -246,6 +323,16 @@ const MonthView: React.FC<MonthViewProps> = ({
                 onClick={() => handleCompanyClick(transcript)}
               />
             ))}
+            {remainingCount > 0 && (
+              <MoreCard count={remainingCount} onClick={() => {
+                useEarningsStore.setState({
+                  selectedDate: date,
+                  selectedCompany: null,
+                  selectedFutureEarnings: null,
+                  showWatchlist: false
+                });
+              }} />
+            )}
           </div>
         </div>
       </div>
@@ -308,19 +395,23 @@ const MonthView: React.FC<MonthViewProps> = ({
                   ) : (
                     <div className="flex flex-col h-full">
                       <MarketTimingGroup
+                        date={date}
                         title="Pre-Market"
                         icon={Sun}
-                        transcripts={dayContent.filter(
-                          (t) => t.MarketTime === "BMO"
-                        )}
+                        transcripts={dayContent.filter((t) => {
+                          const time = t.earningsTime.split(':')[0];
+                          return parseInt(time) < 9; // Before 9am is pre-market
+                        })}
                         bgColor="bg-blue-200/40"
                       />
                       <MarketTimingGroup
+                        date={date}
                         title="After Hours"
                         icon={Moon}
-                        transcripts={dayContent.filter(
-                          (t) => t.MarketTime === "AMC"
-                        )}
+                        transcripts={dayContent.filter((t) => {
+                          const time = t.earningsTime.split(':')[0];
+                          return parseInt(time) >= 16; // After 4pm is after-market
+                        })}
                         bgColor="bg-orange-50"
                       />
                     </div>

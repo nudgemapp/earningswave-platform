@@ -1,105 +1,118 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-interface TranscriptRow {
+interface EarningsQueryResult {
   id: string;
-  title: string;
-  scheduledAt: Date;
-  status: string;
-  MarketTime: string;
-  quarter: string;
-  companyId: string;
   symbol: string;
-  companyName: string;
-  logo: string;
+  quarter: number;
+  year: number;
+  earningsDate: Date;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  companyId: string;
+  companyName: string | null;
+  logo: string | null;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
+  total_for_day: bigint;
+  remaining_count: bigint;
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   let startDate = new Date(searchParams.get("startDate") || "");
 
-  // Ensure we're working with UTC dates
-  startDate = new Date(
-    Date.UTC(
-      startDate.getFullYear(),
-      startDate.getMonth(),
-      startDate.getDate(),
-      0,
-      0,
-      0,
-      0
-    )
-  );
-
   // Adjust to Monday of the current week
   const day = startDate.getUTCDay();
   const diff = startDate.getUTCDate() - day + (day === 0 ? -6 : 1);
-  startDate = new Date(
-    Date.UTC(startDate.getFullYear(), startDate.getMonth(), diff, 0, 0, 0, 0)
-  );
+  startDate = new Date(startDate);
+  startDate.setUTCDate(diff);
+  startDate.setUTCHours(0, 0, 0, 0);
 
   // Set end date to Friday of the same week
   const endDate = new Date(startDate);
-  endDate.setUTCDate(startDate.getUTCDate() + 4); // Add 4 days to get to Friday
+  endDate.setUTCDate(startDate.getUTCDate() + 4);
   endDate.setUTCHours(23, 59, 59, 999);
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  try {
-    const currentDate = new Date();
-    const yesterday = new Date(currentDate);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const twoWeeksAgo = new Date(currentDate);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  console.log("API Date Range:", {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
 
-    const result = await prisma.$queryRaw`
+  try {
+    const result = await prisma.$queryRaw<EarningsQueryResult[]>`
+      WITH DailyEarnings AS (
+        SELECT 
+          e.id,
+          e.symbol,
+          e.quarter,
+          e.year,
+          e."earningsDate",
+          e."earningsTime",
+          e."isDateConfirmed",
+          e."marketCap",
+          c.id as "companyId",
+          c.name as "companyName",
+          c.logo,
+          c.description,
+          c.currency,
+          c."marketCapitalization",
+          c.weburl,
+          c."finnhubIndustry",
+          c.exchange,
+          COUNT(*) OVER (PARTITION BY DATE(e."earningsDate")) as total_for_day
+        FROM "Earnings" e
+        LEFT JOIN "Company" c ON e.symbol = c.symbol
+        WHERE 
+          e."earningsDate" >= ${startDate}
+          AND e."earningsDate" <= ${endDate}
+      )
       SELECT 
-        t.id,
-        t.title,
-        t."scheduledAt",
-        t.status,
-        t."MarketTime",
-        t.quarter,
-        c.id as "companyId",
-        c.symbol,
-        c.name as "companyName",
-        c.logo
-      FROM "Transcript" t
-      JOIN "Company" c ON t."companyId" = c.id
-      WHERE 
-        t."scheduledAt" >= ${startDate}
-        AND t."scheduledAt" <= ${endDate}
-        AND t.quarter IS NOT NULL
-        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${twoWeeksAgo}))
-      ORDER BY t."scheduledAt" ASC;
+        *,
+        (total_for_day - 1) as remaining_count
+      FROM DailyEarnings
+      ORDER BY "earningsDate" ASC;
     `;
 
-    const transformedTranscripts = (result as TranscriptRow[]).map((row) => ({
+    const transformedEarnings = result.map((row) => ({
       id: row.id,
-      title: row.title,
-      scheduledAt: row.scheduledAt,
-      status: row.status,
-      MarketTime: row.MarketTime,
+      symbol: row.symbol,
       quarter: row.quarter,
-      marketTime: row.MarketTime,
+      year: row.year,
+      earningsDate: row.earningsDate,
+      earningsTime: row.earningsTime,
+      isDateConfirmed: row.isDateConfirmed,
+      marketCap: row.marketCap,
+      totalForDay: Number(row.total_for_day),
+      remainingCount: Math.max(0, Number(row.remaining_count)),
       company: {
-        id: row.companyId,
+        id: row.companyId || null,
         symbol: row.symbol,
-        name: row.companyName,
-        logo: row.logo,
+        name: row.companyName || null,
+        logo: row.logo || null,
+        description: row.description || null,
+        currency: row.currency || null,
+        marketCapitalization: row.marketCapitalization || null,
+        weburl: row.weburl || null,
+        finnhubIndustry: row.finnhubIndustry || null,
+        exchange: row.exchange || null,
       },
     }));
 
-    console.log("Found Records:", {
-      transcriptsCount: transformedTranscripts.length,
-      firstTranscriptDate: transformedTranscripts[0]?.scheduledAt,
-      lastTranscriptDate:
-        transformedTranscripts[transformedTranscripts.length - 1]?.scheduledAt,
-    });
+    console.log("Total earnings count:", transformedEarnings.length);
 
-    return NextResponse.json({ transcripts: transformedTranscripts });
+    return NextResponse.json({
+      earnings: transformedEarnings,
+    });
   } catch (error) {
     console.error("Error fetching week view data:", error);
     return new Response("Failed to fetch week view data", { status: 500 });

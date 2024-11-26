@@ -13,6 +13,37 @@ export interface Company {
   sharesOutstanding?: number | null;
 }
 
+interface CompanyType {
+  id: string;
+  symbol: string;
+  name: string | null;
+  logo: string | null;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
+}
+export interface FilterState {
+  sectors: string[];
+  marketCap: string[];
+  watchlist: string[];
+}
+
+export interface EarningsEntry {
+  id: string;
+  symbol: string;
+  quarter: number;
+  year: number;
+  earningsDate: string;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  totalForDay: number;
+  remainingCount: number;
+  company: CompanyType;
+}
 export interface ProcessedTranscript {
   id: string;
   title: string | null;
