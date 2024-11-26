@@ -65,7 +65,7 @@ export const useGetMonthView = () => {
     };
   }, [currentDate]);
 
-  return useQuery<MonthViewResponse>({
+  return useQuery<EarningsEntry[]>({
     queryKey: ["month-view", startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -89,11 +89,12 @@ export const useGetMonthView = () => {
 
       // data = filteredData;
 
-      const data = (await response.json()) as EarningsEntry[];
+      const data = (await response.json().then((data:{earnings:EarningsEntry[]})=>{
 
-      return {
-        data,
-      };
+        return data.earnings
+      })) as EarningsEntry[];
+
+      return data
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,

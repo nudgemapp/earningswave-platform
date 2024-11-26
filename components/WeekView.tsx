@@ -49,25 +49,25 @@ interface WeekViewProps {
   handleCompanyClick: (transcript: EarningsEntry) => void;
 }
 
-const MoreCard = ({
-  count,
-  onClick,
-}: {
-  count: number;
-  onClick: () => void;
-}) => (
-  <div
-    className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick();
-    }}
-  >
-    <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
-      + {count}
-    </div>
-  </div>
-);
+// const MoreCard = ({
+//   count,
+//   onClick,
+// }: {
+//   count: number;
+//   onClick: () => void;
+// }) => (
+//   <div
+//     className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+//     onClick={(e) => {
+//       e.stopPropagation();
+//       onClick();
+//     }}
+//   >
+//     <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
+//       + {count}
+//     </div>
+//   </div>
+// );
 
 const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const { userId } = useAuth();
@@ -325,8 +325,9 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   }) => {
     if (transcripts.length === 0) return null;
 
-    const displayedTranscripts = transcripts.slice(0, 7);
-    const remainingCount = transcripts.length - 7;
+    // const displayedTranscripts = transcripts.slice(0, 7);
+    const displayedTranscripts =transcripts
+    // const remainingCount = transcripts.length - 7;
 
     const hasMore = window.innerWidth < 768 && transcripts.length > 12;
 
@@ -355,7 +356,7 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
               onClick={() => handleCompanyClick(transcript)}
             />
           ))}
-          {remainingCount > 0 && (
+          {/* {remainingCount > 0 && (
             <MoreCard
               count={remainingCount}
               onClick={() => {
@@ -367,7 +368,7 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
                 });
               }}
             />
-          )}
+          )} */}
         </div>
       </div>
     );

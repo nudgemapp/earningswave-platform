@@ -48,6 +48,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   handleCompanyClick,
 }) => {
   const filterEarnings = (earnings: EarningsEntry[]) => {
+    console.log(earnings)
     return earnings.filter((entry) => {
       // Market Cap filtering
       if (filters.marketCap.length > 0) {
@@ -146,9 +147,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (error) return <div>Error loading data</div>;
   if (!data) return <div>No data available</div>;
 
-  // Apply filters to earnings data
-  console.log(data.data)
-  const filteredEarnings = filterEarnings(data.data as EarningsEntry[]);
+  const filteredEarnings = filterEarnings(data as EarningsEntry[]);
 
   const transcripts = Object.entries(
     filteredEarnings.reduce(
@@ -166,25 +165,25 @@ const MonthView: React.FC<MonthViewProps> = ({
     )
   ).flatMap(([, entries]) => entries) as EarningsEntry[];
 
-  const MoreCard = ({
-    count,
-    onClick,
-  }: {
-    count: number;
-    onClick: () => void;
-  }) => (
-    <div
-      className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-    >
-      <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
-        + {count}
-      </div>
-    </div>
-  );
+  // const MoreCard = ({
+  //   count,
+  //   onClick,
+  // }: {
+  //   count: number;
+  //   onClick: () => void;
+  // }) => (
+  //   <div
+  //     className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+  //     onClick={(e) => {
+  //       e.stopPropagation();
+  //       onClick();
+  //     }}
+  //   >
+  //     <div className="flex items-center justify-center w-full h-full font-semibold text-gray-800 dark:text-gray-200">
+  //       + {count}
+  //     </div>
+  //   </div>
+  // );
 
   const CompanyCard = ({
     symbol,
@@ -298,7 +297,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   }) => {
     if (transcripts.length === 0) return null;
 
-    const displayTranscripts = transcripts.slice(0, 7);
+    // const displayTranscripts = transcripts.slice(0, 7);
+    const displayTranscripts = transcripts
     const remainingCount = transcripts.length - 7;
 
     return (
@@ -334,7 +334,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                 onClick={() => handleCompanyClick(transcript)}
               />
             ))}
-            {remainingCount > 0 && (
+            {/* {remainingCount > 0 && (
               <MoreCard
                 count={remainingCount}
                 onClick={() => {
@@ -346,7 +346,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                   });
                 }}
               />
-            )}
+            )} */}
           </div>
         </div>
       </div>

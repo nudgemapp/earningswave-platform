@@ -15,7 +15,7 @@ import React from "react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useUserSubscription } from "@/app/hooks/use-user-subscription";
+import { useUserSubscription } from "@/app/hooks/use-user-subscription"
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
@@ -63,6 +63,7 @@ const EarningsTranscript = () => {
       doc.addPage();
       yPosition = margin;
     };
+
 
     // Helper function to process text content
     const processTextContent = (
