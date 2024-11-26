@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
 import React from "react";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { BLACKLISTED_SYMBOLS } from "../constants/blacklist";
 
 interface Company {
@@ -66,17 +65,16 @@ export const useGetWeekView = () => {
       const response = await fetch(`/api/earnings/week?${params}`);
       if (!response.ok) throw new Error("Failed to fetch week view data");
 
-      
-      const data = await response.json() 
+      const data = await response.json();
       // Filter out blacklisted symbols
-      data.earnings = data.earnings.filter(
-        (entry: EarningsEntry) => {
-          const symbol = entry.symbol.toUpperCase();
-          return !BLACKLISTED_SYMBOLS.some(blacklisted => blacklisted.toUpperCase() === symbol);
-        }
-      );
-     
-      return data
+      data.earnings = data.earnings.filter((entry: EarningsEntry) => {
+        const symbol = entry.symbol.toUpperCase();
+        return !BLACKLISTED_SYMBOLS.some(
+          (blacklisted) => blacklisted.toUpperCase() === symbol
+        );
+      });
+
+      return data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

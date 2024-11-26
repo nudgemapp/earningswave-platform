@@ -1,12 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import React from "react";
-import { BLACKLISTED_SYMBOLS } from "../constants/blacklist";
-
-interface MonthViewResponse {
-  transcripts: ProcessedTranscript[];
-}
 
 interface Company {
   id: string;
@@ -33,34 +27,6 @@ interface EarningsEntry {
   totalForDay: number;
   remainingCount: number;
   company: Company;
-}
-
-
-interface RawTranscript {
-  id: string;
-  companyId: string;
-  title?: string;
-  scheduledAt: string;
-  quarter?: number;
-  year?: number;
-  audioUrl?: string;
-  MarketTime: "BMO" | "AMC" | "DMH" | "UNKNOWN";
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
-  epsActual?: number;
-  epsEstimate?: number;
-  revenueActual?: number;
-  revenueEstimate?: number;
-  company?: {
-    symbol: string;
-    name?: string;
-    logo?: string;
-    marketCapitalization?: number | null;
-  finnhubIndustry?: string | null;
-  exchange?: string | null;
-  country?: string | null;
-  weburl?: string | null;
-  sharesOutstanding?: number | null;
-  };
 }
 
 export const useGetMonthView = () => {
@@ -95,7 +61,7 @@ export const useGetMonthView = () => {
     };
   }, [currentDate]);
 
-  return useQuery<EarningsEntry[] |any>({
+  return useQuery<EarningsEntry[] | any>({
     queryKey: ["month-view", startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -108,9 +74,8 @@ export const useGetMonthView = () => {
       });
 
       if (!response.ok) throw new Error("Failed to fetch month view data");
-      
 
-      let data = await response.json() as EarningsEntry[];
+      let data = (await response.json()) as EarningsEntry[];
       // // Filter out blacklisted symbols
       // const filteredData = data.filter(
       //   (entry: EarningsEntry) => {
@@ -118,12 +83,11 @@ export const useGetMonthView = () => {
       //     return !BLACKLISTED_SYMBOLS.some(blacklisted => blacklisted.toUpperCase() === symbol);
       //   }
       // );
-      
 
       // data = filteredData;
-     
+
       return {
-        data
+        data,
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Calendar,
   CalendarCheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   StarIcon,
-  Filter
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,8 +24,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import Hls from "hls.js";
-import Tabs from "@/app/(auth)/(platform)/earnings/components/Tabs";
 
 interface CalendarNavbarProps {
   currentDate: Date;
@@ -48,7 +46,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   setCurrentDate,
   view,
   setView,
-  onFilter
+  onFilter,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,12 +121,10 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   };
   // const audioRef = useRef<HTMLAudioElement>(null);
 
-
   // useEffect(() => {
   //   if (!audioRef.current) return;
 
   //   const audioUrl = "https://media.main.pro2.mas.media-server.com/c9cca3f025114016bae3b0816b901d94/ypvix9r9_en_enc1_audio_part1.m3u8";
-  
 
   //   if (Hls.isSupported()) {
   //     const hls = new Hls();
@@ -141,15 +137,15 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   //   }
   // }, []);
 
-  const handleApiClick = async () => {
-    try {
-      const response = await fetch("/api/finnhub/transcript-sync");
-      const data = await response.json();
-      console.log("API Response:", data);
-    } catch (error) {
-      console.error("Error fetching from API:", error);
-    }
-  };
+  // const handleApiClick = async () => {
+  //   try {
+  //     const response = await fetch("/api/finnhub/transcript-sync");
+  //     const data = await response.json();
+  //     console.log("API Response:", data);
+  //   } catch (error) {
+  //     console.error("Error fetching from API:", error);
+  //   }
+  // };
 
   const [filters, setFilters] = useState<FilterState>({
     sectors: [],
@@ -158,22 +154,22 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   });
 
   const handleFilterChange = (category: keyof FilterState, value: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const currentValues = prev[category];
       const newValues = currentValues.includes(value)
-        ? currentValues.filter(v => v !== value)
+        ? currentValues.filter((v) => v !== value)
         : [...currentValues, value];
-      
+
       return {
         ...prev,
-        [category]: newValues
+        [category]: newValues,
       };
     });
   };
 
   useEffect(() => {
     // Load filters from localStorage on mount
-    const savedFilters = localStorage.getItem('earnings-filters');
+    const savedFilters = localStorage.getItem("earnings-filters");
     if (savedFilters) {
       setFilters(JSON.parse(savedFilters));
     }
@@ -181,7 +177,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
   useEffect(() => {
     // Save filters to localStorage whenever they change
-    localStorage.setItem('earnings-filters', JSON.stringify(filters));
+    localStorage.setItem("earnings-filters", JSON.stringify(filters));
   }, [filters]);
 
   return (
@@ -250,15 +246,13 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-       <div>
-      
-       </div>
+          <div></div>
           {/* <div>
             <audio ref={audioRef} controls className="h-9">
               Your browser does not support the audio element.
             </audio>
           </div> */}
-          <div> 
+          <div>
             <HoverCard>
               <HoverCardTrigger asChild>
                 <Button
@@ -267,7 +261,9 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                   className="h-9 px-4 font-medium hover:bg-secondary/80 hover:text-primary transition-colors duration-200"
                 >
                   <Filter className="h-5 w-5 mr-2" />
-                  Filter {Object.values(filters).flat().length > 0 && `(${Object.values(filters).flat().length})`}
+                  Filter{" "}
+                  {Object.values(filters).flat().length > 0 &&
+                    `(${Object.values(filters).flat().length})`}
                 </Button>
               </HoverCardTrigger>
               <HoverCardContent className="w-80">
@@ -275,31 +271,49 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                   <div className="flex justify-between items-center border-b pb-2">
                     <h4 className="text-sm font-semibold">Filter Earnings</h4>
                     {Object.values(filters).flat().length > 0 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setFilters({ sectors: [], marketCap: [], watchlist: [] })}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setFilters({
+                            sectors: [],
+                            marketCap: [],
+                            watchlist: [],
+                          })
+                        }
                       >
                         Clear all
                       </Button>
                     )}
                   </div>
-                  
+
                   {/* Sector Section */}
                   <div className="space-y-2">
                     <h5 className="text-sm font-medium">Sector</h5>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        "Retail", "Automotive", "Software", "Insurance",
-                        "Real Estate", "Telecomm", "Technology", "Healthcare",
-                        "Finance", "Energy"
+                        "Retail",
+                        "Automotive",
+                        "Software",
+                        "Insurance",
+                        "Real Estate",
+                        "Telecomm",
+                        "Technology",
+                        "Healthcare",
+                        "Finance",
+                        "Energy",
                       ].map((sector) => (
-                        <label key={sector} className="flex items-center space-x-2 text-sm">
+                        <label
+                          key={sector}
+                          className="flex items-center space-x-2 text-sm"
+                        >
                           <input
                             type="checkbox"
                             className="rounded border-gray-300"
                             checked={filters.sectors.includes(sector)}
-                            onChange={() => handleFilterChange('sectors', sector)}
+                            onChange={() =>
+                              handleFilterChange("sectors", sector)
+                            }
                           />
                           <span>{sector}</span>
                         </label>
@@ -314,14 +328,19 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                       {[
                         "Large Cap ($10B+)",
                         "Mid Cap ($2B-$10B)",
-                        "Small Cap ($300M-$2B)"
+                        "Small Cap ($300M-$2B)",
                       ].map((cap) => (
-                        <label key={cap} className="flex items-center space-x-2 text-sm">
+                        <label
+                          key={cap}
+                          className="flex items-center space-x-2 text-sm"
+                        >
                           <input
                             type="checkbox"
                             className="rounded border-gray-300"
                             checked={filters.marketCap.includes(cap)}
-                            onChange={() => handleFilterChange('marketCap', cap)}
+                            onChange={() =>
+                              handleFilterChange("marketCap", cap)
+                            }
                           />
                           <span>{cap}</span>
                         </label>
@@ -333,34 +352,38 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                   <div className="space-y-2">
                     <h5 className="text-sm font-medium">Watchlist</h5>
                     <div className="space-y-1">
-                      {[
-                        "Show only watchlist",
-                        "Include watchlist alerts"
-                      ].map((option) => (
-                        <label key={option} className="flex items-center space-x-2 text-sm">
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300"
-                            checked={filters.watchlist.includes(option)}
-                            onChange={() => handleFilterChange('watchlist', option)}
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
+                      {["Show only watchlist", "Include watchlist alerts"].map(
+                        (option) => (
+                          <label
+                            key={option}
+                            className="flex items-center space-x-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300"
+                              checked={filters.watchlist.includes(option)}
+                              onChange={() =>
+                                handleFilterChange("watchlist", option)
+                              }
+                            />
+                            <span>{option}</span>
+                          </label>
+                        )
+                      )}
                     </div>
                   </div>
 
                   {/* Filter Buttons */}
                   <div className="flex gap-2 mt-2">
-                  <Button
+                    <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
                         // Reset all filters to empty arrays
                         const clearedFilters = {
                           marketCap: [],
-                          sectors: [], 
-                          watchlist: []
+                          sectors: [],
+                          watchlist: [],
                         };
                         // Update UI state to clear checkboxes
                         setFilters(clearedFilters);
@@ -370,8 +393,8 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                     >
                       Clear
                     </Button>
-                    <Button 
-                      className="flex-1" 
+                    <Button
+                      className="flex-1"
                       size="sm"
                       onClick={() => {
                         onFilter(filters);
@@ -379,12 +402,10 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                     >
                       Apply Filters
                     </Button>
-                    
                   </div>
                 </div>
               </HoverCardContent>
             </HoverCard>
-            
           </div>
           <HoverCard>
             <HoverCardTrigger asChild>

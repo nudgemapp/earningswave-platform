@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, MarketTime } from "@prisma/client";
 
+interface TranscriptSpeech {
+  name: string;
+  speech: string[];
+  session?: string;
+}
+
+interface TranscriptParticipant {
+  name: string;
+  role?: string;
+  description?: string;
+}
+
 export async function GET() {
   const prisma = new PrismaClient();
   const symbol = "KULR";
@@ -64,7 +76,9 @@ export async function GET() {
               MarketTime: marketTime as MarketTime,
               status: "COMPLETED",
               fullText: transcriptData.transcript
-                ?.map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
+                ?.map(
+                  (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                )
                 .join("\n"),
               speakers: transcriptData.participant,
             },
@@ -79,7 +93,9 @@ export async function GET() {
               MarketTime: marketTime as MarketTime,
               status: "COMPLETED",
               fullText: transcriptData.transcript
-                ?.map((t: any) => `${t.name}: ${t.speech.join(" ")}`)
+                ?.map(
+                  (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                )
                 .join("\n"),
               speakers: transcriptData.participant,
             },
@@ -103,8 +119,8 @@ export async function GET() {
 
             // Find all speeches for this participant
             const participantSpeeches = transcriptData.transcript
-              .filter((t: any) => t.name === p.name)
-              .map((t: any, idx: number) => ({
+              .filter((t: TranscriptSpeech) => t.name === p.name)
+              .map((t: TranscriptSpeech, idx: number) => ({
                 content: t.speech.join("\n"),
                 sequence: idx,
                 sessionType: t.session || null,

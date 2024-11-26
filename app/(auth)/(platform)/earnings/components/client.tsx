@@ -5,12 +5,13 @@ import dynamic from "next/dynamic";
 import { useCalendarStore } from "@/store/CalendarStore";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { User, Subscription } from "@prisma/client";
-import { EarningsEntry, ProcessedTranscript } from "../types";
+import { EarningsEntry } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
 import { useAuthModal } from "@/store/AuthModalStore";
 // import { Button } from "@/components/ui/button";
 // import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 // import { useAuthModal } from "@/store/AuthModalStore";
+
 interface FilterState {
   sectors: string[];
   marketCap: string[];
@@ -46,7 +47,6 @@ const EarningsClient = () => {
     useCalendarStore();
   const { setSelectedCompany, setSelectedTranscript } = useEarningsStore();
 
-  // const { onOpen: openAuthModal } = useAuthModal();
   const { onOpen: openAuthModal } = useAuthModal();
 
   useEffect(() => {
@@ -113,10 +113,10 @@ const EarningsClient = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <CalendarNavbar
-      onFilter={(filters) => {
-        console.log(filters);
-        setFilters(filters);
-      }}
+        onFilter={(filters) => {
+          console.log(filters);
+          setFilters(filters);
+        }}
         currentDate={currentDate}
         setCurrentDate={handleDateChange}
         navigateMonth={(direction: number) =>

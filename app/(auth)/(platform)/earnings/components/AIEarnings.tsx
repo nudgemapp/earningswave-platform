@@ -15,7 +15,7 @@ interface AIEarningsAnalysisProps {
 const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
   console.log(company);
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   // Get the most recent completed transcript
   const latestTranscript = company.recentTranscripts?.find(

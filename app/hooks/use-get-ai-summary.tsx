@@ -3,9 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 
 interface AISummaryResponse {
   analysis: string;
-  keyPoints?: any; // From aiKeyPoints in schema
-  sentiment?: any; // From aiSentimentAnalysis in schema
-  lastUpdated?: Date; // From aiLastUpdated in schema
+  keyPoints?: Record<string, unknown>;
+  sentiment?: {
+    overall: string;
+    score?: number;
+    details?: Record<string, string>;
+  };
+  lastUpdated?: Date;
 }
 
 export const useGetAISummary = (transcriptId: string | undefined) => {

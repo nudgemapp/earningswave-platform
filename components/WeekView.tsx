@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { FilterState, ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
+import { FilterState } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";
@@ -49,9 +49,14 @@ interface WeekViewProps {
   handleCompanyClick: (transcript: EarningsEntry) => void;
 }
 
-
-const MoreCard = ({ count, onClick }: { count: number, onClick: () => void }) => (
-  <div 
+const MoreCard = ({
+  count,
+  onClick,
+}: {
+  count: number;
+  onClick: () => void;
+}) => (
+  <div
     className="flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
     onClick={(e) => {
       e.stopPropagation();
@@ -63,7 +68,6 @@ const MoreCard = ({ count, onClick }: { count: number, onClick: () => void }) =>
     </div>
   </div>
 );
-
 
 const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const { userId } = useAuth();
@@ -115,14 +119,25 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const { data, isLoading, error } = useGetWeekView();
 
   const filterEarnings = (earnings: EarningsEntry[]) => {
-    return earnings.filter(entry => {
+    return earnings.filter((entry) => {
       // Market Cap filtering
       if (filters.marketCap.length > 0) {
         const marketCapValue = entry.marketCap || 0;
-        const matchesMarketCap = filters.marketCap.some(cap => {
-          if (cap === "Large Cap ($10B+)" && marketCapValue >= 10000000000) return true;
-          if (cap === "Mid Cap ($2B-$10B)" && marketCapValue >= 2000000000 && marketCapValue < 10000000000) return true;
-          if (cap === "Small Cap ($300M-$2B)" && marketCapValue >= 300000000 && marketCapValue < 2000000000) return true;
+        const matchesMarketCap = filters.marketCap.some((cap) => {
+          if (cap === "Large Cap ($10B+)" && marketCapValue >= 10000000000)
+            return true;
+          if (
+            cap === "Mid Cap ($2B-$10B)" &&
+            marketCapValue >= 2000000000 &&
+            marketCapValue < 10000000000
+          )
+            return true;
+          if (
+            cap === "Small Cap ($300M-$2B)" &&
+            marketCapValue >= 300000000 &&
+            marketCapValue < 2000000000
+          )
+            return true;
           return false;
         });
         if (!matchesMarketCap) return false;
@@ -130,7 +145,8 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
 
       // Sector filtering
       if (filters.sectors.length > 0) {
-        if (!filters.sectors.includes(entry.company.finnhubIndustry || "")) return false;
+        if (!filters.sectors.includes(entry.company.finnhubIndustry || ""))
+          return false;
       }
 
       // // Exchange filtering
@@ -302,13 +318,12 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
     bgColor,
   }: {
     title: string;
-    date:Date,
+    date: Date;
     icon: LucideIcon;
     transcripts: EarningsEntry[];
     bgColor: string;
   }) => {
     if (transcripts.length === 0) return null;
-
 
     const displayedTranscripts = transcripts.slice(0, 7);
     const remainingCount = transcripts.length - 7;
@@ -341,17 +356,19 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
             />
           ))}
           {remainingCount > 0 && (
-              <MoreCard count={remainingCount} onClick={() => {
+            <MoreCard
+              count={remainingCount}
+              onClick={() => {
                 useEarningsStore.setState({
                   selectedDate: date,
                   selectedCompany: null,
                   selectedFutureEarnings: null,
-                  showWatchlist: false
+                  showWatchlist: false,
                 });
-              }} />
-            )}
+              }}
+            />
+          )}
         </div>
-        
       </div>
     );
   };
@@ -452,21 +469,17 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
           const { dayTranscripts, isEmpty } = getDateContent[index];
 
           // Get the date from the earnings date field
-          const date =  weekDates[index];
+          const date = weekDates[index];
 
           // Group transcripts by market timing (only BMO and AMC)
-          const preMarket = dayTranscripts.filter(
-            (t) => {
-              const time = t.earningsTime.split(':')[0];
-              return parseInt(time) < 9; // Before 9am is pre-market
-            }
-          );
-          const afterMarket = dayTranscripts.filter(
-            (t) => {
-              const time = t.earningsTime.split(':')[0];
-              return parseInt(time) >= 16; // 4pm or later is after-market
-            }
-          );
+          const preMarket = dayTranscripts.filter((t) => {
+            const time = t.earningsTime.split(":")[0];
+            return parseInt(time) < 9; // Before 9am is pre-market
+          });
+          const afterMarket = dayTranscripts.filter((t) => {
+            const time = t.earningsTime.split(":")[0];
+            return parseInt(time) >= 16; // 4pm or later is after-market
+          });
 
           return (
             <div

@@ -12,7 +12,6 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetDayView } from "@/app/hooks/use-get-day-view";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
@@ -52,7 +51,6 @@ interface EarningsEntry {
   company: Company;
 }
 
-
 interface DayViewProps {
   date: Date;
   onTranscriptClick: (transcript: EarningsEntry) => void;
@@ -76,8 +74,6 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   const { userId } = useAuth();
   const authModal = useAuthModal();
   const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  console.log(data);
 
   const handleDateChange =
     (direction: number) => (e: React.MouseEvent | React.TouchEvent) => {
@@ -122,16 +118,15 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     return data.earnings.filter((earning) => {
       // Convert earnings time to hours for comparison
       const timeStr = earning.earningsTime;
-      const hours = parseInt(timeStr.split(':')[0]);
-      
+      const hours = parseInt(timeStr.split(":")[0]);
+
       // Before market hours (BMO) is before 9:30 AM
       // After market hours (AMC) is after 4:00 PM
       const marketTime = hours < 9.5 ? "BMO" : hours >= 16 ? "AMC" : "DMH";
-      
+
       return marketTime === activeFilter;
     });
   }, [data, activeFilter]);
-
 
   const groupedTranscripts = React.useMemo(() => {
     if (!filteredData) return {};
@@ -139,8 +134,8 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     return filteredData.reduce((acc, earning) => {
       // Convert earnings time to hours for comparison
       const timeStr = earning.earningsTime;
-      const hours = parseInt(timeStr.split(':')[0]);
-      
+      const hours = parseInt(timeStr.split(":")[0]);
+
       // Before market hours (BMO) is before 9:30 AM
       // After market hours (AMC) is after 4:00 PM
       const timing = hours < 9.5 ? "BMO" : hours >= 16 ? "AMC" : "DMH";

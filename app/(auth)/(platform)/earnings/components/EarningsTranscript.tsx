@@ -64,9 +64,6 @@ const EarningsTranscript = () => {
       yPosition = margin;
     };
 
-    // Helper function to check remaining space
-    const getRemainingSpace = () => pageHeight - margin - yPosition;
-
     // Helper function to process text content
     const processTextContent = (
       text: string,

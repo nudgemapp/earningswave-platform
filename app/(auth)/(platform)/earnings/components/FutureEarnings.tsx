@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -27,9 +27,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import Tabs from "./Tabs";
 import { Button } from "@/components/ui/button";
-import AIEarningsAnalysis from "./AIEarnings";
+// import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   SelectedCompany: {

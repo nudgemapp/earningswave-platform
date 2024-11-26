@@ -82,8 +82,6 @@ export interface AlphaVantageDaily {
   "5. volume": string;
 }
 
-export interface AlphaVantageIntraday extends AlphaVantageDaily {}
-
 export interface FinnhubTrade {
   p: number; // Last price
   s: string; // Symbol
