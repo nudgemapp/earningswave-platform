@@ -591,7 +591,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                      
                       {todayPrices.percentChange !== null && 
                        todayPrices.priceDifference !== null && 
-                       realtimeData?.realtimePrice && (
+                       realtimeData?.realtimePrice &&
+                       new Date().getHours() < 16 && (
                         <span
                           className={`text-sm font-medium ${
                             todayPrices.percentChange > 0
