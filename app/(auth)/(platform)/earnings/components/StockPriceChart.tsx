@@ -8,10 +8,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  XAxis,
 } from "recharts";
 import { useStockWebSocket } from "@/hooks/use-stock-websocket";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { IconPlaneArrival } from "@tabler/icons-react";
+import { curveMonotoneX } from "d3-shape";
 
 interface StockChartProps {
   symbol: string;
@@ -88,30 +91,25 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     [websocketConnection]
   );
 
-  console.log(timeframe);
-  console.log(symbol);
-  console.log(isConnected);
-  console.log(error);
-
-  // Get real-time data from React Query cache
-  const realtimeData = queryClient.getQueryData<RealtimeStockData>([
-    "stockPrice",
-    symbol,
-  ]);
-
-  console.log(realtimeData);
+  const { data: realtimeData } = useQuery<RealtimeStockData>({
+    queryKey: ["stockPrice", symbol],
+    enabled: !!symbol,
+    staleTime: Infinity,
+  });
 
   const [data, setData] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [todayPrices, setTodayPrices] = useState<{
+    prevClose:number|null
     preMarket: number | null;
     regular: number | null;
     afterHours: number | null;
     regularOpen: number | null;
     percentChange: number | null;
     priceDifference: number | null;
-    mostRecentDate: string | null;
+    mostRecentDate?: string | null;
   }>({
+    prevClose:null,
     preMarket: null,
     regular: null,
     afterHours: null,
@@ -259,19 +257,35 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         if (result["Time Series (1min)"]) {
           const entries = Object.entries(result["Time Series (1min)"]);
           const mostRecentDate = entries[0][0].split(" ")[0];
+          // Find previous day's closing price (4:00 PM EST)
+          const prevDate = new Date(mostRecentDate);
+          const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
+
+          
+          const prevDayClose = entries.find(([date]) => {
+            const entryDate = new Date(date);
+            return entryDate.getDate() === prevDate.getDate() && 
+                   entryDate.getHours() === 16 && // 4 PM
+                   entryDate.getMinutes() === 0;  // 00 minutes
+          });
+
+          const prevClosePrice = prevDayClose ? 
+            parseFloat((prevDayClose[1] as AlphaVantageIntraday)["4. close"]) : 
+            null;
+
 
           let preMarketPrice = null;
           let regularPrice = null;
           let afterHoursPrice = null;
           let regularOpenPrice = null;
           let latestPrice = null;
+          let prevClose = prevClosePrice
 
           // Process entries for the most recent day only
           const todayEntries = entries.filter(
             ([date]) => date.split(" ")[0] === mostRecentDate
           ).reverse();
           const todayDate = todayEntries[0][0].split(" ")[0];
-          console.log('todayDate', todayDate);
 
           // Get the latest price first
           if (todayEntries.length > 0) {
@@ -320,7 +334,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               afterHoursPrice = close;
             }
           }
-
+           
+          
            // Calculate actual price difference using regular price after 4pm EST
            const currentPrice = new Date().getHours() >= 16 ? regularPrice : latestPrice;
            const priceDifference = 
@@ -351,8 +366,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             afterHours: afterHoursPrice,
             regularOpen: regularOpenPrice,
             percentChange,
-            priceDifference,
-            mostRecentDate: todayDate
+           priceDifference: todayPrices.prevClose && realtimeData
+          ? realtimeData.realtimePrice - todayPrices.prevClose 
+          : null,
+            mostRecentDate: todayDate,
+            prevClose:prevClose
           });
         }
       } catch (error) {
@@ -365,169 +383,66 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   const getTimeframeData = () => {
     if (timeframe === "1D") {
-      // Create a full day timeline from 4:00 AM to 8:00 PM
+      // Set time range from 4am to 8pm
       const today = new Date();
-      today.setHours(4, 0, 0, 0); // Start at 4 AM
-      const endTime = new Date(today);
-      endTime.setHours(20, 0, 0, 0); // End at 8 PM
-      const currentTime = new Date();
+      const marketOpen = new Date(today);
+      marketOpen.setHours(4, 0, 0, 0);  // Start at 4 AM
+      const marketClose = new Date(today);
+      marketClose.setHours(20, 0, 0, 0); // End at 8 PM
 
-      // Create baseline data points every 5 minutes for the FULL day
-      const baselineData: StockData[] = [];
-
-      for (
-        let time = new Date(today);
-        time <= endTime;
-        time.setMinutes(time.getMinutes() + 5)
-      ) {
-        let marketSession: StockData["marketSession"] = "regular";
-        const hours = time.getHours();
-        const minutes = time.getMinutes();
-        const timeInMinutes = hours * 60 + minutes;
-
-        if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
-          marketSession = "pre";
-        } else if (timeInMinutes >= 9 * 60 + 30 && timeInMinutes < 16 * 60) {
-          marketSession = "regular";
-        } else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
-          marketSession = "post";
-        }
-
-        // Add ALL time slots, but only fill data for times up to now
-        baselineData.push({
-          date: time.toISOString(),
-          open: time <= currentTime ? null : undefined, // undefined for future times
-          close: time <= currentTime ? null : undefined,
-          high: time <= currentTime ? null : undefined,
-          low: time <= currentTime ? null : undefined,
-          volume: 0,
-          gain: false,
-          marketSession,
-        });
-      }
-
-      // Process historical data from AlphaVantage
-      if (data.length > 0) {
-        const historicalDataMap = new Map(
-          data.map((point) => [new Date(point.date).toISOString(), point])
-        );
-
-        // Fill in historical data points
-        baselineData.forEach((point, index) => {
-          const historicalPoint = historicalDataMap.get(point.date);
-          if (historicalPoint && new Date(point.date) <= currentTime) {
-            baselineData[index] = historicalPoint;
-          }
-        });
-      }
-
-      // Process real-time websocket data
-      if (realtimeData?.data.length) {
-        const lastHistoricalTime =
-          data.length > 0 ? new Date(data[data.length - 1].date) : new Date(0);
-
-        // Only use websocket data that's newer than our historical data
-        const realtimePoints = realtimeData.data
-          .filter((point) => new Date(point.date) > lastHistoricalTime)
-          .sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-          );
-
-        // Update or add real-time points
-        realtimePoints.forEach((point) => {
+      // Filter and sort the actual data points
+      const validData = data
+        .filter(point => {
           const pointTime = new Date(point.date);
-          const index = baselineData.findIndex((baseline) => {
-            const baselineTime = new Date(baseline.date);
-            const nextInterval = new Date(baselineTime);
-            nextInterval.setMinutes(nextInterval.getMinutes() + 5);
-            return pointTime >= baselineTime && pointTime < nextInterval;
+          return pointTime >= marketOpen && pointTime <= marketClose;
+        })
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // If we have valid data, use it directly
+      if (validData.length > 0) {
+        // Find the previous day's closing price
+        const prevClose = validData[0]?.close || 0;
+
+        // Create pre-market data if needed
+        const preMarketData: StockData[] = [];
+        if (new Date(validData[0]?.date) > marketOpen) {
+          preMarketData.push({
+            date: marketOpen.toISOString(),
+            open: prevClose,
+            close: prevClose,
+            high: prevClose,
+            low: prevClose,
+            volume: 0,
+            gain: false,
+            marketSession: "regular"
           });
-
-          if (index !== -1) {
-            baselineData[index] = point;
-          }
-        });
-
-        // Add the latest real-time price
-        if (realtimeData.realtimePrice) {
-          const lastValidIndex =
-            baselineData.findIndex(
-              (point) => new Date(point.date) > currentTime
-            ) - 1;
-
-          if (lastValidIndex >= 0) {
-            baselineData[lastValidIndex] = {
-              ...baselineData[lastValidIndex],
-              close: realtimeData.realtimePrice,
-              gain:
-                realtimeData.realtimePrice > baselineData[lastValidIndex].open,
-            };
-          }
         }
+
+        return [...preMarketData, ...validData];
       }
 
-      // Fill gaps with the last known price (only up to current time)
-      let lastValidPrice = null;
-      for (let i = 0; i < baselineData.length; i++) {
-        const pointTime = new Date(baselineData[i].date);
-        if (pointTime > currentTime) break; // Stop filling at current time
-
-        if (baselineData[i].close !== null) {
-          lastValidPrice = baselineData[i].close;
-        } else if (lastValidPrice !== null) {
-          baselineData[i] = {
-            ...baselineData[i],
-            open: lastValidPrice,
-            close: lastValidPrice,
-            high: lastValidPrice,
-            low: lastValidPrice,
-            gain: lastValidPrice > (baselineData[i - 1]?.close || 0),
-          };
-        }
-      }
-
-      // Return all points, but only those up to current time will have values
-      return baselineData;
+      return [];
     }
 
-    let tradingDays = 0;
-
-    switch (timeframe) {
-      case "1W":
-        tradingDays = 5; // Approximately 5 trading days in a week
-        break;
-      case "1M":
-        tradingDays = 21; // Approximately 21 trading days in a month
-        break;
-      case "6M":
-        tradingDays = 126; // Approximately 126 trading days in 6 months
-        break;
-      case "1Y":
-        tradingDays = 252; // Approximately 252 trading days in a year
-        break;
-      default:
-        tradingDays = 21; // Default to 1M
-    }
-
-    return data.slice(-tradingDays);
+    return data;
   };
 
   const filteredData = getTimeframeData();
 
-  // Calculate domain for Y-axis using realtime data for 1D view
+  // Update the yDomain calculation in the useMemo hook
   const yDomain = useMemo(() => {
-    if (timeframe === "1D" && realtimeData?.data.length) {
-      const prices = realtimeData.data.map((d) => d.close);
-      return [Math.min(...prices) * 0.999, Math.max(...prices) * 1.001];
-    }
-
-    return filteredData.length > 0
-      ? [
-          Math.min(...filteredData.map((d) => d.low)) * 0.99,
-          Math.max(...filteredData.map((d) => d.high)) * 1.01,
-        ]
-      : ["auto", "auto"];
-  }, [filteredData, timeframe, realtimeData]);
+    if (filteredData.length === 0) return ["auto", "auto"];
+    
+    const prices = filteredData.map(d => d.close);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const padding = (max - min) * 0.1; // 10% padding
+    
+    return [
+      Math.floor((min - padding) * 100) / 100, // Round down to 2 decimal places
+      Math.ceil((max + padding) * 100) / 100   // Round up to 2 decimal places
+    ];
+  }, [filteredData]);
 
   // Calculate optimal tick interval based on timeframe and data length
   // const getTickInterval = () => {
@@ -571,54 +486,44 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   // Update todayPrices based on realtime data
   useEffect(() => {
-    if (realtimeData) {
-      const latestData = realtimeData.data[realtimeData.data.length - 1];
-      if (!latestData) return;
+    if (realtimeData?.realtimePrice && todayPrices.prevClose) {
+      const priceDiff = realtimeData.realtimePrice - todayPrices.prevClose;
+      const percentChange = (priceDiff / todayPrices.prevClose) * 100;
 
-      const preMarketData = realtimeData.data.find(
-        (d) => d.marketSession === "pre"
-      );
-      const regularMarketData = realtimeData.data.find(
-        (d) => d.marketSession === "regular"
-      );
-      const afterHoursData = realtimeData.data.find(
-        (d) => d.marketSession === "post"
-      );
+      setTodayPrices(prev => ({
+        ...prev,
+        regular: realtimeData.realtimePrice,
+        priceDifference: priceDiff,
+        percentChange: percentChange
+      }));
 
-      setTodayPrices({
-        preMarket: preMarketData?.close ?? null,
-        regular: regularMarketData?.close ?? realtimeData.realtimePrice,
-        afterHours: afterHoursData?.close ?? null,
-        regularOpen: regularMarketData?.open ?? null,
-        percentChange: regularMarketData?.open
-          ? ((realtimeData.realtimePrice - regularMarketData.open) /
-              regularMarketData.open) *
-            100
-          : null,
-      });
+     
     }
-  }, [realtimeData]);
+  }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
 
   // Update the Area component to use different colors based on price movement
   const priceChange = useMemo(() => {
-    if (timeframe === "1D" && realtimeData?.data.length) {
-      const firstPrice = realtimeData.data[0]?.close;
-      const lastPrice = realtimeData.realtimePrice;
-      return lastPrice - firstPrice;
+    if (realtimeData?.realtimePrice && todayPrices.prevClose) {
+      return realtimeData.realtimePrice - todayPrices.prevClose;
     }
     return 0;
-  }, [realtimeData, timeframe]);
+  }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
 
   // Update the regular market price display
   useEffect(() => {
+
     if (realtimeData?.realtimePrice) {
+      const percentChange = todayPrices.prevClose 
+      ? ((realtimeData.realtimePrice - todayPrices.prevClose) / todayPrices.prevClose) * 100
+      : null;
+
+      console.log('percentage',percentChange)
       setTodayPrices((prev) => ({
         ...prev,
         regular: realtimeData.realtimePrice,
-        percentChange: prev.regularOpen
-          ? ((realtimeData.realtimePrice - prev.regularOpen) /
-              prev.regularOpen) *
-            100
+        percentChange,
+        priceDifference: todayPrices.prevClose 
+          ? realtimeData.realtimePrice - todayPrices.prevClose 
           : null,
       }));
     }
@@ -666,23 +571,27 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 <div className="px-6">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 mb-0.5">
+                    {/* <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                         Regular Market
                       </span>
                       {timeframe === "1D" && <LiveIndicator />}
-                    </div>
+                    </div> */}
                     <div className="flex items-baseline gap-1">
                       <span
                         className={`font-bold text-3xl ${
                           todayPrices.percentChange && todayPrices.percentChange > 0
                             ? "text-emerald-600 dark:text-emerald-500"
                             : "text-red-600 dark:text-red-500"
-                        )}
+                        }`}
                       >
-                        ${todayPrices.regular && todayPrices.regular < 0 ? "-" : ""}{Math.abs(todayPrices.regular || 0).toFixed(2)}
+                        ${(new Date().getHours() >= 16 ? todayPrices.regular : todayPrices.regular) && todayPrices.regular&& todayPrices.regular < 0 ? "-" : ""}{Math.abs((new Date().getHours() >= 16 ? todayPrices.regular : todayPrices.regular) || 0).toFixed(2)}
                       </span>
-                      {todayPrices.percentChange && (
+                    </div>
+                     
+                      {todayPrices.percentChange !== null && 
+                       todayPrices.priceDifference !== null && 
+                       realtimeData?.realtimePrice && (
                         <span
                           className={`text-sm font-medium ${
                             todayPrices.percentChange > 0
@@ -690,7 +599,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                               : "text-red-600 dark:text-red-500"
                           }`}
                         >
-                          {todayPrices.percentChange > 0 ? "▲" : "▼"} ${Math.abs(todayPrices.priceDifference || 0).toFixed(2)} ({todayPrices.percentChange < 0 ? "-" : ""}{Math.abs(todayPrices.percentChange || 0).toFixed(2)}%)
+                          {todayPrices.percentChange > 0 ? "▲" : "▼"} ${(todayPrices.priceDifference).toFixed(2)} ({(todayPrices.percentChange).toFixed(2)}%)
                         </span>
                       )}
                     </div>
@@ -783,7 +692,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={filteredData}
-              margin={{ top: 5, right: 5, left: -15, bottom: 0 }}
+              margin={{ top: 20, right: 20, left: -15, bottom: 20 }}
             >
               <defs>
                 <linearGradient
@@ -822,32 +731,40 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 tick={{ fontSize: 11 }}
                 dx={-5}
                 className="text-gray-500 dark:text-gray-400"
+                allowDataOverflow={false}
+                scale="linear"
+                padding={{ top: 20, bottom: 20 }}
+                interval="preserveStartEnd"
+                tickCount={7}
               />
-              {/* <XAxis
+              <XAxis
                 dataKey="date"
                 tickFormatter={(value) => {
                   const date = new Date(value);
-                  if (timeframe === "1D") {
-                    return date.toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
-                  }
-                  return timeframe === "1W"
-                    ? date.toLocaleDateString(undefined, { weekday: "short" })
-                    : date.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      });
+                  return date.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  }).toLowerCase();
                 }}
+                ticks={[
+                  new Date().setHours(4, 0, 0),   // 4:00 am
+                  new Date().setHours(8, 0, 0),   // 8:00 am
+                  new Date().setHours(12, 0, 0),  // 12:00 pm
+                  new Date().setHours(16, 0, 0),  // 4:00 pm
+                  new Date().setHours(20, 0, 0)   // 8:00 pm
+                ]}
                 tickLine={false}
                 axisLine={false}
-                interval={getTickInterval()}
-                height={30}
-                tick={{ fontSize: 11 }}
+                interval={0}
+                minTickGap={30}
+                tick={{ 
+                  fontSize: 11,
+                  fill: '#9CA3AF'
+                }}
                 dy={10}
                 className="text-gray-500 dark:text-gray-400"
-              /> */}
+              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -897,14 +814,18 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               />
               {filteredData.length > 0 && (
                 <Area
-                  type="monotone"
+                  type="monotoneX"
                   dataKey="close"
-                  stroke={priceChange >= 0 ? "#10b981" : "#ef4444"}
+                  stroke={todayPrices.percentChange && todayPrices.percentChange > 0 ? "#10b981" : "#ef4444"}
                   strokeWidth={1.5}
                   fill={`url(#${
-                    priceChange >= 0 ? "colorUpGradient" : "colorDownGradient"
+                    todayPrices.percentChange && todayPrices.percentChange > 0 
+                      ? "colorUpGradient" 
+                      : "colorDownGradient"
                   })`}
-                  connectNulls={false}
+                  connectNulls={true}
+                  isAnimationActive={false}
+                  dot={false}
                 />
               )}
             </AreaChart>
