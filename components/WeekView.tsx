@@ -311,7 +311,7 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   );
 
   const MarketTimingGroup = ({
-    date,
+    // date,
     title,
     icon: Icon,
     transcripts,

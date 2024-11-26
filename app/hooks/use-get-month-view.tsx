@@ -29,9 +29,9 @@ interface EarningsEntry {
   company: Company;
 }
 
-interface MonthViewResponse {
-  data: EarningsEntry[];
-}
+// interface MonthViewResponse {
+//   data: EarningsEntry[];
+// }
 
 export const useGetMonthView = () => {
   const { currentDate } = useCalendarStore();

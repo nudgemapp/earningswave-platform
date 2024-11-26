@@ -283,7 +283,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   );
 
   const MarketTimingGroup = ({
-    date,
+    // date,
     title,
     icon: Icon,
     transcripts,
@@ -299,7 +299,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
     // const displayTranscripts = transcripts.slice(0, 7);
     const displayTranscripts = transcripts
-    const remainingCount = transcripts.length - 7;
+    // const remainingCount = transcripts.length - 7;
 
     return (
       <div
