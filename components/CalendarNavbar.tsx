@@ -181,14 +181,14 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   }, [filters]);
 
   return (
-    <div className="bg-white-300/50 dark:bg-neutral-950 pb-2 px-6 rounded-xl shadow-sm mt-5 lg:mt-0">
+    <div className="bg-white dark:bg-slate-900 pb-2 px-6 rounded-lg shadow-sm dark:shadow-slate-800/50 mt-5 lg:mt-0">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Button
             onClick={() => handleNavigation(-1)}
             variant="ghost"
             size="icon"
-            className="h-9 w-9 hover:text-primary hover:bg-secondary/80 transition-colors duration-200"
+            className="h-9 w-9 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200"
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
@@ -202,10 +202,10 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               setCurrentDate(newDate);
             }}
           >
-            <SelectTrigger className="h-9 w-[120px] font-medium">
+            <SelectTrigger className="h-9 w-[120px] font-medium bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
               {months.map((month) => (
                 <SelectItem key={month} value={month}>
                   {month}
@@ -223,10 +223,10 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               setCurrentDate(newDate);
             }}
           >
-            <SelectTrigger className="h-9 w-[100px] font-medium">
+            <SelectTrigger className="h-9 w-[100px] font-medium bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
@@ -239,7 +239,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             onClick={() => handleNavigation(1)}
             variant="ghost"
             size="icon"
-            className="h-9 w-9 hover:text-primary hover:bg-secondary/80 transition-colors duration-200"
+            className="h-9 w-9 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200"
           >
             <ChevronRightIcon className="h-5 w-5" />
           </Button>
@@ -258,7 +258,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 <Button
                   variant="ghost"
                   size="default"
-                  className="h-9 px-4 font-medium hover:bg-secondary/80 hover:text-primary transition-colors duration-200"
+                  className="h-9 px-4 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
                 >
                   <Filter className="h-5 w-5 mr-2" />
                   Filter{" "}
@@ -266,7 +266,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                     `(${Object.values(filters).flat().length})`}
                 </Button>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80">
+              <HoverCardContent className="w-80 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b pb-2">
                     <h4 className="text-sm font-semibold">Filter Earnings</h4>
@@ -412,7 +412,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
               <Button
                 variant="ghost"
                 size="default"
-                className="h-9 px-4 font-medium hover:bg-secondary/80 hover:text-primary transition-colors duration-200"
+                className="h-9 px-4 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
                 onClick={handleWatchlistClick}
               >
                 <StarIcon className="h-5 w-5 mr-2" />
@@ -437,15 +437,15 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
             </HoverCardContent>
           </HoverCard>
 
-          <div className="bg-secondary/20 rounded-lg p-1">
+          <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-1">
             <div className="flex gap-1">
               <Button
                 onClick={() => setView("month")}
                 variant={view === "month" ? "default" : "outline"}
                 className={`px-4 py-2 transition-colors duration-200 ${
                   view === "month"
-                    ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                    : "bg-white dark:bg-neutral-950 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                    ? "bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900"
+                    : "bg-white dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
                 }`}
               >
                 {view === "month" ? (
@@ -460,8 +460,8 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
                 variant={view === "week" ? "default" : "outline"}
                 className={`px-4 py-2 transition-colors duration-200 ${
                   view === "week"
-                    ? "bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-black"
-                    : "bg-white dark:bg-neutral-950 hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
+                    ? "bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900"
+                    : "bg-white dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
                 }`}
               >
                 {view === "week" ? (

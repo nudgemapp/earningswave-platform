@@ -100,7 +100,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-200`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-200`}
         >
           <ThemeProvider
             attribute="class"
@@ -118,7 +118,7 @@ export default function RootLayout({
               theme="system"
               toastOptions={{
                 className:
-                  "bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700",
+                  "bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-sm dark:shadow-slate-800/50",
               }}
             />
           </ThemeProvider>

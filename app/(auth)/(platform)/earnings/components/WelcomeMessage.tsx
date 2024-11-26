@@ -33,15 +33,15 @@ const WelcomeMessage: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 pb-8 max-w-6xl mx-auto bg-white dark:bg-neutral-950"
+      className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 pb-8 max-w-6xl mx-auto bg-white dark:bg-slate-900"
     >
       <motion.div variants={itemVariants}>
-        <Logo className=" mb-4 -translate-y-[-20px]" width={240} height={240} />
+        <Logo className="mb-4 -translate-y-[-20px]" width={240} height={240} />
       </motion.div>
 
       <motion.h2
         variants={itemVariants}
-        className="text-3xl font-semibold mb-3 text-gray-900 dark:text-gray-100"
+        className="text-3xl font-semibold mb-3 text-gray-900 dark:text-white"
       >
         Welcome to EarningsWave
       </motion.h2>
@@ -53,20 +53,6 @@ const WelcomeMessage: React.FC = () => {
         Select a company to view financial statistics, market sentiment,
         real-time pricing, earnings call transcripts, audio recordings, and more
       </motion.p>
-
-      {/* <motion.p
-        variants={itemVariants}
-        className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl text-center"
-      >
-        Press <span className="text-md">⌘</span> + K to search any company
-        anywhere.
-      </motion.p> */}
-
-      {/* {showSearch && (
-        <motion.div variants={itemVariants} className="w-full max-w-3xl">
-          <TickerSearch />
-        </motion.div>
-      )} */}
 
       <motion.div
         variants={itemVariants}
@@ -113,7 +99,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     <motion.div
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="bg-white dark:bg-neutral-900 p-4 rounded-lg border border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700 transition-all duration-200 shadow-sm dark:shadow-neutral-900/50"
+      className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 transition-all duration-200 shadow-sm dark:shadow-slate-800/50"
     >
       <div className="flex items-center gap-4">
         <div className="p-2 bg-gray-50 dark:bg-neutral-950 rounded-lg">

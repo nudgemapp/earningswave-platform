@@ -4,7 +4,7 @@ import NavBar from "@/components/NavBar";
 const MarketingLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <main className="flex flex-col min-h-screen bg-white dark:bg-slate-900">
-      <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
+      <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 shadow-sm dark:shadow-slate-800/50">
         <NavBar />
       </div>
       <div className="flex-grow">{children}</div>

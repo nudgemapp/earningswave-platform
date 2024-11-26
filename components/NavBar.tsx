@@ -35,7 +35,7 @@ function useMount() {
 
 function NavBar() {
   const router = useRouter();
-  const { onOpen } = useAuthModal();  // Make sure this is imported at the top
+  const { onOpen } = useAuthModal(); // Make sure this is imported at the top
 
   const [menu, setMenu] = useState(false);
   const { mounted, user, isLoaded } = useMount();
@@ -87,7 +87,7 @@ function NavBar() {
     if (user) {
       signOut(() => router.push("/"));
     } else {
-      onOpen();  
+      onOpen();
     }
   };
 
@@ -114,7 +114,7 @@ function NavBar() {
           className="md:sticky md:top-0 md:shadow-none z-20 md:mt-0"
         >
           {/* DESKTOP */}
-          <div className="hidden lg:block bg-white dark:bg-neutral-950 p-2">
+          <div className="hidden lg:block bg-white dark:bg-slate-900 p-2">
             <div className="flex items-center mx-4">
               {/* Logo - Left */}
               <motion.div
@@ -136,7 +136,7 @@ function NavBar() {
                   >
                     {item.dropdownItems ? (
                       <>
-                        <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-black dark:text-white transition-colors duration-200 relative">
+                        <p className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray-700 dark:text-gray-200 transition-colors duration-200 relative">
                           {item.name}
                           <ChevronDown
                             size={16}
@@ -149,13 +149,13 @@ function NavBar() {
                             transition={{ duration: 0.2 }}
                           />
                         </p>
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-neutral-900 shadow-lg dark:shadow-slate-800/50 rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-slate-900 shadow-lg dark:shadow-slate-800/50 rounded-md overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
                           <div className="py-2">
                             {item.dropdownItems.map(
                               (dropdownItem, dropdownIndex) => (
                                 <p
                                   key={dropdownIndex}
-                                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer transition-colors duration-150 text-black dark:text-white"
+                                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer transition-colors duration-150 text-gray-700 dark:text-gray-200"
                                   onClick={() =>
                                     handleNavigation(dropdownItem.route)
                                   }
@@ -169,7 +169,7 @@ function NavBar() {
                       </>
                     ) : (
                       <p
-                        className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-black dark:text-white relative"
+                        className="hover:text-primary cursor-pointer flex items-center gap-2 font-[500] text-gray-700 dark:text-gray-200 relative"
                         onClick={() => handleNavigation(item.route)}
                       >
                         {item.name}

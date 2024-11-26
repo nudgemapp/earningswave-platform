@@ -23,7 +23,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   const content = useMemo(
     () => (
       <div
-        className={`h-screen p-4 overflow-y-auto bg-white dark:bg-neutral-950 ${className}`}
+        className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
         key={`${showWatchlist}-${selectedCompany?.companyId}`}
       >
         {showWatchlist ? (
@@ -67,7 +67,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
       <Sheet open={shouldShowSheet}>
         <SheetContent
           side="right"
-          className="w-full p-0 bg-white dark:bg-neutral-950 border-l border-gray-200 dark:border-neutral-900"
+          className="w-full p-0 bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-700"
         >
           {content}
         </SheetContent>
@@ -76,7 +76,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-neutral-950 border-l border-gray-200 dark:border-neutral-900 h-full">
+    <div className="bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-slate-700 h-full">
       {content}
     </div>
   );

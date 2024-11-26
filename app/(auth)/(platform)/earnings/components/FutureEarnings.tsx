@@ -68,7 +68,7 @@ interface CompanyHeaderProps {
 }
 
 const StockChartSkeleton = () => (
-  <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
+  <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
     <div className="h-[400px] w-full bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg" />
   </div>
 );
@@ -82,7 +82,7 @@ const TranscriptsSkeleton = () => (
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-20 bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg"
+          className="h-20 bg-gray-50/50 dark:bg-slate-800/50 animate-pulse rounded-lg border border-gray-200/50 dark:border-slate-700/50"
         />
       ))}
     </div>
@@ -228,7 +228,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   if (isLoadingCompany) {
     return (
       <div className="space-y-6">
-        <Card className="w-full shadow-sm dark:shadow-neutral-900/50 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800">
+        <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-neutral-800">
           <CardHeader className="space-y-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
@@ -322,7 +322,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   return (
     <div className="space-y-4 mb-20 sm:mb-0">
       {!selectedTranscript && (
-        <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-800/50 shadow-sm dark:shadow-slate-900/30">
+        <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-800/50">
           <CardHeader className="space-y-4 pb-4 px-4">
             <CompanyHeader
               company={company}
@@ -337,7 +337,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           <CardContent className="space-y-6 px-4 pb-4">
             {/* Stock Chart with Suspense */}
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4 pb-8">
+              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4 pb-8">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
                     todayData={(data) => {
@@ -351,24 +351,24 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
             </Suspense>
 
-            {/* <AIEarningsAnalysis company={company} /> */}
-
-            <div className="flex flex-row items-center  gap-4">
-              <div className="flex flex-row justify-center w-full gap-4 ">
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex flex-row justify-center w-full gap-4">
                 <Button
-                  className="w-full border border-gray-200 dark:border-slate-700"
+                  className="w-full border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                   variant="ghost"
                   onClick={() =>
                     company.weburl
                       ? window.open(company.weburl, "_blank")
                       : null
                   }
-                >{`${company.symbol} Website`}</Button>
+                >
+                  <span className="text-gray-700 dark:text-gray-200">{`${company.symbol} Website`}</span>
+                </Button>
               </div>
             </div>
 
-            {/* New Company Info Table */}
-            <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700/50 p-4">
+            {/* Company Info Table */}
+            <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {company.name}
               </h3>
@@ -378,19 +378,25 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               <table className="w-full mt-4 text-sm text-left text-gray-500 dark:text-gray-400">
                 <tbody>
                   <tr>
-                    <th className="py-2">Current Price</th>
+                    <th className="py-2 text-gray-700 dark:text-gray-200">
+                      Current Price
+                    </th>
                     <td className="py-2">
                       ${todayPrices.regular?.toFixed(2) || "-"}
                     </td>
                   </tr>
                   <tr>
-                    <th className="py-2">Previous Close</th>
-                    <td className="py-2">{`$${
-                      todayPrices.preMarket?.toFixed(2) || "-"
-                    }`}</td>
+                    <th className="py-2 text-gray-700 dark:text-gray-200">
+                      Previous Close
+                    </th>
+                    <td className="py-2">
+                      ${todayPrices.preMarket?.toFixed(2) || "-"}
+                    </td>
                   </tr>
                   <tr>
-                    <th className="py-2">Next Earnings</th>
+                    <th className="py-2 text-gray-700 dark:text-gray-200">
+                      Next Earnings
+                    </th>
                     <td className="py-2">
                       {company.recentTranscripts?.[0]?.scheduledAt
                         ? formatDate(company.recentTranscripts[0].scheduledAt)
@@ -421,7 +427,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full dark:bg-neutral-950 dark:text-white">
+        <Card className="w-full dark:bg-slate-900 border-gray-200 dark:border-slate-700">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>
@@ -430,7 +436,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="sm:max-w-2xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 p-4">
+        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {company.name} ({company.symbol}) - Company Summary
@@ -471,7 +477,9 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     {section.items.map((item, itemIndex) => (
                       <p key={itemIndex} className="flex items-center gap-2">
-                        <span className="font-medium">{item.label}:</span>{" "}
+                        <span className="font-medium text-gray-700 dark:text-gray-200">
+                          {item.label}:
+                        </span>{" "}
                         {item.value}
                       </p>
                     ))}
