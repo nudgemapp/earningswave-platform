@@ -147,7 +147,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   if (!data) return <div>No data available</div>;
 
   // Apply filters to earnings data
-  const filteredEarnings = filterEarnings(data.data.earnings);
+  console.log(data.data)
+  const filteredEarnings = filterEarnings(data.data as EarningsEntry[]);
 
   const transcripts = Object.entries(
     filteredEarnings.reduce(
