@@ -15,8 +15,6 @@ interface AIEarningsAnalysisProps {
 const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
   console.log(company);
 
-  const [loading] = useState(false);
-
   // Get the most recent completed transcript
   const latestTranscript = company.recentTranscripts?.find(
     (t) => t.status === "COMPLETED"
@@ -69,7 +67,7 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {aiSummaryLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>

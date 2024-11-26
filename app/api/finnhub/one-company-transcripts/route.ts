@@ -7,12 +7,6 @@ interface TranscriptSpeech {
   session?: string;
 }
 
-interface TranscriptParticipant {
-  name: string;
-  role?: string;
-  description?: string;
-}
-
 export async function GET() {
   const prisma = new PrismaClient();
   const symbol = "KULR";

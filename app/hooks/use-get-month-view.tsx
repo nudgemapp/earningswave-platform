@@ -29,6 +29,10 @@ interface EarningsEntry {
   company: Company;
 }
 
+interface MonthViewResponse {
+  data: EarningsEntry[];
+}
+
 export const useGetMonthView = () => {
   const { currentDate } = useCalendarStore();
 
@@ -61,7 +65,7 @@ export const useGetMonthView = () => {
     };
   }, [currentDate]);
 
-  return useQuery<EarningsEntry[] | any>({
+  return useQuery<MonthViewResponse>({
     queryKey: ["month-view", startDate.toISOString(), endDate.toISOString()],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -70,12 +74,11 @@ export const useGetMonthView = () => {
       });
 
       const response = await fetch(`/api/earnings/month?${params}`, {
-        next: { revalidate: 300 }, // Cache for 5 minutes
+        next: { revalidate: 300 },
       });
 
       if (!response.ok) throw new Error("Failed to fetch month view data");
 
-      let data = (await response.json()) as EarningsEntry[];
       // // Filter out blacklisted symbols
       // const filteredData = data.filter(
       //   (entry: EarningsEntry) => {
@@ -85,6 +88,8 @@ export const useGetMonthView = () => {
       // );
 
       // data = filteredData;
+
+      const data = (await response.json()) as EarningsEntry[];
 
       return {
         data,
