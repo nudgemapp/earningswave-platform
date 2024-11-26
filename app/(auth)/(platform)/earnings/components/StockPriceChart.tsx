@@ -70,7 +70,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   onTimeframeChange,
 }) => {
   const queryClient = useQueryClient();
-  const { isConnected, error } = useStockWebSocket(symbol);
+  const websocketConnection = useStockWebSocket(symbol);
+  const { isConnected, error } = useMemo(
+    () => websocketConnection,
+    [websocketConnection]
+  );
 
   console.log(timeframe);
   console.log(symbol);
@@ -100,6 +104,17 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     regularOpen: null,
     percentChange: null,
   });
+
+  // Memoize timeframe buttons
+  const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
+
+  // You can show connection status if needed
+  useEffect(() => {
+    if (error) {
+      console.error("WebSocket error:", error);
+      // Handle error (show toast, etc.)
+    }
+  }, [error]);
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -293,8 +308,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     fetchTodayPrices();
   }, [symbol]);
 
-  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
-
   const getTimeframeData = () => {
     if (timeframe === "1D") {
       // Create a full day timeline from 4:00 AM to 8:00 PM
@@ -302,10 +315,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       today.setHours(4, 0, 0, 0); // Start at 4 AM
       const endTime = new Date(today);
       endTime.setHours(20, 0, 0, 0); // End at 8 PM
-
-      // Create baseline data points every 5 minutes
-      const baselineData: StockData[] = [];
       const currentTime = new Date();
+
+      // Create baseline data points every 5 minutes for the FULL day
+      const baselineData: StockData[] = [];
 
       for (
         let time = new Date(today);
@@ -325,49 +338,62 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           marketSession = "post";
         }
 
-        // For times after current time, set close to null instead of 0
-        const isAfterCurrentTime = time > currentTime;
+        // Add ALL time slots, but only fill data for times up to now
         baselineData.push({
           date: time.toISOString(),
-          open: isAfterCurrentTime ? null : 0,
-          close: isAfterCurrentTime ? null : 0,
-          high: isAfterCurrentTime ? null : 0,
-          low: isAfterCurrentTime ? null : 0,
+          open: time <= currentTime ? null : undefined, // undefined for future times
+          close: time <= currentTime ? null : undefined,
+          high: time <= currentTime ? null : undefined,
+          low: time <= currentTime ? null : undefined,
           volume: 0,
           gain: false,
           marketSession,
         });
       }
 
-      // Merge realtime data with baseline
-      if (realtimeData?.data) {
-        const realtimeMap = new Map(
-          realtimeData.data.map((item) => [item.date, item])
+      // Process historical data from AlphaVantage
+      if (data.length > 0) {
+        const historicalDataMap = new Map(
+          data.map((point) => [new Date(point.date).toISOString(), point])
         );
 
-        let lastPrice: number = realtimeData.data[0]?.close || 0;
-
+        // Fill in historical data points
         baselineData.forEach((point, index) => {
+          const historicalPoint = historicalDataMap.get(point.date);
+          if (historicalPoint && new Date(point.date) <= currentTime) {
+            baselineData[index] = historicalPoint;
+          }
+        });
+      }
+
+      // Process real-time websocket data
+      if (realtimeData?.data.length) {
+        const lastHistoricalTime =
+          data.length > 0 ? new Date(data[data.length - 1].date) : new Date(0);
+
+        // Only use websocket data that's newer than our historical data
+        const realtimePoints = realtimeData.data
+          .filter((point) => new Date(point.date) > lastHistoricalTime)
+          .sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+
+        // Update or add real-time points
+        realtimePoints.forEach((point) => {
           const pointTime = new Date(point.date);
-          if (pointTime <= currentTime) {
-            const realtimePoint = realtimeMap.get(point.date);
-            if (realtimePoint) {
-              baselineData[index] = realtimePoint;
-              lastPrice = realtimePoint.close;
-            } else {
-              baselineData[index] = {
-                ...point,
-                open: lastPrice,
-                close: lastPrice,
-                high: lastPrice,
-                low: lastPrice,
-                gain: lastPrice > (baselineData[index - 1]?.close || 0),
-              };
-            }
+          const index = baselineData.findIndex((baseline) => {
+            const baselineTime = new Date(baseline.date);
+            const nextInterval = new Date(baselineTime);
+            nextInterval.setMinutes(nextInterval.getMinutes() + 5);
+            return pointTime >= baselineTime && pointTime < nextInterval;
+          });
+
+          if (index !== -1) {
+            baselineData[index] = point;
           }
         });
 
-        // Update the last known price point with realtime price
+        // Add the latest real-time price
         if (realtimeData.realtimePrice) {
           const lastValidIndex =
             baselineData.findIndex(
@@ -375,13 +401,37 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             ) - 1;
 
           if (lastValidIndex >= 0) {
-            baselineData[lastValidIndex].close = realtimeData.realtimePrice;
-            baselineData[lastValidIndex].gain =
-              realtimeData.realtimePrice > baselineData[lastValidIndex].open;
+            baselineData[lastValidIndex] = {
+              ...baselineData[lastValidIndex],
+              close: realtimeData.realtimePrice,
+              gain:
+                realtimeData.realtimePrice > baselineData[lastValidIndex].open,
+            };
           }
         }
       }
 
+      // Fill gaps with the last known price (only up to current time)
+      let lastValidPrice = null;
+      for (let i = 0; i < baselineData.length; i++) {
+        const pointTime = new Date(baselineData[i].date);
+        if (pointTime > currentTime) break; // Stop filling at current time
+
+        if (baselineData[i].close !== null) {
+          lastValidPrice = baselineData[i].close;
+        } else if (lastValidPrice !== null) {
+          baselineData[i] = {
+            ...baselineData[i],
+            open: lastValidPrice,
+            close: lastValidPrice,
+            high: lastValidPrice,
+            low: lastValidPrice,
+            gain: lastValidPrice > (baselineData[i - 1]?.close || 0),
+          };
+        }
+      }
+
+      // Return all points, but only those up to current time will have values
       return baselineData;
     }
 

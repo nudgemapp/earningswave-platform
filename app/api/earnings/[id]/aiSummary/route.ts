@@ -143,33 +143,3 @@ function generateUpcomingEarningsPrompt(
       }
     }`;
 }
-
-function generateCompletedEarningsPrompt(
-  transcript: TranscriptWithCompany
-): string {
-  return `Analyze the completed earnings report for ${
-    transcript.company.symbol
-  } (${transcript.company.name}).
-    EPS Actual: ${transcript.epsActual || "N/A"}
-    EPS Estimate: ${transcript.epsEstimate || "N/A"}
-    Revenue Actual: ${transcript.revenueActual || "N/A"}
-    Revenue Estimate: ${transcript.revenueEstimate || "N/A"}
-    Quarter: Q${transcript.quarter || "N/A"} ${transcript.year || "N/A"}
-
-    ${transcript.fullText ? "Full transcript: " + transcript.fullText : ""}
-
-    Provide a comprehensive analysis. Format the response as JSON with the following structure:
-    {
-      "summary": "Detailed summary of the earnings call",
-      "keyHighlights": [
-        { "title": "string", "description": "string" }
-      ],
-      "performanceAnalysis": [
-        { "metric": "string", "analysis": "string" }
-      ],
-      "sentiment": {
-        "score": number, // 0 to 1
-        "label": "bullish" | "neutral" | "bearish"
-      }
-    }`;
-}
