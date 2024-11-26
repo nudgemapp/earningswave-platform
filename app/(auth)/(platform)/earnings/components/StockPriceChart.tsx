@@ -11,14 +11,13 @@ import {
   XAxis,
 } from "recharts";
 import { useStockWebSocket } from "@/hooks/use-stock-websocket";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
-
+import { useQuery } from "@tanstack/react-query";
 
 interface StockChartProps {
   symbol: string;
   timeframe?: string;
   onTimeframeChange: (tf: string) => void;
-  todayData: (data:{
+  todayData: (data: {
     preMarket: number | null;
     regular: number | null;
     afterHours: number | null;
@@ -26,9 +25,7 @@ interface StockChartProps {
     percentChange: number | null;
     priceDifference: number | null;
     mostRecentDate: string | null;
-
-
-  })=>void;
+  }) => void;
 }
 
 interface StockData {
@@ -83,10 +80,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   todayData,
 }) => {
   const websocketConnection = useStockWebSocket(symbol);
-  const {  error } = useMemo(
-    () => websocketConnection,
-    [websocketConnection]
-  );
+  const { error } = useMemo(() => websocketConnection, [websocketConnection]);
 
   const { data: realtimeData } = useQuery<RealtimeStockData>({
     queryKey: ["stockPrice", symbol],
@@ -97,7 +91,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   const [data, setData] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [todayPrices, setTodayPrices] = useState<{
-    prevClose:number|null
+    prevClose: number | null;
     preMarket: number | null;
     regular: number | null;
     afterHours: number | null;
@@ -105,10 +99,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     percentChange: number | null;
     priceDifference: number | null;
     mostRecentDate?: string | null;
-    atClose?:number|null
+    atClose?: number | null;
   }>({
-    prevClose:null,
-    atClose:null,
+    prevClose: null,
+    atClose: null,
     preMarket: null,
     regular: null,
     afterHours: null,
@@ -244,14 +238,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       if (!symbol) return;
 
       try {
-        
         const API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
         const endpoint = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=1min&outputsize=full&extended_hours=true&entitlement=delayed&apikey=${API_KEY}`;
 
         const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch today's prices");
         const result = await response.json();
-        console.log('result', result);
+        console.log("result", result);
 
         if (result["Time Series (1min)"]) {
           const entries = Object.entries(result["Time Series (1min)"]);
@@ -259,30 +252,30 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           // Find previous day's closing price (4:00 PM EST)
           const prevDate = new Date(mostRecentDate);
 
-          
           const prevDayClose = entries.find(([date]) => {
             const entryDate = new Date(date);
-            return entryDate.getDate() === prevDate.getDate() && 
-                   entryDate.getHours() === 16 && // 4 PM
-                   entryDate.getMinutes() === 0;  // 00 minutes
+            return (
+              entryDate.getDate() === prevDate.getDate() &&
+              entryDate.getHours() === 16 && // 4 PM
+              entryDate.getMinutes() === 0
+            ); // 00 minutes
           });
 
-          const prevClosePrice = prevDayClose ? 
-            parseFloat((prevDayClose[1] as AlphaVantageIntraday)["4. close"]) : 
-            null;
-
+          const prevClosePrice = prevDayClose
+            ? parseFloat((prevDayClose[1] as AlphaVantageIntraday)["4. close"])
+            : null;
 
           let preMarketPrice = null;
           let regularPrice = null;
           let afterHoursPrice = null;
           let regularOpenPrice = null;
           let latestPrice = null;
-          const prevClose = prevClosePrice
+          const prevClose = prevClosePrice;
 
           // Process entries for the most recent day only
-          const todayEntries = entries.filter(
-            ([date]) => date.split(" ")[0] === mostRecentDate
-          ).reverse();
+          const todayEntries = entries
+            .filter(([date]) => date.split(" ")[0] === mostRecentDate)
+            .reverse();
           const todayDate = todayEntries[0][0].split(" ")[0];
 
           // Get the latest price first
@@ -300,7 +293,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             const minutes = dateObj.getMinutes();
             const timeInMinutes = hours * 60 + minutes;
             const close = parseFloat(typedValues["4. close"]);
-          
+
             // Pre-market (4:00 AM - 9:30 AM ET)
             if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
               if (!preMarketPrice) {
@@ -309,12 +302,16 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 prevDayDate.setDate(prevDayDate.getDate() - 1);
                 const prevDayEntries = entries.filter(([date]) => {
                   const entryDate = new Date(date);
-                  return entryDate.getDate() === prevDayDate.getDate() && 
-                         entryDate.getHours() === 16 && 
-                         entryDate.getMinutes() === 0;
+                  return (
+                    entryDate.getDate() === prevDayDate.getDate() &&
+                    entryDate.getHours() === 16 &&
+                    entryDate.getMinutes() === 0
+                  );
                 });
                 if (prevDayEntries.length > 0) {
-                  preMarketPrice = parseFloat((prevDayEntries[0][1] as AlphaVantageIntraday)["4. close"]);
+                  preMarketPrice = parseFloat(
+                    (prevDayEntries[0][1] as AlphaVantageIntraday)["4. close"]
+                  );
                 } else {
                   preMarketPrice = close;
                 }
@@ -332,44 +329,53 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               afterHoursPrice = close;
             }
           }
-           
-          
-           // Calculate actual price difference using regular price after 4pm EST
-           const currentPrice = new Date().getHours() >= 16 ? regularPrice : latestPrice;
-           const priceDifference = 
-             preMarketPrice && currentPrice !== null
-               ? currentPrice - preMarketPrice
-               : null;
-          // Calculate percent change using the previously calculated price difference  
+
+          // Calculate actual price difference using regular price after 4pm EST
+          const currentPrice =
+            new Date().getHours() >= 16 ? regularPrice : latestPrice;
+          const priceDifference =
+            preMarketPrice && currentPrice !== null
+              ? currentPrice - preMarketPrice
+              : null;
+          // Calculate percent change using the previously calculated price difference
           const percentChange =
             priceDifference && preMarketPrice
               ? (priceDifference / preMarketPrice) * 100
               : null;
 
-              todayData({
-                preMarket: preMarketPrice,
-                regular: (new Date().getHours() >= 9 && new Date().getMinutes() >= 30 && new Date().getHours() < 16) ? regularPrice : latestPrice,
-                afterHours: afterHoursPrice,
-                regularOpen: regularOpenPrice,
-                percentChange,
-                priceDifference,
-                mostRecentDate: todayDate
-              });
-              
-              
-              
+          todayData({
+            preMarket: preMarketPrice,
+            regular:
+              new Date().getHours() >= 9 &&
+              new Date().getMinutes() >= 30 &&
+              new Date().getHours() < 16
+                ? regularPrice
+                : latestPrice,
+            afterHours: afterHoursPrice,
+            regularOpen: regularOpenPrice,
+            percentChange,
+            priceDifference,
+            mostRecentDate: todayDate,
+          });
+
           setTodayPrices({
             preMarket: preMarketPrice,
-            regular: (new Date().getHours() >= 9 && new Date().getMinutes() >= 30 && new Date().getHours() < 16) ? regularPrice : latestPrice,
+            regular:
+              new Date().getHours() >= 9 &&
+              new Date().getMinutes() >= 30 &&
+              new Date().getHours() < 16
+                ? regularPrice
+                : latestPrice,
             atClose: new Date().getHours() >= 16 ? regularPrice : null,
             afterHours: afterHoursPrice,
             regularOpen: regularOpenPrice,
             percentChange,
-           priceDifference: todayPrices.prevClose && realtimeData
-          ? realtimeData.realtimePrice - todayPrices.prevClose 
-          : null,
+            priceDifference:
+              todayPrices.prevClose && realtimeData
+                ? realtimeData.realtimePrice - todayPrices.prevClose
+                : null,
             mostRecentDate: todayDate,
-            prevClose:prevClose
+            prevClose: prevClose,
           });
         }
       } catch (error) {
@@ -385,17 +391,19 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       // Set time range from 4am to 8pm
       const today = new Date();
       const marketOpen = new Date(today);
-      marketOpen.setHours(4, 0, 0, 0);  // Start at 4 AM
+      marketOpen.setHours(4, 0, 0, 0); // Start at 4 AM
       const marketClose = new Date(today);
       marketClose.setHours(20, 0, 0, 0); // End at 8 PM
 
       // Filter and sort the actual data points
       const validData = data
-        .filter(point => {
+        .filter((point) => {
           const pointTime = new Date(point.date);
           return pointTime >= marketOpen && pointTime <= marketClose;
         })
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
 
       // If we have valid data, use it directly
       if (validData.length > 0) {
@@ -413,7 +421,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             low: prevClose,
             volume: 0,
             gain: false,
-            marketSession: "regular"
+            marketSession: "regular",
           });
         }
 
@@ -431,15 +439,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Update the yDomain calculation in the useMemo hook
   const yDomain = useMemo(() => {
     if (filteredData.length === 0) return ["auto", "auto"];
-    
-    const prices = filteredData.map(d => d.close);
+
+    const prices = filteredData.map((d) => d.close);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const padding = (max - min) * 0.1; // 10% padding
-    
+
     return [
       Math.floor((min - padding) * 100) / 100, // Round down to 2 decimal places
-      Math.ceil((max + padding) * 100) / 100   // Round up to 2 decimal places
+      Math.ceil((max + padding) * 100) / 100, // Round up to 2 decimal places
     ];
   }, [filteredData]);
 
@@ -489,35 +497,31 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       const priceDiff = realtimeData.realtimePrice - todayPrices.prevClose;
       const percentChange = (priceDiff / todayPrices.prevClose) * 100;
 
-      setTodayPrices(prev => ({
+      setTodayPrices((prev) => ({
         ...prev,
         regular: realtimeData.realtimePrice,
         priceDifference: priceDiff,
-        percentChange: percentChange
+        percentChange: percentChange,
       }));
-
-     
     }
   }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
 
- 
- 
-
   // Update the regular market price display
   useEffect(() => {
-
     if (realtimeData?.realtimePrice) {
-      const percentChange = todayPrices.prevClose 
-      ? ((realtimeData.realtimePrice - todayPrices.prevClose) / todayPrices.prevClose) * 100
-      : null;
+      const percentChange = todayPrices.prevClose
+        ? ((realtimeData.realtimePrice - todayPrices.prevClose) /
+            todayPrices.prevClose) *
+          100
+        : null;
 
-      console.log('percentage',percentChange)
+      console.log("percentage", percentChange);
       setTodayPrices((prev) => ({
         ...prev,
         regular: realtimeData.realtimePrice,
         percentChange,
-        priceDifference: todayPrices.prevClose 
-          ? realtimeData.realtimePrice - todayPrices.prevClose 
+        priceDifference: todayPrices.prevClose
+          ? realtimeData.realtimePrice - todayPrices.prevClose
           : null,
       }));
     }
@@ -542,7 +546,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   return (
     <div className="h-full w-full">
-    
       <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-4">
         <div className="flex items-center gap-2">
           {!isLoading && (
@@ -582,72 +585,124 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 <div className="px-6">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                    {/* <div className="flex items-center gap-2 mb-0.5">
+                      {/* <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                         Regular Market
                       </span>
                       {timeframe === "1D" && <LiveIndicator />}
                     </div> */}
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className={`font-bold text-3xl ${
-                          todayPrices.percentChange && todayPrices.percentChange > 0
-                            ? "text-emerald-600 dark:text-emerald-500"
-                            : "text-red-600 dark:text-red-500"
-                        }`}
-                      >
-                        
-                        
-                        ${(isAfterHours ? todayPrices.atClose : todayPrices.regular) && todayPrices.regular && todayPrices.regular < 0 ? "-" : ""}{Math.abs((isAfterHours ? todayPrices.atClose : todayPrices.regular) || 0).toFixed(2)}
-                      </span>
-                    </div>
-                     
-                      {todayPrices.percentChange !== null && 
-                       todayPrices.priceDifference !== null && 
-                       realtimeData?.realtimePrice &&
-                       new Date().getHours() < 16 && (
+                      <div className="flex items-baseline gap-1">
                         <span
-                          className={`text-sm font-medium ${
+                          className={`font-bold text-3xl ${
+                            todayPrices.percentChange &&
                             todayPrices.percentChange > 0
-                              ? "text-emerald-600 dark:text-emerald-500" 
+                              ? "text-emerald-600 dark:text-emerald-500"
                               : "text-red-600 dark:text-red-500"
                           }`}
                         >
-                          {todayPrices.percentChange > 0 ? "▲" : "▼"} ${(todayPrices.priceDifference).toFixed(2)} ({(todayPrices.percentChange).toFixed(2)}%)
+                          $
+                          {(isAfterHours
+                            ? todayPrices.atClose
+                            : todayPrices.regular) &&
+                          todayPrices.regular &&
+                          todayPrices.regular < 0
+                            ? "-"
+                            : ""}
+                          {Math.abs(
+                            (isAfterHours
+                              ? todayPrices.atClose
+                              : todayPrices.regular) || 0
+                          ).toFixed(2)}
                         </span>
-                      )}
+                      </div>
+
+                      {todayPrices.percentChange !== null &&
+                        todayPrices.priceDifference !== null &&
+                        realtimeData?.realtimePrice &&
+                        new Date().getHours() < 16 && (
+                          <span
+                            className={`text-sm font-medium ${
+                              todayPrices.percentChange > 0
+                                ? "text-emerald-600 dark:text-emerald-500"
+                                : "text-red-600 dark:text-red-500"
+                            }`}
+                          >
+                            {todayPrices.percentChange > 0 ? "▲" : "▼"} $
+                            {todayPrices.priceDifference.toFixed(2)} (
+                            {todayPrices.percentChange.toFixed(2)}%)
+                          </span>
+                        )}
                     </div>
-                    {(new Date().getHours() >= 16 || new Date().getHours() < 9 || (new Date().getHours() === 9 && new Date().getMinutes() < 30)) && (
+                    {(new Date().getHours() >= 16 ||
+                      new Date().getHours() < 9 ||
+                      (new Date().getHours() === 9 &&
+                        new Date().getMinutes() < 30)) && (
                       <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                        At close, {todayPrices.mostRecentDate ? new Date(new Date(todayPrices.mostRecentDate).getTime() + 24*60*60*1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'MM/DD/YYYY'} at 4:00pm EST, USD
+                        At close,{" "}
+                        {todayPrices.mostRecentDate
+                          ? new Date(
+                              new Date(todayPrices.mostRecentDate).getTime() +
+                                24 * 60 * 60 * 1000
+                            ).toLocaleDateString("en-US", {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "MM/DD/YYYY"}{" "}
+                        at 4:00pm EST, USD
                         <div className="w-4 h-4 rounded-full border-2 border-gray-400 dark:border-gray-500 flex items-center justify-center">
-                          <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300">!</span>
+                          <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300">
+                            !
+                          </span>
                         </div>
                       </span>
                     )}
-                    
-                    {todayPrices.afterHours && (new Date().getHours() >= 16 || new Date().getHours() < 9 || (new Date().getHours() === 9 && new Date().getMinutes() < 30)) && (
-                      <div className="flex items-center gap-2">
-                        <span className={` text-sm text-gray-500 dark:text-gray-400`}>After Hours</span>
-                        <span className={` text-sm ${
-                          todayPrices.afterHours > (todayPrices.regular || 0)
-                            ? "text-emerald-600 dark:text-emerald-500"
-                            : "text-red-600 dark:text-red-500"
-                        }`}>
-                          ${todayPrices.afterHours.toFixed(2)}
-                        </span>
-                        {todayPrices.regular && (
-                          <span className={`text-sm font-medium ${
-                            todayPrices.afterHours > todayPrices.regular
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}>
-                             ${Math.abs(todayPrices.afterHours - todayPrices.regular).toFixed(2)} ({((todayPrices.afterHours - todayPrices.regular) / todayPrices.regular * 100).toFixed(2)}%)
-                          </span>
-                        )}
-                      </div>
-                    )}
 
+                    {todayPrices.afterHours &&
+                      (new Date().getHours() >= 16 ||
+                        new Date().getHours() < 9 ||
+                        (new Date().getHours() === 9 &&
+                          new Date().getMinutes() < 30)) && (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={` text-sm text-gray-500 dark:text-gray-400`}
+                          >
+                            After Hours
+                          </span>
+                          <span
+                            className={` text-sm ${
+                              todayPrices.afterHours >
+                              (todayPrices.regular || 0)
+                                ? "text-emerald-600 dark:text-emerald-500"
+                                : "text-red-600 dark:text-red-500"
+                            }`}
+                          >
+                            ${todayPrices.afterHours.toFixed(2)}
+                          </span>
+                          {todayPrices.regular && (
+                            <span
+                              className={`text-sm font-medium ${
+                                todayPrices.afterHours > todayPrices.regular
+                                  ? "text-emerald-600 dark:text-emerald-500"
+                                  : "text-red-600 dark:text-red-500"
+                              }`}
+                            >
+                              $
+                              {Math.abs(
+                                todayPrices.afterHours - todayPrices.regular
+                              ).toFixed(2)}{" "}
+                              (
+                              {(
+                                ((todayPrices.afterHours -
+                                  todayPrices.regular) /
+                                  todayPrices.regular) *
+                                100
+                              ).toFixed(2)}
+                              %)
+                            </span>
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -755,26 +810,28 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 dataKey="date"
                 tickFormatter={(value) => {
                   const date = new Date(value);
-                  return date.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  }).toLowerCase();
+                  return date
+                    .toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                    .toLowerCase();
                 }}
                 ticks={[
-                  new Date().setHours(4, 0, 0),   // 4:00 am
-                  new Date().setHours(8, 0, 0),   // 8:00 am
-                  new Date().setHours(12, 0, 0),  // 12:00 pm
-                  new Date().setHours(16, 0, 0),  // 4:00 pm
-                  new Date().setHours(20, 0, 0)   // 8:00 pm
+                  new Date().setHours(4, 0, 0), // 4:00 am
+                  new Date().setHours(8, 0, 0), // 8:00 am
+                  new Date().setHours(12, 0, 0), // 12:00 pm
+                  new Date().setHours(16, 0, 0), // 4:00 pm
+                  new Date().setHours(20, 0, 0), // 8:00 pm
                 ]}
                 tickLine={false}
                 axisLine={false}
                 interval={0}
                 minTickGap={30}
-                tick={{ 
+                tick={{
                   fontSize: 11,
-                  fill: '#9CA3AF'
+                  fill: "#9CA3AF",
                 }}
                 dy={10}
                 className="text-gray-500 dark:text-gray-400"
@@ -830,11 +887,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 <Area
                   type="monotoneX"
                   dataKey="close"
-                  stroke={todayPrices.percentChange && todayPrices.percentChange > 0 ? "#10b981" : "#ef4444"}
+                  stroke={
+                    todayPrices.percentChange && todayPrices.percentChange > 0
+                      ? "#10b981"
+                      : "#ef4444"
+                  }
                   strokeWidth={1.5}
                   fill={`url(#${
-                    todayPrices.percentChange && todayPrices.percentChange > 0 
-                      ? "colorUpGradient" 
+                    todayPrices.percentChange && todayPrices.percentChange > 0
+                      ? "colorUpGradient"
                       : "colorDownGradient"
                   })`}
                   connectNulls={true}

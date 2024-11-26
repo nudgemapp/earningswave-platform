@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -17,25 +17,29 @@ interface EarningsCalendar {
 
 async function getMonthDates(startYear: number, endYear: number) {
   const dates: { start: string; end: string }[] = [];
-  
+
   for (let year = startYear; year <= endYear; year++) {
     for (let month = 1; month <= 12; month++) {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0); // Last day of month
-      
+
       dates.push({
-        start: startDate.toISOString().split('T')[0],
-        end: endDate.toISOString().split('T')[0]
+        start: startDate.toISOString().split("T")[0],
+        end: endDate.toISOString().split("T")[0],
       });
     }
   }
-  
+
   return dates;
 }
 
-// @ts-ignore
-async function processBatch<T>(items: T[], batchSize: number, processor: (item: T) => Promise<any>) {
-  const results = [];
+// Replace @ts-ignore with more specific typing
+async function processBatch<T, R>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = [];
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
     const batchResults = await Promise.all(batch.map(processor));
@@ -46,8 +50,8 @@ async function processBatch<T>(items: T[], batchSize: number, processor: (item: 
 
 async function scrapeEarningsForMonth(startDate: string, endDate: string) {
   try {
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     const response = await fetch(
       `https://api.savvytrader.com/pricing/assets/earnings/calendar/daily?start=${startDate}&end=${endDate}`
     );
@@ -57,22 +61,28 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
     }
 
     const calendar: EarningsCalendar = await response.json();
-    
+
     // Process entries in batches
-    const allEntries = Object.entries(calendar).flatMap(([ entries]) => {
+    const allEntries = Object.entries(calendar).flatMap(([entries]) => {
       if (!Array.isArray(entries)) return [];
       return entries;
     });
 
     const results = await processBatch(allEntries, 10, async (entry) => {
       let year: number, quarter: number;
-      
+
       if (entry.sk) {
-        const [ yearStr, quarterStr] = entry.sk.split("#");
+        const [yearStr, quarterStr] = entry.sk.split("#");
         const parsedYear = parseInt(yearStr);
-        const parsedQuarter = quarterStr ? parseInt(quarterStr.substring(1)) : null;
-        
-        if (!isNaN(parsedYear) && parsedQuarter !== null && !isNaN(parsedQuarter)) {
+        const parsedQuarter = quarterStr
+          ? parseInt(quarterStr.substring(1))
+          : null;
+
+        if (
+          !isNaN(parsedYear) &&
+          parsedQuarter !== null &&
+          !isNaN(parsedQuarter)
+        ) {
           year = parsedYear;
           quarter = parsedQuarter;
         } else {
@@ -93,8 +103,8 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
               symbol: entry.symbol,
               year: year,
               quarter: quarter,
-            }
-          }
+            },
+          },
         });
 
         const data = {
@@ -110,7 +120,7 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
 
         if (existing) {
           // Only update if there are actual changes
-          const hasChanges = 
+          const hasChanges =
             existing.earningsDate.getTime() !== data.earningsDate.getTime() ||
             existing.earningsTime !== data.earningsTime ||
             existing.isDateConfirmed !== data.isDateConfirmed ||
@@ -124,12 +134,12 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
                   symbol: entry.symbol,
                   year: year,
                   quarter: quarter,
-                }
+                },
               },
               data: {
                 ...data,
                 updatedAt: new Date(),
-              }
+              },
             });
           }
           return existing; // Return existing record if no changes needed
@@ -142,11 +152,14 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
       }
     });
 
-    const validResults = results.filter(r => r !== null);
+    const validResults = results.filter((r) => r !== null);
     console.log(`Successfully processed ${validResults.length} entries`);
     return validResults;
   } catch (error) {
-    console.error(`Failed to process month range ${startDate} to ${endDate}:`, error);
+    console.error(
+      `Failed to process month range ${startDate} to ${endDate}:`,
+      error
+    );
     throw error;
   }
 }
@@ -154,14 +167,14 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
 async function main() {
   try {
     const monthRanges = await getMonthDates(2023, 2025);
-    
+
     for (const range of monthRanges) {
       await scrapeEarningsForMonth(range.start, range.end);
     }
-    
-    console.log('Earnings data scraping completed successfully');
+
+    console.log("Earnings data scraping completed successfully");
   } catch (error) {
-    console.error('Failed to complete earnings scraping:', error);
+    console.error("Failed to complete earnings scraping:", error);
   } finally {
     await prisma.$disconnect();
   }
