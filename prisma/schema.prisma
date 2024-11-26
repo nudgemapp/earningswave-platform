@@ -97,6 +97,7 @@ enum TranscriptStatus {
   CANCELLED
 }
 
+
 model Company {
   id            String       @id @default(cuid())
   currency      String       // Trading currency
@@ -224,3 +225,24 @@ model WatchlistEntry {
   @@index([userId])
   @@index([companyId])
 }
+
+model Earnings {
+  id             String   @id @default(cuid())
+  symbol         String
+  quarter        Int      // For q3 etc
+  sk             String?       // Added this field, optional since some entries might not have it
+  year           Int      // For 2024 etc
+  earningsDate   DateTime @db.Date
+  earningsTime   String   // Store as HH:mm:ss format
+  isDateConfirmed Boolean  // Whether the earnings date is confirmed
+  marketCap      Float?   // Market cap in millions, nullable
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([symbol, year, quarter]) // One earnings entry per company per quarter/year
+  @@index([symbol])
+  @@index([earningsDate])
+  @@index([symbol, earningsDate])
+}
+

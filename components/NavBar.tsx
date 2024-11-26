@@ -35,6 +35,8 @@ function useMount() {
 
 function NavBar() {
   const router = useRouter();
+  const { onOpen } = useAuthModal();  // Make sure this is imported at the top
+
   const [menu, setMenu] = useState(false);
   const { mounted, user, isLoaded } = useMount();
   const { signOut } = useClerk();
@@ -85,7 +87,7 @@ function NavBar() {
     if (user) {
       signOut(() => router.push("/"));
     } else {
-      router.push("/sign-up");
+      onOpen();  
     }
   };
 

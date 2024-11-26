@@ -25,10 +25,37 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 type FilterType = "BMO" | "AMC" | "UNKNOWN";
+interface Company {
+  id: string;
+  symbol: string;
+  name: string | null;
+  logo: string | null;
+  description: string;
+  currency: string;
+  marketCapitalization: number | null;
+  weburl: string | null;
+  finnhubIndustry: string | null;
+  exchange: string | null;
+}
+
+interface EarningsEntry {
+  id: string;
+  symbol: string;
+  quarter: number;
+  year: number;
+  earningsDate: string;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
+  totalForDay: number;
+  remainingCount: number;
+  company: Company;
+}
+
 
 interface DayViewProps {
   date: Date;
-  onTranscriptClick: (transcript: ProcessedTranscript) => void;
+  onTranscriptClick: (transcript: EarningsEntry) => void;
 }
 
 const getNextValidDate = (currentDate: Date, direction: number): Date => {
@@ -90,25 +117,38 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   );
 
   const filteredData = React.useMemo(() => {
-    if (!data || activeFilter === "UNKNOWN") return data;
+    if (!data?.earnings || activeFilter === "UNKNOWN") return data?.earnings;
 
-    return {
-      ...data,
-      transcripts: data.transcripts.filter(
-        (transcript) => transcript.MarketTime === activeFilter
-      ),
-    };
+    return data.earnings.filter((earning) => {
+      // Convert earnings time to hours for comparison
+      const timeStr = earning.earningsTime;
+      const hours = parseInt(timeStr.split(':')[0]);
+      
+      // Before market hours (BMO) is before 9:30 AM
+      // After market hours (AMC) is after 4:00 PM
+      const marketTime = hours < 9.5 ? "BMO" : hours >= 16 ? "AMC" : "DMH";
+      
+      return marketTime === activeFilter;
+    });
   }, [data, activeFilter]);
 
-  const groupedTranscripts = React.useMemo(() => {
-    if (!filteredData?.transcripts) return {};
 
-    return filteredData.transcripts.reduce((acc, transcript) => {
-      const timing = transcript.MarketTime || "UNKNOWN";
+  const groupedTranscripts = React.useMemo(() => {
+    if (!filteredData) return {};
+
+    return filteredData.reduce((acc, earning) => {
+      // Convert earnings time to hours for comparison
+      const timeStr = earning.earningsTime;
+      const hours = parseInt(timeStr.split(':')[0]);
+      
+      // Before market hours (BMO) is before 9:30 AM
+      // After market hours (AMC) is after 4:00 PM
+      const timing = hours < 9.5 ? "BMO" : hours >= 16 ? "AMC" : "DMH";
+
       if (!acc[timing]) acc[timing] = [];
-      acc[timing].push(transcript);
+      acc[timing].push(earning);
       return acc;
-    }, {} as Record<string, ProcessedTranscript[]>);
+    }, {} as Record<string, EarningsEntry[]>);
   }, [filteredData]);
 
   const formatDate = (date: Date) => {
@@ -172,7 +212,7 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
     isWatchlisted,
     onWatchlistToggle,
   }: {
-    transcript: ProcessedTranscript;
+    transcript: EarningsEntry;
     onClick: () => void;
     isWatchlisted: boolean;
     onWatchlistToggle: (companyId: string) => Promise<void>;
@@ -271,7 +311,7 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
   }: {
     title: string;
     icon: LucideIcon;
-    transcripts: ProcessedTranscript[];
+    transcripts: EarningsEntry[];
     className: string;
   }) => {
     if (!transcripts?.length) return null;
@@ -432,7 +472,7 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
         <CardContent className="px-4 pb-4">
           {!isLoading && !error && filteredData && (
             <>
-              {filteredData.transcripts.length === 0 ? (
+              {filteredData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500 dark:text-gray-400">
                   <Calendar className="w-12 h-12 mb-4 text-gray-400 dark:text-gray-500" />
                   <p className="text-lg font-medium">

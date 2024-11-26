@@ -1,27 +1,26 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
-interface TranscriptRow {
+interface EarningsQueryResult {
   id: string;
-  title: string;
-  scheduledAt: Date;
+  symbol: string;
   quarter: string;
   year: number;
-  MarketTime: string;
-  epsActual: number | null;
-  epsEstimate: number | null;
-  revenueActual: number | null;
-  revenueEstimate: number | null;
+  earningsDate: Date;
+  earningsTime: string;
+  isDateConfirmed: boolean;
+  marketCap: number | null;
   companyId: string;
-  symbol: string;
-  companyName: string;
+  companyName: string | null;
   logo: string | null;
+  description: string;
+  currency: string;
   marketCapitalization: number | null;
+  weburl: string | null;
   finnhubIndustry: string | null;
   exchange: string | null;
-  country: string | null;
-  weburl: string | null;
-  sharesOutstanding: number | null;
+  total_for_day: bigint;
+  remaining_count: bigint;
 }
 
 export async function GET(request: Request) {
@@ -29,83 +28,78 @@ export async function GET(request: Request) {
   const startDate = new Date(searchParams.get("startDate") || "");
   const endDate = new Date(searchParams.get("endDate") || "");
 
-  if (
-    !startDate ||
-    !endDate ||
-    isNaN(startDate.getTime()) ||
-    isNaN(endDate.getTime())
-  ) {
+  if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
+  console.log("API Date Range:", {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
+
   try {
-    const currentDate = new Date();
-    const yesterday = new Date(currentDate);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const twoWeeksAgo = new Date(currentDate);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-    console.log("Fetching day view data", currentDate);
-
-    const result = await prisma.$queryRaw`
+    const result = await prisma.$queryRaw<EarningsQueryResult[]>`
+      WITH DailyEarnings AS (
+        SELECT 
+          e.id,
+          e.symbol,
+          e.quarter,
+          e.year,
+          e."earningsDate",
+          e."earningsTime",
+          e."isDateConfirmed",
+          e."marketCap",
+          c.id as "companyId",
+          c.name as "companyName",
+          c.logo,
+          c.description,
+          c.currency,
+          c."marketCapitalization",
+          c.weburl,
+          c."finnhubIndustry",
+          c.exchange,
+          COUNT(*) OVER (PARTITION BY DATE(e."earningsDate")) as total_for_day
+        FROM "Earnings" e
+        LEFT JOIN "Company" c ON e.symbol = c.symbol
+        WHERE 
+          e."earningsDate" >= ${startDate}
+          AND e."earningsDate" <= ${endDate}
+      )
       SELECT 
-        t.id,
-        t.title,
-        t."scheduledAt",
-        t.quarter,
-        t.year,
-        t."MarketTime",
-        t."epsActual",
-        t."epsEstimate",
-        t."revenueActual",
-        t."revenueEstimate",
-        c.id as "companyId",
-        c.symbol,
-        c.name as "companyName",
-        c.logo,
-        c."marketCapitalization",
-        c."finnhubIndustry",
-        c.exchange,
-        c.country,
-        c.weburl,
-        c."sharesOutstanding"
-      FROM "Transcript" t
-      JOIN "Company" c ON t."companyId" = c.id
-      WHERE 
-        t."scheduledAt" >= ${startDate}
-        AND t."scheduledAt" <= ${endDate}
-        AND t.quarter IS NOT NULL
-        AND t.year IS NOT NULL
-        AND (t.status != 'SCHEDULED' OR (t.status = 'SCHEDULED' AND t."scheduledAt" > ${twoWeeksAgo}))
-      ORDER BY t."scheduledAt" ASC;
+        *,
+        (total_for_day - 1) as remaining_count
+      FROM DailyEarnings
+      ORDER BY "earningsDate" ASC;
     `;
 
-    const processedTranscripts = (result as TranscriptRow[]).map((row) => ({
+    const transformedEarnings = result.map((row) => ({
       id: row.id,
-      title: row.title,
-      scheduledAt: row.scheduledAt,
+      symbol: row.symbol,
       quarter: row.quarter,
       year: row.year,
-      MarketTime: row.MarketTime,
-      epsActual: row.epsActual,
-      epsEstimate: row.epsEstimate,
-      revenueActual: row.revenueActual,
-      revenueEstimate: row.revenueEstimate,
+      earningsDate: row.earningsDate,
+      earningsTime: row.earningsTime,
+      isDateConfirmed: row.isDateConfirmed,
+      marketCap: row.marketCap,
+      totalForDay: Number(row.total_for_day),
+      remainingCount: Math.max(0, Number(row.remaining_count)),
       company: {
         id: row.companyId,
         symbol: row.symbol,
         name: row.companyName,
-        logo: row.logo || null,
+        logo: row.logo,
+        description: row.description,
+        currency: row.currency,
         marketCapitalization: row.marketCapitalization,
+        weburl: row.weburl,
         finnhubIndustry: row.finnhubIndustry,
         exchange: row.exchange,
-        country: row.country,
-        weburl: row.weburl,
-        sharesOutstanding: row.sharesOutstanding,
       },
     }));
 
-    return NextResponse.json({ transcripts: processedTranscripts });
+    return NextResponse.json({
+      earnings: transformedEarnings,
+    });
   } catch (error) {
     console.error("Error fetching day view data:", error);
     return new Response("Failed to fetch day view data", { status: 500 });
