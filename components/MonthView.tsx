@@ -88,9 +88,9 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
+      <div className="h-full flex flex-col bg-white dark:bg-neutral-950 relative rounded-lg shadow-sm dark:shadow-neutral-900/50">
         {/* Header */}
-        <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+        <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="py-1 text-center">
               <Skeleton className="h-3.5 w-12 mx-auto rounded-md" />
@@ -100,11 +100,11 @@ const MonthView: React.FC<MonthViewProps> = ({
 
         {/* Calendar Grid */}
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
+          <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-neutral-800">
             {[...Array(35)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-slate-900 p-2 min-h-[120px] space-y-2"
+                className="bg-white dark:bg-neutral-950 p-2 min-h-[120px] space-y-2"
               >
                 {/* Date */}
                 <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     onClick: () => void;
   }) => (
     <div
-      className="flex flex-col bg-white dark:bg-black border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+      className="flex flex-col bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-neutral-900/50 hover:border-gray-800 dark:hover:border-neutral-700 cursor-pointer"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -203,14 +203,14 @@ const MonthView: React.FC<MonthViewProps> = ({
             className="p-0"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900">
             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
               {symbol}
             </span>
           </div>
         )}
       </div>
-      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+      <div className="w-full bg-gray-50 dark:bg-neutral-900 py-0.5 border-t border-gray-200 dark:border-neutral-800">
         <span className="text-[8px] font-medium text-gray-800 dark:text-white block text-center truncate px-0.5">
           {symbol}
         </span>
@@ -262,7 +262,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const NoEarnings = () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-sm">
+    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 dark:border-neutral-800 rounded-sm">
       <div className="flex flex-row items-center gap-1">
         <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
@@ -294,7 +294,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       <div
         className={`rounded-md overflow-hidden ${bgColor} dark:bg-opacity-20`}
       >
-        <div className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
+        <div className="w-full bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
           <div className="flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1 min-w-0">
               <Icon className="w-3 h-3 flex-shrink-0 text-gray-600 dark:text-gray-300" />
@@ -340,8 +340,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
-      <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounde">
+    <div className="h-full flex flex-col bg-white dark:bg-neutral-950 relative rounded-lg shadow-sm dark:shadow-neutral-900/50">
+      <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 rounded">
         {weekDays.map((day) => (
           <div
             key={day}
@@ -352,8 +352,8 @@ const MonthView: React.FC<MonthViewProps> = ({
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
+      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+        <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-neutral-800">
           {getDaysInMonth(currentDate).map((date, index) => {
             const { items: dayContent, totalCount: transcriptRemaining } =
               getLogosForDate(date, transcripts);
@@ -362,9 +362,9 @@ const MonthView: React.FC<MonthViewProps> = ({
             return (
               <div
                 key={index}
-                className={`bg-white dark:bg-slate-900 p-0.5 text-center flex flex-col min-h-[120px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-slate-800 ${
+                className={`bg-white dark:bg-neutral-950 p-0.5 text-center flex flex-col min-h-[120px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-neutral-900 ${
                   !isCurrentMonth
-                    ? "text-gray-400 bg-gray-50 dark:bg-slate-800/50"
+                    ? "text-gray-400 bg-gray-50 dark:bg-neutral-900/50"
                     : "text-gray-800 dark:text-gray-200"
                 } ${
                   date.toDateString() === new Date().toDateString()

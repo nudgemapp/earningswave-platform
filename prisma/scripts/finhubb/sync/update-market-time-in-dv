@@ -1,0 +1,87 @@
+// import { NextResponse } from "next/server";
+// import { PrismaClient } from "@prisma/client";
+// // import pLimit from "p-limit";
+
+// export async function GET() {
+//   const prisma = new PrismaClient();
+
+//   try {
+//     // Get today's date at start of day (UTC)
+//     const today = new Date();
+//     today.setUTCHours(0, 0, 0, 0);
+
+//     // Find scheduled transcripts from today onwards
+//     const transcriptsToUpdate = await prisma.transcript.findMany({
+//       where: {
+//         scheduledAt: {
+//           gte: today,
+//         },
+//         status: "SCHEDULED",
+//       },
+//       include: {
+//         company: true,
+//       },
+//     });
+
+//     let updateCount = 0;
+//     const updates = [];
+
+//     // Fetch Finnhub data for each unique company
+//     for (const transcript of transcriptsToUpdate) {
+//       const date = transcript.scheduledAt.toISOString().split("T")[0];
+//       const symbol = transcript.company.symbol;
+
+//       const earningsResponse = await fetch(
+//         `https://finnhub.io/api/v1/calendar/earnings?from=${date}&to=${date}&symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//       );
+//       const earningsData = await earningsResponse.json();
+
+//       if (earningsData.earningsCalendar?.[0]) {
+//         const finnhubMarketTime =
+//           earningsData.earningsCalendar[0].hour.toUpperCase() === "BMO"
+//             ? "BMO"
+//             : "AMC";
+
+//         if (transcript.MarketTime !== finnhubMarketTime) {
+//           console.log(`Updating transcript ${transcript.id}:`);
+//           console.log(`  Old MarketTime: ${transcript.MarketTime}`);
+//           console.log(`  New MarketTime: ${finnhubMarketTime}`);
+//           console.log("---");
+
+//           // Add to updates array
+//           updates.push(
+//             prisma.transcript.update({
+//               where: { id: transcript.id },
+//               data: {
+//                 MarketTime: finnhubMarketTime,
+//                 updatedAt: new Date(),
+//               },
+//             })
+//           );
+//           updateCount++;
+//         }
+//       }
+//     }
+
+//     // Perform all updates in a transaction
+//     if (updates.length > 0) {
+//       await prisma.$transaction(updates);
+//     }
+
+//     return NextResponse.json({
+//       message: "Market time updates complete",
+//       updatedCount: updateCount,
+//     });
+//   } catch (error) {
+//     console.error("Error updating transcripts:", error);
+//     return NextResponse.json(
+//       {
+//         error: "Failed to update transcripts",
+//         details: error instanceof Error ? error.message : String(error),
+//       },
+//       { status: 500 }
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }

@@ -89,6 +89,15 @@ export default function RootLayout({
       <html lang="en" className="bg-white dark:bg-slate-900">
         <head>
           <GoogleAnalytics GA_MEASUREMENT_ID="G-ZD51TYHM3M" />
+          <script async src="//cdn.trackdesk.com/tracking.js" />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(t,d,k){(t[k]=t[k]||[]).push(d);t[d]=t[d]||t[k].f||function(){(t[d].q=t[d].q||[]).push(arguments)}})(window,"trackdesk","TrackdeskObject");
+                trackdesk('earningswave', 'click');
+              `,
+            }}
+          />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-200`}
@@ -115,6 +124,29 @@ export default function RootLayout({
           </ThemeProvider>
           <Analytics />
           <GoogleTagManager gtmId="GTM-525F6NV9" />
+
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function () {
+                    var cookie = document.cookie.match('(^|;)\\s*trakdesk_cid\\s*=\\s*([^;]+)');
+                    if (Array.isArray(cookie)) {
+                        try {
+                            var trakdeskCid = JSON.parse(cookie.pop());
+                            var cid = trakdeskCid['cid'];
+                            document.querySelectorAll('a[href^="https://buy.stripe.com/"]').forEach(function (a) {
+                                var url = new URL(a.href);
+                                url.searchParams.set('client_reference_id', cid);
+                                a.href = url.href;
+                            });
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                })();
+              `,
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>

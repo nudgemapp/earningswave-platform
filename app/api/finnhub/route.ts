@@ -31,7 +31,7 @@ export async function GET() {
 
     const from = "2023-02-01";
     const to = "2026-03-01";
-    const symbol = "SYM";
+    const symbol = "KULR";
 
     // Add earnings calendar fetch
     const earningsResponse = await fetch(
@@ -58,7 +58,7 @@ export async function GET() {
 
     // Fetch the full transcript using the most recent ID
     // Add transcript fetch if ID is provided
-    const transcriptId = "SYM_3409268";
+    const transcriptId = "NIO_3409561";
 
     const transcriptResponse = await fetch(
       `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptId}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
@@ -66,6 +66,14 @@ export async function GET() {
     const transcriptData = await transcriptResponse.json();
 
     console.log(transcriptData);
+
+    const profileResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+
+    const profileData = await profileResponse.json();
+
+    console.log(profileData);
 
     return NextResponse.json({
       // symbolsData: combinedData,

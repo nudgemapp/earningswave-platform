@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { Company, Transcript } from "@prisma/client";
+import { useGetAISummary } from "@/app/hooks/use-get-ai-summary";
 
 interface AIEarningsAnalysisProps {
   company: Company & {
@@ -12,8 +13,9 @@ interface AIEarningsAnalysisProps {
 }
 
 const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
+  console.log(company);
+
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState<string | null>(null);
 
   // Get the most recent completed transcript
   const latestTranscript = company.recentTranscripts?.find(
@@ -26,26 +28,36 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
     return `Q${transcript.quarter} ${transcript.year}`;
   };
 
-  useEffect(() => {
-    const fetchAiAnalysis = async () => {
-      if (!latestTranscript?.id) return;
+  console.log(latestTranscript);
 
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/ai/earnings/${latestTranscript.id}`);
-        if (!response.ok) throw new Error("Failed to fetch AI analysis");
-        const data = await response.json();
-        setAnalysis(data.analysis);
-      } catch (error) {
-        console.error("Error fetching AI analysis:", error);
-        setAnalysis(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: aiSummary, isLoading: aiSummaryLoading } = useGetAISummary(
+    latestTranscript?.id
+  );
 
-    fetchAiAnalysis();
-  }, [latestTranscript?.id]);
+  console.log(aiSummary);
+
+  // useEffect(() => {
+  //   const fetchAiAnalysis = async () => {
+  //     if (!latestTranscript?.id) return;
+
+  //     setLoading(true);
+  //     try {
+  //       const response = await fetch(
+  //         `/api/earnings/${latestTranscript.id}/aiSummary`
+  //       );
+  //       if (!response.ok) throw new Error("Failed to fetch AI analysis");
+  //       const data = await response.json();
+  //       setAnalysis(data.analysis);
+  //     } catch (error) {
+  //       console.error("Error fetching AI analysis:", error);
+  //       setAnalysis(null);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAiAnalysis();
+  // }, [latestTranscript?.id]);
 
   if (!latestTranscript) return null;
 
@@ -61,9 +73,11 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        ) : analysis ? (
+        ) : aiSummary ? (
           <div className="prose dark:prose-invert max-w-none">
-            <p className="text-gray-600 dark:text-gray-400">{analysis}</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              {aiSummary.analysis}
+            </p>
           </div>
         ) : (
           <p className="text-gray-500 dark:text-gray-400">

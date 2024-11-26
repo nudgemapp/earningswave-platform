@@ -120,6 +120,8 @@ export async function GET(
             SELECT *
             FROM "Transcript"
             WHERE "companyId" = ${params.id}
+            AND quarter IS NOT NULL 
+            AND year IS NOT NULL
             AND (status != 'SCHEDULED' OR (status = 'SCHEDULED' AND "scheduledAt" > ${yesterday}))
             ORDER BY "scheduledAt" DESC
             LIMIT 4

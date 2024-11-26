@@ -76,7 +76,7 @@ const StockChartSkeleton = () => (
 const TranscriptsSkeleton = () => (
   <div className="space-y-3">
     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-      Recent Transcripts
+      Recent Earnings
     </h3>
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
@@ -88,6 +88,9 @@ const TranscriptsSkeleton = () => (
     </div>
   </div>
 );
+
+// ???
+// use scrollarea here form ShadowNoneIcon
 
 // Update the CompanyHeader component with the proper type
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({
@@ -225,7 +228,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   if (isLoadingCompany) {
     return (
       <div className="space-y-6">
-        <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+        <Card className="w-full shadow-sm dark:shadow-neutral-900/50 bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800">
           <CardHeader className="space-y-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
@@ -417,7 +420,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full dark:bg-slate-900 dark:text-white">
+        <Card className="w-full dark:bg-neutral-950 dark:text-white">
           <CardContent className="p-4">
             <EarningsTranscript />
           </CardContent>
@@ -426,7 +429,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
       {/* Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
-        <DialogContent className="sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 p-4">
+        <DialogContent className="sm:max-w-2xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 p-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {company.name} ({company.symbol}) - Company Summary

@@ -241,6 +241,7 @@ export async function GET() {
               symbol: transcript.symbol,
               time: transcript.time,
               data: transcriptData,
+              marketTime: transcriptData.marketTime,
             });
 
             results.transcriptDetails.push({
@@ -272,9 +273,23 @@ export async function GET() {
     for (const transcript of results.transcriptDetails) {
       try {
         const marketTime = (() => {
-          const hour = new Date(transcript.time).getHours();
-          if (hour < 9) return "BMO";
-          return "AMC";
+          // Convert transcript time to ET (US Eastern Time)
+          const date = new Date(transcript.time);
+          // Create formatter in ET timezone
+          const timeInET = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/New_York",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: false,
+          }).format(date);
+
+          const [hours, minutes] = timeInET.split(":").map(Number);
+          const timeInMinutes = hours * 60 + minutes;
+
+          // Before 9:30 AM ET (570 minutes)
+          if (timeInMinutes < 570) return "BMO" as const;
+          // After 4:00 PM ET (960 minutes)
+          return "AMC" as const;
         })();
 
         // Create a date without time component

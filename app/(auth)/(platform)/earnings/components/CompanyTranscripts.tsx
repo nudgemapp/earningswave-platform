@@ -34,8 +34,6 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
     setSelectedTranscript(transcriptId);
   };
 
-  console.log(transcripts);
-
   return (
     <div className="space-y-2">
       {transcripts.map((transcript) => (
@@ -62,28 +60,26 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
               </div>
             </div>
 
-            {transcript.status === "SCHEDULED" && (
-              <div className="text-right text-xs">
-                <div className="space-y-0.5">
-                  <div className="text-gray-500 dark:text-gray-400">
-                    (Est.) EPS:{" "}
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {transcript.epsEstimate
-                        ? formatCurrency(transcript.epsEstimate)
-                        : "-"}
-                    </span>
-                  </div>
-                  <div className="text-gray-500 dark:text-gray-400">
-                    (Est.) Rev:{" "}
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {transcript.revenueEstimate
-                        ? formatCurrency(transcript.revenueEstimate, true)
-                        : "-"}
-                    </span>
-                  </div>
+            <div className="text-right text-xs">
+              <div className="space-y-0.5">
+                <div className="text-gray-500 dark:text-gray-400">
+                  (Est.) EPS:{" "}
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {transcript.epsEstimate
+                      ? formatCurrency(transcript.epsEstimate)
+                      : "-"}
+                  </span>
+                </div>
+                <div className="text-gray-500 dark:text-gray-400">
+                  (Est.) Rev:{" "}
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {transcript.revenueEstimate
+                      ? formatCurrency(transcript.revenueEstimate, true)
+                      : "-"}
+                  </span>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </button>
       ))}

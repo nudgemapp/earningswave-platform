@@ -149,7 +149,7 @@ export const AuthModal = () => {
             </h2>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 text-center">
               {isSignUp
-                ? "Free access to 1 transcript per month"
+                ? "Free access to company data and earnings calendar"
                 : "Access your account to get started"}
             </p>
           </div>
