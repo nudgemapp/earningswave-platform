@@ -12,9 +12,7 @@ import {
 } from "recharts";
 import { useStockWebSocket } from "@/hooks/use-stock-websocket";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
-import { IconPlaneArrival } from "@tabler/icons-react";
-import { curveMonotoneX } from "d3-shape";
+
 
 interface StockChartProps {
   symbol: string;
@@ -66,17 +64,17 @@ interface RealtimeStockData {
   data: StockData[];
 }
 
-const LiveIndicator = () => (
-  <div className="flex items-center gap-1.5">
-    <div className="relative flex h-2.5 w-2.5">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-    </div>
-    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-      LIVE
-    </span>
-  </div>
-);
+// const LiveIndicator = () => (
+//   <div className="flex items-center gap-1.5">
+//     <div className="relative flex h-2.5 w-2.5">
+//       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+//       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+//     </div>
+//     <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+//       LIVE
+//     </span>
+//   </div>
+// );
 
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
@@ -84,9 +82,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   onTimeframeChange,
   todayData,
 }) => {
-  const queryClient = useQueryClient();
   const websocketConnection = useStockWebSocket(symbol);
-  const { isConnected, error } = useMemo(
+  const {  error } = useMemo(
     () => websocketConnection,
     [websocketConnection]
   );
@@ -261,7 +258,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           const mostRecentDate = entries[0][0].split(" ")[0];
           // Find previous day's closing price (4:00 PM EST)
           const prevDate = new Date(mostRecentDate);
-          const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
 
           
           const prevDayClose = entries.find(([date]) => {
@@ -281,7 +277,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           let afterHoursPrice = null;
           let regularOpenPrice = null;
           let latestPrice = null;
-          let prevClose = prevClosePrice
+          const prevClose = prevClosePrice
 
           // Process entries for the most recent day only
           const todayEntries = entries.filter(
@@ -504,13 +500,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     }
   }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
 
-  // Update the Area component to use different colors based on price movement
-  const priceChange = useMemo(() => {
-    if (realtimeData?.realtimePrice && todayPrices.prevClose) {
-      return realtimeData.realtimePrice - todayPrices.prevClose;
-    }
-    return 0;
-  }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
+ 
+ 
 
   // Update the regular market price display
   useEffect(() => {

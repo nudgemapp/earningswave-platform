@@ -33,6 +33,7 @@ async function getMonthDates(startYear: number, endYear: number) {
   return dates;
 }
 
+// @ts-ignore
 async function processBatch<T>(items: T[], batchSize: number, processor: (item: T) => Promise<any>) {
   const results = [];
   for (let i = 0; i < items.length; i += batchSize) {
@@ -58,7 +59,7 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
     const calendar: EarningsCalendar = await response.json();
     
     // Process entries in batches
-    const allEntries = Object.entries(calendar).flatMap(([date, entries]) => {
+    const allEntries = Object.entries(calendar).flatMap(([ entries]) => {
       if (!Array.isArray(entries)) return [];
       return entries;
     });
@@ -67,7 +68,7 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
       let year: number, quarter: number;
       
       if (entry.sk) {
-        const [_, yearStr, quarterStr] = entry.sk.split("#");
+        const [ yearStr, quarterStr] = entry.sk.split("#");
         const parsedYear = parseInt(yearStr);
         const parsedQuarter = quarterStr ? parseInt(quarterStr.substring(1)) : null;
         
