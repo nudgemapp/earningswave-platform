@@ -9,6 +9,7 @@ import {
   Clock,
   Lock,
   CalendarIcon,
+  FileDown,
 } from "lucide-react";
 import React from "react";
 import { format } from "date-fns";
@@ -19,6 +20,7 @@ import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import Image from "next/image";
+import jsPDF from "jspdf";
 
 const formatUTCDate = (date: string | Date) => {
   const d = new Date(date);
@@ -40,10 +42,149 @@ const EarningsTranscript = () => {
   const subscriptionModal = useSubscriptionModal();
 
   console.log(transcript);
-  console.log(subscription);
+  // console.log(subscription);
 
   const handleBack = () => {
     setSelectedTranscript(null);
+  };
+
+  const handleDownloadPDF = () => {
+    if (!transcript) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const lineHeight = 7; // Consistent line height
+    let yPosition = margin;
+
+    // Helper function to check and add new page if needed
+    const checkAndAddPage = (heightNeeded: number) => {
+      if (yPosition + heightNeeded > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+        return true;
+      }
+      return false;
+    };
+
+    // Add header section
+    doc.setFontSize(16);
+    doc.text(transcript.title || "Earnings Transcript", margin, yPosition);
+    yPosition += lineHeight * 2;
+
+    // Add metadata in a compact format
+    doc.setFontSize(10);
+    const metadataLines: string[] = [];
+    if (transcript.scheduledAt) {
+      metadataLines.push(`Date: ${formatUTCDate(transcript.scheduledAt)}`);
+    }
+    if (transcript.MarketTime) {
+      metadataLines.push(`Time: ${transcript.MarketTime}`);
+    }
+    if (transcript.financials) {
+      const { epsActual, epsEstimate, revenueActual, revenueEstimate } =
+        transcript.financials;
+      if (epsActual !== null || epsEstimate !== null) {
+        metadataLines.push(
+          `EPS: ${epsActual ?? "N/A"} (Est: ${epsEstimate ?? "N/A"})`
+        );
+      }
+      if (revenueActual !== null || revenueEstimate !== null) {
+        metadataLines.push(
+          `Revenue: ${revenueActual ?? "N/A"} (Est: ${
+            revenueEstimate ?? "N/A"
+          })`
+        );
+      }
+    }
+
+    // Add metadata
+    metadataLines.forEach((line) => {
+      doc.text(line, margin, yPosition);
+      yPosition += lineHeight;
+    });
+
+    // Add separator line
+    yPosition += lineHeight;
+    doc.setLineWidth(0.2);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += lineHeight * 1.5;
+
+    // Process and add transcript content
+    if (transcript.fullText) {
+      const paragraphs = transcript.fullText
+        .split("\n")
+        .filter((p): p is string => Boolean(p.trim()))
+        .map((p) => p.trim());
+
+      paragraphs.forEach((paragraph) => {
+        // Check if this is a speaker line
+        const isSpeaker = paragraph.includes(":");
+
+        if (isSpeaker) {
+          const [speaker = "", ...content] = paragraph.split(":");
+          const contentText = content.join(":").trim();
+
+          // Calculate heights
+          doc.setFont("helvetica", "bold");
+          const speakerText = `${speaker.trim()}:`; // Now speaker is guaranteed to be a string
+          const speakerWidth = doc.getTextWidth(speakerText);
+
+          doc.setFont("helvetica", "normal");
+          const availableWidth = pageWidth - margin * 2 - speakerWidth - 5; // 5px gap
+          const contentLines = doc.splitTextToSize(contentText, availableWidth);
+          const totalHeight = Math.max(
+            lineHeight,
+            contentLines.length * lineHeight
+          );
+
+          // Check for page break
+          if (checkAndAddPage(totalHeight)) {
+            // Reset position to top of new page
+            yPosition = margin;
+          }
+
+          // Draw speaker name
+          doc.setFont("helvetica", "bold");
+          doc.text(speakerText, margin, yPosition);
+
+          // Draw content
+          doc.setFont("helvetica", "normal");
+          doc.text(contentLines, margin + speakerWidth + 5, yPosition);
+
+          yPosition += totalHeight + lineHeight / 2;
+        } else {
+          // Regular paragraph
+          const lines = doc.splitTextToSize(paragraph, pageWidth - margin * 2);
+          const totalHeight = lines.length * lineHeight;
+
+          if (checkAndAddPage(totalHeight)) {
+            yPosition = margin;
+          }
+
+          doc.text(lines, margin, yPosition);
+          yPosition += totalHeight + lineHeight / 2;
+        }
+      });
+    }
+
+    // Add page numbers
+    const totalPages = doc.internal.pages.length - 1; // -1 because jsPDF adds an initial empty page
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128); // Gray color for page numbers
+      doc.text(
+        `Page ${i} of ${totalPages}`,
+        pageWidth - margin,
+        pageHeight - margin / 2,
+        { align: "right" }
+      );
+    }
+
+    // Save the PDF
+    doc.save(`${transcript.title || "earnings-transcript"}.pdf`);
   };
 
   if (isLoading) {
@@ -53,7 +194,6 @@ const EarningsTranscript = () => {
   if (!transcript || !isSignedIn) return null;
 
   const hasActiveSubscription = subscription?.isActive;
-  console.log(hasActiveSubscription);
 
   // Add check for scheduled status
   if (transcript.status === "SCHEDULED") {
@@ -200,16 +340,27 @@ const EarningsTranscript = () => {
         </div>
 
         {/* Audio Link - only show if has active subscription */}
-        {hasActiveSubscription && transcript.audioUrl && (
-          <a
-            href={transcript.audioUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-          >
-            <Volume2 className="w-4 h-4" />
-            Listen to Audio Recording
-          </a>
+        {hasActiveSubscription && (
+          <div className="flex gap-2">
+            {transcript.audioUrl && (
+              <a
+                href={transcript.audioUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Volume2 className="w-4 h-4" />
+                Listen to Audio Recording
+              </a>
+            )}
+            <button
+              onClick={handleDownloadPDF}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <FileDown className="w-4 h-4" />
+              Download PDF
+            </button>
+          </div>
         )}
       </div>
 
