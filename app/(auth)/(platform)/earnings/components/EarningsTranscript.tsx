@@ -55,126 +55,121 @@ const EarningsTranscript = () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
-    const lineHeight = 7; // Consistent line height
+    const lineHeight = 7;
     let yPosition = margin;
 
-    // Helper function to check and add new page if needed
-    const checkAndAddPage = (heightNeeded: number) => {
-      if (yPosition + heightNeeded > pageHeight - margin) {
-        doc.addPage();
-        yPosition = margin;
-        return true;
-      }
-      return false;
+    // Helper function to add new page
+    const addNewPage = () => {
+      doc.addPage();
+      yPosition = margin;
     };
 
-    // Add header section
+    // Helper function to check remaining space
+    const getRemainingSpace = () => pageHeight - margin - yPosition;
+
+    // Helper function to process text content
+    const processTextContent = (
+      text: string,
+      xPos: number,
+      maxWidth: number,
+      isSpeakerName = false
+    ) => {
+      doc.setFont("helvetica", isSpeakerName ? "bold" : "normal");
+      const lines = doc.splitTextToSize(text, maxWidth);
+
+      lines.forEach((line: string, index: number) => {
+        // Check if we need a new page
+        if (yPosition + lineHeight > pageHeight - margin) {
+          addNewPage();
+          // Repeat speaker name on new page if this is content
+          if (!isSpeakerName && index === 0) {
+            const speakerName = text.split(":")[0] + ":";
+            doc.setFont("helvetica", "bold");
+            doc.text(speakerName, margin, yPosition);
+            doc.setFont("helvetica", "normal");
+            yPosition += lineHeight;
+          }
+        }
+
+        doc.text(line, xPos, yPosition);
+        yPosition += lineHeight;
+      });
+
+      // Add small spacing after paragraph
+      yPosition += lineHeight * 0.5;
+    };
+
+    // Add header
     doc.setFontSize(16);
     doc.text(transcript.title || "Earnings Transcript", margin, yPosition);
     yPosition += lineHeight * 2;
 
-    // Add metadata in a compact format
-    doc.setFontSize(10);
-    const metadataLines: string[] = [];
-    if (transcript.scheduledAt) {
-      metadataLines.push(`Date: ${formatUTCDate(transcript.scheduledAt)}`);
-    }
-    if (transcript.MarketTime) {
-      metadataLines.push(`Time: ${transcript.MarketTime}`);
-    }
-    if (transcript.financials) {
-      const { epsActual, epsEstimate, revenueActual, revenueEstimate } =
-        transcript.financials;
-      if (epsActual !== null || epsEstimate !== null) {
-        metadataLines.push(
-          `EPS: ${epsActual ?? "N/A"} (Est: ${epsEstimate ?? "N/A"})`
-        );
-      }
-      if (revenueActual !== null || revenueEstimate !== null) {
-        metadataLines.push(
-          `Revenue: ${revenueActual ?? "N/A"} (Est: ${
-            revenueEstimate ?? "N/A"
-          })`
-        );
-      }
-    }
-
     // Add metadata
+    doc.setFontSize(10);
+    const metadataLines = [
+      `Date: ${formatUTCDate(transcript.scheduledAt)}`,
+      `Time: ${transcript.MarketTime}`,
+      transcript.financials?.epsActual &&
+        `EPS: ${transcript.financials.epsActual} (Est: ${transcript.financials.epsEstimate})`,
+      transcript.financials?.revenueActual &&
+        `Revenue: ${formatCurrency(
+          transcript.financials.revenueActual,
+          true
+        )} (Est: ${formatCurrency(
+          transcript.financials.revenueEstimate || 0,
+          true
+        )})`,
+    ].filter(Boolean);
+
     metadataLines.forEach((line) => {
-      doc.text(line, margin, yPosition);
+      doc.text(line as string, margin, yPosition);
       yPosition += lineHeight;
     });
 
-    // Add separator line
+    // Add separator
     yPosition += lineHeight;
     doc.setLineWidth(0.2);
     doc.line(margin, yPosition, pageWidth - margin, yPosition);
     yPosition += lineHeight * 1.5;
 
-    // Process and add transcript content
+    // Process transcript content
     if (transcript.fullText) {
       const paragraphs = transcript.fullText
         .split("\n")
-        .filter((p): p is string => Boolean(p.trim()))
+        .filter((p) => p.trim())
         .map((p) => p.trim());
 
       paragraphs.forEach((paragraph) => {
-        // Check if this is a speaker line
-        const isSpeaker = paragraph.includes(":");
+        if (paragraph.includes(":")) {
+          const [speaker, ...content] = paragraph.split(":");
+          const speakerText = `${speaker.trim()}:`;
 
-        if (isSpeaker) {
-          const [speaker = "", ...content] = paragraph.split(":");
+          // Calculate speaker width for proper content alignment
+          doc.setFont("helvetica", "bold");
+          const speakerWidth = doc.getTextWidth(speakerText) + 5;
+
+          // Process speaker name
+          processTextContent(speakerText, margin, pageWidth - margin * 2, true);
+
+          // Process content with proper indentation
           const contentText = content.join(":").trim();
+          const contentXPos = margin + speakerWidth;
+          const contentWidth = pageWidth - margin * 2 - speakerWidth;
 
-          // Calculate heights
-          doc.setFont("helvetica", "bold");
-          const speakerText = `${speaker.trim()}:`; // Now speaker is guaranteed to be a string
-          const speakerWidth = doc.getTextWidth(speakerText);
-
-          doc.setFont("helvetica", "normal");
-          const availableWidth = pageWidth - margin * 2 - speakerWidth - 5; // 5px gap
-          const contentLines = doc.splitTextToSize(contentText, availableWidth);
-          const totalHeight = Math.max(
-            lineHeight,
-            contentLines.length * lineHeight
-          );
-
-          // Check for page break
-          if (checkAndAddPage(totalHeight)) {
-            // Reset position to top of new page
-            yPosition = margin;
-          }
-
-          // Draw speaker name
-          doc.setFont("helvetica", "bold");
-          doc.text(speakerText, margin, yPosition);
-
-          // Draw content
-          doc.setFont("helvetica", "normal");
-          doc.text(contentLines, margin + speakerWidth + 5, yPosition);
-
-          yPosition += totalHeight + lineHeight / 2;
+          processTextContent(contentText, contentXPos, contentWidth);
         } else {
-          // Regular paragraph
-          const lines = doc.splitTextToSize(paragraph, pageWidth - margin * 2);
-          const totalHeight = lines.length * lineHeight;
-
-          if (checkAndAddPage(totalHeight)) {
-            yPosition = margin;
-          }
-
-          doc.text(lines, margin, yPosition);
-          yPosition += totalHeight + lineHeight / 2;
+          // Process regular paragraph
+          processTextContent(paragraph, margin, pageWidth - margin * 2);
         }
       });
     }
 
     // Add page numbers
-    const totalPages = doc.internal.pages.length - 1; // -1 because jsPDF adds an initial empty page
+    const totalPages = doc.internal.pages.length - 1;
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
-      doc.setTextColor(128, 128, 128); // Gray color for page numbers
+      doc.setTextColor(128);
       doc.text(
         `Page ${i} of ${totalPages}`,
         pageWidth - margin,
@@ -183,7 +178,7 @@ const EarningsTranscript = () => {
       );
     }
 
-    // Save the PDF
+    // Save PDF
     doc.save(`${transcript.title || "earnings-transcript"}.pdf`);
   };
 
