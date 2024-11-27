@@ -615,7 +615,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                           ).toFixed(2)}
                         </span>
                       </div>
-
                       {todayPrices.percentChange !== null &&
                         todayPrices.priceDifference !== null &&
                         realtimeData?.realtimePrice &&

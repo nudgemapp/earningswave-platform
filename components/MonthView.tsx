@@ -233,24 +233,40 @@ const MonthView: React.FC<MonthViewProps> = ({
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
     const days: Date[] = [];
 
-    // Adjust first day to start from Monday (1) instead of Sunday (0)
-    const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+    // Get the first day of the month
+    const firstOfMonth = new Date(year, month, 1);
+    const firstDayOfWeek = firstOfMonth.getDay(); // 0 = Sunday, 1 = Monday, ..., 5 = Friday
 
-    // Add padding days from previous month
-    for (let i = 0; i < adjustedFirstDay; i++) {
-      days.push(new Date(year, month, -adjustedFirstDay + i + 1));
+    // If first day is a weekday, include the previous days of that business week
+    if (firstDayOfWeek !== 0 && firstDayOfWeek !== 6) { // If weekday
+      // Calculate how many days to go back to get to Monday
+      const daysToMonday = firstDayOfWeek - 1;
+      for (let i = daysToMonday; i > 0; i--) {
+        const prevDate = new Date(year, month, 1 - i);
+        days.push(prevDate);
+      }
     }
 
-    // Add days of current month, excluding weekends
+    // Add all weekdays of current month
     for (let i = 1; i <= daysInMonth; i++) {
-      const currentDay = new Date(year, month, i);
-      const dayOfWeek = currentDay.getDay();
-      // Only add if it's not Saturday (6) or Sunday (0)
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        days.push(currentDay);
+      const currentDate = new Date(year, month, i);
+      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) { // Skip weekends
+        days.push(currentDate);
+      }
+    }
+
+    // Complete the last week if necessary
+    const lastDate = days[days.length - 1];
+    const lastDayOfWeek = lastDate.getDay();
+    if (lastDayOfWeek !== 5) { // If not Friday
+      const daysToAdd = 5 - lastDayOfWeek;
+      for (let i = 1; i <= daysToAdd; i++) {
+        const nextMonthDate = new Date(year, month + 1, i);
+        if (nextMonthDate.getDay() !== 0 && nextMonthDate.getDay() !== 6) {
+          days.push(nextMonthDate);
+        }
       }
     }
 
