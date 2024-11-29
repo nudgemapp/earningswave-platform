@@ -2,12 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useEmailModal } from "@/store/EmailModalStore";
-import PricingSection from "@/components/PricingSection";
-import { loadStripe, Stripe } from "@stripe/stripe-js";
-import { useApiClient } from "@/lib/apiClient";
-import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+// import { loadStripe, Stripe } from "@stripe/stripe-js";
+// import { useApiClient } from "@/lib/apiClient";
+// import { useState, useEffect } from "react";
+// import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 
 import example1 from "@/public/images/example1.webp";
@@ -17,59 +15,58 @@ import CoverageApiSection from "@/components/coverageApiSection";
 import CarouselSection from "@/components/carouselSection";
 
 const ApiClientPage = () => {
-  const emailModal = useEmailModal();
-  const { user } = useUser();
-  const apiClient = useApiClient();
-  const [stripePromise, setStripePromise] =
-    useState<Promise<Stripe | null> | null>(null);
+  // const { user } = useUser();
+  // const apiClient = useApiClient();
+  // const [stripePromise, setStripePromise] =
+  //   useState<Promise<Stripe | null> | null>(null);
 
-  useEffect(() => {
-    setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
-  }, []);
+  // useEffect(() => {
+  //   setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!));
+  // }, []);
 
-  const handleCheckout = async () => {
-    console.log("user", user?.id);
-    console.log("email", user?.emailAddresses[0].emailAddress);
+  // const handleCheckout = async () => {
+  //   console.log("user", user?.id);
+  //   console.log("email", user?.emailAddresses[0].emailAddress);
 
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID;
-    const subscription = true;
+  //   const priceId = process.env.NEXT_PUBLIC_STRIPE_MONTHLY_API_PRICE_ID;
+  //   const subscription = true;
 
-    try {
-      interface CheckoutSessionResponse {
-        sessionId: string;
-      }
+  //   try {
+  //     interface CheckoutSessionResponse {
+  //       sessionId: string;
+  //     }
 
-      const { data } = await apiClient.post<CheckoutSessionResponse>(
-        "/payments/create-checkout-session",
-        {
-          userId: user?.id,
-          email: user?.emailAddresses[0].emailAddress,
-          priceId,
-          subscription,
-        }
-      );
+  //     const { data } = await apiClient.post<CheckoutSessionResponse>(
+  //       "/payments/create-checkout-session",
+  //       {
+  //         userId: user?.id,
+  //         email: user?.emailAddresses[0].emailAddress,
+  //         priceId,
+  //         subscription,
+  //       }
+  //     );
 
-      console.log(data);
+  //     console.log(data);
 
-      if (data.sessionId) {
-        const stripe = await stripePromise;
-        console.log(stripe);
+  //     if (data.sessionId) {
+  //       const stripe = await stripePromise;
+  //       console.log(stripe);
 
-        const response = await stripe?.redirectToCheckout({
-          sessionId: data.sessionId,
-        });
-        console.log(response);
+  //       const response = await stripe?.redirectToCheckout({
+  //         sessionId: data.sessionId,
+  //       });
+  //       console.log(response);
 
-        return response;
-      } else {
-        console.error("No sessionId found");
-        return;
-      }
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-  };
+  //       return response;
+  //     } else {
+  //       console.error("No sessionId found");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     return;
+  //   }
+  // };
 
   return (
     <motion.section
