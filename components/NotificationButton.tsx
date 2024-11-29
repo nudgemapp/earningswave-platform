@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
 
 interface Notification {
   id: string;
@@ -23,6 +24,16 @@ export default function NotificationButton() {
     ).length;
     setUnreadCount(unreadNotifications);
   }, [notifications]);
+
+  const handleApiClick = async () => {
+    try {
+      const response = await fetch("/api/finnhub/test-script");
+      const data = await response.json();
+      console.log("API Response:", data);
+    } catch (error) {
+      console.error("Error fetching from API:", error);
+    }
+  };
 
   return (
     <Popover>
@@ -77,6 +88,7 @@ export default function NotificationButton() {
                 <li>Earnings call transcripts</li>
                 <li>Financial updates</li>
               </ul>
+              <Button onClick={handleApiClick}>Sync</Button>
             </div>
           )}
         </div>

@@ -48,12 +48,8 @@ const AccordionItem = ({
 
   return (
     <motion.div
-      className="border-b border-gray-200 dark:border-slate-700 overflow-hidden"
+      className="border-b border-gray-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900"
       initial={false}
-      animate={{
-        backgroundColor: isOpen ? "rgba(229, 231, 235, 0.5)" : "transparent",
-      }}
-      transition={{ duration: 0.3 }}
     >
       <motion.header
         className="py-7 flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors duration-300"
@@ -90,7 +86,7 @@ const AccordionItem = ({
             <motion.div
               variants={{ collapsed: { scale: 0.8 }, open: { scale: 1 } }}
               transition={{ duration: 0.4 }}
-              className="text-gray-600 dark:text-gray-400"
+              className="text-gray-600 dark:text-white"
             >
               {answer}
             </motion.div>
@@ -104,7 +100,7 @@ const AccordionItem = ({
 const FAQsection = () => {
   return (
     <motion.div
-      className="mx-auto py-[72px] sm:py-24 bg-white dark:bg-slate-900"
+      className="mx-auto sm-24 bg-white dark:bg-slate-900"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

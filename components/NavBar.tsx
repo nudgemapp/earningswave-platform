@@ -55,7 +55,6 @@ function NavBar() {
     {
       name: "Company",
       dropdownItems: [
-        { name: "Pricing", route: "/pricing" },
         { name: "About Us", route: "/about-us" },
         { name: "Docs", route: "/docs" },
         { name: "Blog", route: "/blog" },
@@ -64,6 +63,11 @@ function NavBar() {
     {
       route: "/api",
       name: "API",
+      badgeCount: 0,
+    },
+    {
+      route: "/pricing",
+      name: "Pricing",
       badgeCount: 0,
     },
   ];

@@ -14,9 +14,9 @@ export default function Home() {
       <div className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
         <NavBar />
       </div> */}
-      <div className="pt-20 bg-white dark:bg-slate-900">
+      {/* <div className="pt-20 bg-white dark:bg-slate-900">
         <HeroSection />
-      </div>
+      </div> */}
       <div className="mt-8 md:mt-[81px] flex flex-col gap-12 md:gap-[150px] px-4 md:px-[100px] bg-white dark:bg-slate-900">
         {/* <MarqueeSection /> */}
         {/* <CRMSection /> */}

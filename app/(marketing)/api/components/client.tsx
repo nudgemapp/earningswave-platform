@@ -8,6 +8,13 @@ import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useApiClient } from "@/lib/apiClient";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+
+import example1 from "@/public/images/example1.webp";
+import ApiInfoSection from "@/components/apiInfoSection";
+import StatisticsSection from "@/components/statisticsSections";
+import CoverageApiSection from "@/components/coverageApiSection";
+import CarouselSection from "@/components/carouselSection";
 
 const ApiClientPage = () => {
   const emailModal = useEmailModal();
@@ -71,49 +78,79 @@ const ApiClientPage = () => {
       transition={{ duration: 0.5 }}
       className="bg-white dark:bg-slate-900 py-8 overflow-x-clip mt-24 sm:mt-0"
     >
-      <div className="mx-auto pb-40">
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="max-w-[540px] mx-auto flex flex-col items-center"
-        >
-          <h2 className="text-center text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5 text-gray-900 dark:text-gray-100">
-            Earnings call transcripts on demand: Flexible access for every need
-          </h2>
-          <p className="text-center text-[18px] sm:text-[22px] leading-[28px] sm:leading-[30px] tracking-tight text-gray-600 dark:text-gray-300 mt-5 mb-8 font-medium sm:font-normal">
-            Tailor your transcript access to your specific requirements. Whether
-            you need bulk historical data, real-time updates, or targeted
-            searches, our flexible API allows you to retrieve exactly the
-            information you need, when you need it.
-          </p>
-        </motion.div>
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-16 xl:px-32 flex justify-center space-x-4 mt-8"
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 bg-primary hover:bg-primary/90 text-white dark:text-white shadow-sm dark:shadow-slate-800/50 transition-all duration-300 dark:text-black"
-              onClick={handleCheckout}
+      <div className="container mx-auto pb-40">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col"
+          >
+            <h2 className="text-3xl md:text-[54px] md:leading-[60px] font-bold tracking-tighter mt-5 text-gray-900 dark:text-gray-100">
+              Earnings Intel API: Every Call, Every Estimate, Every Quarter{" "}
+            </h2>
+            <p className="text-[18px] sm:text-[22px] leading-[28px] sm:leading-[30px] tracking-tight text-gray-600 dark:text-gray-300 mt-5 mb-8 font-medium sm:font-normal">
+              Get instant access to the earnings data that matters. Our API
+              delivers comprehensive earnings call transcripts, estimates, and
+              audio across global markets - all through simple, reliable
+              endpoints.
+            </p>
+
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="flex space-x-4 mt-8"
             >
-              Get API
-            </Button>
+              {/* <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 bg-primary hover:bg-primary/90 text-white shadow-sm dark:shadow-slate-800/50 transition-all duration-300 dark:text-black"
+                  onClick={handleCheckout}
+                >
+                  Get API
+                </Button>
+              </motion.div> */}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  onClick={() =>
+                    window.open(
+                      "https://calendly.com/matthew-earningswave/discovery-call"
+                    )
+                  }
+                  variant="outline"
+                >
+                  Talk to Sales
+                </Button>
+              </motion.div>
+            </motion.div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"
-              onClick={() => emailModal.onOpen()}
-              variant="outline"
-            >
-              Talk to Sales
-            </Button>
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex justify-center"
+          >
+            <Image
+              src={example1}
+              alt="API Client Image"
+              width={600}
+              height={600}
+              className="rounded-lg"
+            />
           </motion.div>
-        </motion.div>
+        </div>
       </div>
-      <PricingSection showTitle={false} showTraderCard={false} />
+      <ApiInfoSection />
+      <StatisticsSection />
+      <CarouselSection />
+      <CoverageApiSection />
     </motion.section>
   );
 };

@@ -36,7 +36,20 @@ function PricingSection({
 
   const apiClient = useApiClient();
 
-  const handleCheckout = async (priceId: string, subscription: boolean) => {
+  const handleCheckoutOrRedirect = async (
+    priceId: string,
+    subscription: boolean,
+    planName: string
+  ) => {
+    if (planName.toLowerCase().includes("api")) {
+      window.open(
+        "https://calendly.com/matthew-earningswave/discovery-call",
+        "_blank"
+      );
+      return;
+    }
+
+    // Original checkout logic for Trader plan
     try {
       interface CheckoutSessionResponse {
         sessionId: string;
@@ -54,20 +67,13 @@ function PricingSection({
 
       if (data.sessionId) {
         const stripe = await stripePromise;
-        console.log(stripe);
-
         const response = await stripe?.redirectToCheckout({
           sessionId: data.sessionId,
         });
-
         return response;
-      } else {
-        console.error("No sessionId found");
-        return;
       }
     } catch (error) {
       console.log(error);
-      return;
     }
   };
 
@@ -77,16 +83,16 @@ function PricingSection({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto py-20 px-4 md:px-8 lg:px-20 xl:px-32 bg-white dark:bg-slate-900"
+      className="container mx-auto px-4 md:px-8 lg:px-20 xl:px-32 bg-white dark:bg-slate-900"
     >
       {showTitle && (
         <motion.h2
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-200 mb-12"
+          className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-200 mb-8"
         >
-          Transparent Pricing for Every Need
+          One Straightforward Price
         </motion.h2>
       )}
       <Tabs
@@ -94,7 +100,7 @@ function PricingSection({
         className="w-full max-w-5xl mx-auto"
         onValueChange={togglePricingPeriod}
       >
-        <div className="flex justify-center mb-12">
+        <div className="flex justify-center mb-8">
           <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 p-1 text-gray-600 dark:text-gray-400">
             <TabsTrigger
               value="monthly"
@@ -139,7 +145,7 @@ function PricingSection({
                     isAnnual={false}
                     index={index}
                     handleCheckout={(priceId: string, subscription: boolean) =>
-                      handleCheckout(priceId, subscription)
+                      handleCheckoutOrRedirect(priceId, subscription, plan.name)
                     }
                     user={user}
                     isYearly={isYearly}
@@ -171,7 +177,7 @@ function PricingSection({
                     isAnnual={true}
                     index={index}
                     handleCheckout={(priceId: string, subscription: boolean) =>
-                      handleCheckout(priceId, subscription)
+                      handleCheckoutOrRedirect(priceId, subscription, plan.name)
                     }
                     user={user}
                     isYearly={isYearly}

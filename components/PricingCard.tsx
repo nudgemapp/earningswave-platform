@@ -53,41 +53,77 @@ function PricingCard({
       transition={{ delay: 0.1 * index, duration: 0.5 }}
       className="h-full"
     >
-      <Card className="flex flex-col h-full border-gray-200 dark:border-slate-700 shadow-lg hover:shadow-xl dark:shadow-slate-800/50 dark:hover:shadow-slate-800 transition-shadow duration-300 bg-white dark:bg-slate-900">
-        <CardHeader className="text-center pb-8">
+      <Card
+        className={`
+          relative flex flex-col h-full
+          border border-gray-200 dark:border-gray-800 rounded-xl
+          ${
+            plan.popular
+              ? "bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800"
+              : "bg-white dark:bg-slate-900"
+          }
+          shadow-sm hover:shadow-md
+          transform hover:-translate-y-1 transition-all duration-300
+        `}
+      >
+        {plan.popular && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 rounded-full text-xs font-semibold tracking-wide">
+              MOST POPULAR
+            </span>
+          </div>
+        )}
+
+        <CardHeader className="text-center pb-4 pt-8 px-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + 0.1 * index, duration: 0.5 }}
           >
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-200">
+            <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
               {plan.name}
+              {plan.name.toLowerCase().includes("trader") && (
+                <span role="img" aria-label="rocket" className="text-xl">
+                  🚀
+                </span>
+              )}
+              {plan.name.toLowerCase().includes("api") && (
+                <span role="img" aria-label="lightning" className="text-xl">
+                  ⚡️
+                </span>
+              )}
             </CardTitle>
           </motion.div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 + 0.1 * index, duration: 0.5 }}
+            className="mt-3"
           >
-            <CardDescription className="text-4xl font-semibold mt-4 text-gray-900 dark:text-gray-200">
-              {isAnnual ? plan.annualPrice : plan.monthlyPrice}
-              <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-                / {isAnnual ? "year" : "month"}
+            <CardDescription className="flex items-baseline justify-center gap-1.5">
+              <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {isAnnual ? plan.annualPrice : plan.monthlyPrice}
+              </span>
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                /{isAnnual ? "yr" : "mo"}
               </span>
             </CardDescription>
           </motion.div>
+
           {isAnnual && (
             <motion.p
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + 0.1 * index, duration: 0.5 }}
-              className="text-sm font-medium text-green-600 dark:text-green-400 mt-2"
+              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-2"
             >
-              Save 20% with annual billing
+              20% discount applied
             </motion.p>
           )}
         </CardHeader>
-        <CardContent className="flex-grow">
+
+        <CardContent className="flex-grow px-6">
           <ul className="space-y-3">
             {plan.features.map((feature: string, featureIndex: number) => (
               <motion.li
@@ -98,17 +134,28 @@ function PricingCard({
                   delay: 0.5 + 0.05 * featureIndex + 0.1 * index,
                   duration: 0.5,
                 }}
-                className="flex items-center text-gray-700 dark:text-gray-300"
+                className="flex items-start gap-2"
               >
-                <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
-                <span>{feature}</span>
+                <Check className="h-4 w-4 text-emerald-500 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                <span className="text-sm text-slate-600 dark:text-slate-300 leading-tight">
+                  {feature}
+                </span>
               </motion.li>
             ))}
           </ul>
         </CardContent>
-        <CardFooter className="mt-auto">
+
+        <CardFooter className="p-6 pt-4">
           <Button
-            className="w-full bg-primary dark:bg-white hover:bg-primary/90 dark:hover:bg-gray-100 text-white dark:text-gray-900 transition-colors duration-300"
+            className={`
+              w-full py-4 text-sm font-semibold tracking-wide rounded-lg
+              ${
+                plan.popular
+                  ? "bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white"
+              }
+              transition-colors duration-200
+            `}
             onClick={() => {
               if (user?.id) {
                 const priceId = isYearly

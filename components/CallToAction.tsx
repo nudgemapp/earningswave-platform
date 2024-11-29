@@ -44,10 +44,11 @@ const CallToAction = () => {
     <div className="py-[72px] sm:py-24 text-center bg-white dark:bg-slate-900">
       <div className="container max-w-xl relative mx-auto">
         <h2 className="font-bold text-5xl tracking-tighter sm:text-6xl text-black dark:text-white">
-          Get instant access
+          Get the Wave Report
         </h2>
         <p className="text-xl text-gray-600 dark:text-gray-300 mt-5">
-          Explore all of our carefully crafted APIs for your next investment
+          Catch the wave before it breaks. Subscribe to the Wave Report for
+          marketing moving earnings insights weekly.{" "}
         </p>
         <form
           onSubmit={handleSubmit}
@@ -66,7 +67,7 @@ const CallToAction = () => {
             className="bg-primary dark:bg-primary text-white h-12 rounded-lg px-5 hover:bg-primary/90 dark:hover:bg-primary/90 disabled:bg-gray-400 dark:disabled:bg-gray-600 transition-colors duration-200 dark:text-black"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Get access"}
+            {isSubmitting ? "Submitting..." : "Subscribe"}
           </button>
         </form>
         {message && (

@@ -1,0 +1,66 @@
+// import { NextResponse } from "next/server";
+// import { PrismaClient } from "@prisma/client";
+
+// function determineMIC(exchange: string): "XNAS" | "XNYS" {
+//   const exchangeLower = exchange.toLowerCase();
+
+//   if (exchangeLower.includes("nasdaq")) {
+//     return "XNAS";
+//   }
+//   if (exchangeLower.includes("nyse") || exchangeLower.includes("mkt")) {
+//     return "XNYS";
+//   }
+
+//   // Default to XNYS if unknown
+//   console.warn(`Unknown exchange: ${exchange}, defaulting to XNYS`);
+//   return "XNYS";
+// }
+
+// export async function GET() {
+//   const prisma = new PrismaClient();
+
+//   const symbol = "FATH";
+
+//   try {
+//     const profileResponse = await fetch(
+//       `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//     );
+
+//     const profileData = await profileResponse.json();
+
+//     console.log(profileData);
+
+//     const newCompany = await prisma.company.create({
+//       data: {
+//         symbol: profileData.ticker,
+//         currency: profileData.currency,
+//         description: profileData.name,
+//         displaySymbol: profileData.ticker,
+//         mic: determineMIC(profileData.exchange),
+//         type: "Common Stock",
+//         country: profileData.country,
+//         exchange: profileData.exchange,
+//         ipo: new Date(profileData.ipo),
+//         marketCapitalization: profileData.marketCapitalization,
+//         name: profileData.name,
+//         phone: profileData.phone,
+//         sharesOutstanding: profileData.shareOutstanding,
+//         weburl: profileData.weburl,
+//         logo: profileData.logo,
+//         finnhubIndustry: profileData.finnhubIndustry,
+//       },
+//     });
+
+//     console.log(newCompany);
+
+//     return NextResponse.json({ success: true, company: newCompany });
+//   } catch (error) {
+//     console.error("Error fetching companies:", error);
+//     return NextResponse.json(
+//       { error: "Failed to fetch companies" },
+//       { status: 500 }
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }

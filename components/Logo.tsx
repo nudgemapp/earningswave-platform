@@ -19,17 +19,13 @@ const Logo: React.FC<LogoProps> = ({ className, width = 80, height = 80 }) => {
   const { theme } = useTheme();
   const img = theme === "dark" ? darkImg : lightImg;
 
-  const handleClick = () => {
-    router.push("/");
-  };
-
   return (
     <div
       className={cn(
-        "font-normal flex space-x-2 items-center text-sm text-black relative z-20",
+        "cursor-pointer transition-opacity hover:opacity-80 flex items-center justify-center",
         className
       )}
-      onClick={handleClick}
+      onClick={() => router.push("/")}
     >
       <Image
         src={img}
