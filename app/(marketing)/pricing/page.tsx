@@ -1,7 +1,7 @@
 import CallToAction from "@/components/CallToAction";
 import FAQsection from "@/components/FAQsection";
-import HeroSection from "@/components/HeroSection";
 import PricingSection from "@/components/PricingSection";
+// import HeroSection from "@/components/HeroSection";
 // import MarqueeSection from "@/components/MarqueeSection";
 // import ProductSection from "@/components/ProductSection";
 

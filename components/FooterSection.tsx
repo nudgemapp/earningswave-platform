@@ -2,19 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FaYoutube, FaTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { useEmailModal } from "@/store/EmailModalStore";
-import { useAuth } from "@clerk/nextjs";
 
-import img from "@/public/images/ew-logo-dark-noBG.png";
 import Logo from "./Logo";
 
 function FooterSection() {
-  const router = useRouter();
   const emailModal = useEmailModal();
-  const { isSignedIn } = useAuth();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
