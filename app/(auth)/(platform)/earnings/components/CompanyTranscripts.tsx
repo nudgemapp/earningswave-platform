@@ -34,6 +34,8 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
     setSelectedTranscript(transcriptId);
   };
 
+  console.log(transcripts);
+
   return (
     <div className="space-y-2">
       {transcripts.map((transcript) => (

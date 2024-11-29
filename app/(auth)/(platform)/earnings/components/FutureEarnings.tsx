@@ -141,12 +141,12 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
         <button
           onClick={onWatchlistClick}
           className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
-            ${
-              isWatchlisted
-                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300"
-            } 
-            hover:bg-opacity-90 border border-gray-200 dark:border-slate-700`}
+    ${
+      isWatchlisted
+        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+        : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300"
+    } 
+    hover:bg-opacity-90 border border-gray-200 dark:border-slate-700`}
           disabled={
             isCheckingWatchlist ||
             addToWatchlist.isPending ||

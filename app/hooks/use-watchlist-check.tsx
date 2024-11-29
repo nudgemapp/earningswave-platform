@@ -14,5 +14,7 @@ export const useWatchlistCheck = (companyId: string) => {
       return data.isWatchlisted;
     },
     enabled: !!companyId,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
   });
 };

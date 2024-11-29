@@ -115,7 +115,7 @@ const ApiClientPage = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
-                  className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="border-none rounded-[12px] text-lg sm:text-2xl py-3 px-6 sm:py-6 sm:px-12 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-black dark:bg-white text-white dark:text-black"
                   onClick={() =>
                     window.open(
                       "https://calendly.com/matthew-earningswave/discovery-call"

@@ -18,12 +18,10 @@ export const useWatchlistMutations = () => {
       return response.json();
     },
     onMutate: async (companyId) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({
         queryKey: ["watchlist-check", companyId],
       });
 
-      // Save previous value
       const previousValue = queryClient.getQueryData([
         "watchlist-check",
         companyId,
@@ -35,17 +33,17 @@ export const useWatchlistMutations = () => {
       return { previousValue };
     },
     onError: (err, companyId, context) => {
-      // Rollback on error
       queryClient.setQueryData(
         ["watchlist-check", companyId],
         context?.previousValue
       );
     },
-    onSettled: (_, __, companyId) => {
-      // Refetch to ensure sync
-      queryClient.invalidateQueries({
-        queryKey: ["watchlist-check", companyId],
-      });
+    onSettled: (data, error, companyId) => {
+      if (!error) {
+        // On success, update the cache without refetching
+        queryClient.setQueryData(["watchlist-check", companyId], true);
+      }
+      // Only invalidate the watchlist query, not the check query
       queryClient.invalidateQueries({ queryKey: ["watchlist"] });
     },
   });
@@ -81,10 +79,12 @@ export const useWatchlistMutations = () => {
         context?.previousValue
       );
     },
-    onSettled: (_, __, companyId) => {
-      queryClient.invalidateQueries({
-        queryKey: ["watchlist-check", companyId],
-      });
+    onSettled: (data, error, companyId) => {
+      if (!error) {
+        // On success, update the cache without refetching
+        queryClient.setQueryData(["watchlist-check", companyId], false);
+      }
+      // Only invalidate the watchlist query, not the check query
       queryClient.invalidateQueries({ queryKey: ["watchlist"] });
     },
   });

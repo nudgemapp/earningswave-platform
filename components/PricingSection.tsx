@@ -85,16 +85,6 @@ function PricingSection({
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 md:px-8 lg:px-20 xl:px-32 bg-white dark:bg-slate-900"
     >
-      {showTitle && (
-        <motion.h2
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-200 mb-8"
-        >
-          One Straightforward Price
-        </motion.h2>
-      )}
       <Tabs
         defaultValue="monthly"
         className="w-full max-w-5xl mx-auto"
@@ -122,6 +112,18 @@ function PricingSection({
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {showTitle && (
+          <motion.h2
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-center text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-200 mb-8"
+          >
+            One Straightforward Price
+          </motion.h2>
+        )}
+
         <TabsContent value="monthly">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
