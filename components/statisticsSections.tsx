@@ -36,7 +36,7 @@ const StatisticItem = ({
   return (
     <div ref={ref} className="flex flex-col items-center">
       <motion.span
-        className="text-4xl xl:text-5xl 2xl:text-6xl font-bold text-gray-900 mb-2"
+        className="text-4xl xl:text-5xl 2xl:text-6xl font-bold text-gray-900 mb-2 dark:text-white"
         initial={{ opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -46,7 +46,7 @@ const StatisticItem = ({
         {suffix}
       </motion.span>
       <motion.span
-        className="text-gray-600 text-lg"
+        className="text-gray-600 text-lg dark:text-white"
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
@@ -63,9 +63,9 @@ const StatisticsSection = () => {
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, duration: 0.5 }}
-      className="bg-gray-100 py-16"
+      className="bg-gray-100 py-16 dark:bg-slate-800"
     >
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 ">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <StatisticItem endValue={7} label="of Audio" suffix="TB+" />
           <StatisticItem endValue={7892} label="Tickers" />

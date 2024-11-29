@@ -107,7 +107,7 @@ const CarouselSection = () => {
                   src={logo}
                   alt="Company logo"
                   fill
-                  className="object-contain filter dark:invert-[0.85] opacity-70 hover:opacity-100 transition-opacity"
+                  className="object-contain opacity-70 hover:opacity-100 transition-opacity"
                   loading="lazy"
                 />
               </div>

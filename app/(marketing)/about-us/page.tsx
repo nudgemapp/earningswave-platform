@@ -39,7 +39,7 @@ export default function AboutUs() {
           variants={staggerChildren}
         >
           <motion.h2
-            className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800"
+            className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800 dark:text-white"
             variants={fadeInUp}
             transition={transition}
           >
@@ -47,7 +47,7 @@ export default function AboutUs() {
           </motion.h2>
 
           <motion.p
-            className="text-lg text-center mb-12 text-gray-600 max-w-3xl mx-auto"
+            className="text-lg text-center mb-12 text-gray-600 dark:text-gray-400 max-w-3xl mx-auto"
             variants={fadeInUp}
             transition={transition}
           >
@@ -86,11 +86,15 @@ export default function AboutUs() {
                 variants={fadeInUp}
                 transition={transition}
               >
-                <Card className="h-full">
+                <Card className="h-full bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                   <CardContent className="p-6 flex flex-col items-center text-center">
                     <item.icon className="w-12 h-12 mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {item.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -102,10 +106,10 @@ export default function AboutUs() {
             variants={fadeInUp}
             transition={transition}
           >
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">
+            <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
               Our Mission
             </h3>
-            <p className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
               We&apos;re revolutionizing financial analysis by providing
               instant, AI-powered insights from earnings calls and reports.
               EarningsWave democratizes access to premium financial data,

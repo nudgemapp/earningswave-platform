@@ -247,8 +247,8 @@ function NavBar() {
           </div>
 
           {/* MOBILE */}
-          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-neutral-950">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-neutral-900 bg-white dark:bg-neutral-950">
+          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-slate-900">
+            <div className="flex justify-between items-center px-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <button onClick={toggleMenu} className="p-2 z-10">
                   {menu ? (
@@ -305,74 +305,134 @@ function NavBar() {
               )}
             </div>
             {menu && (
-              <div className="h-[calc(100vh-56px)] flex flex-col justify-between bg-white dark:bg-neutral-950 overflow-hidden">
-                <nav className="flex-grow flex flex-col justify-center items-center px-6">
+              <div className="h-[calc(100vh-56px)] flex flex-col bg-white dark:bg-slate-900 overflow-hidden">
+                {/* User Profile Section (if logged in) */}
+                {user && (
+                  <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <UserButton
+                        appearance={{
+                          baseTheme: theme === "dark" ? dark : undefined,
+                        }}
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {user.fullName || user.username}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {user.primaryEmailAddress?.emailAddress}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Search Bar */}
+                <div className="px-6 py-3 border-b border-gray-100 dark:border-slate-800">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm text-gray-500 dark:text-gray-400"
+                    onClick={() => {
+                      toggle();
+                      setMenu(false);
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Search...
+                    <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  </Button>
+                </div>
+
+                {/* Main Navigation */}
+                <nav className="flex-1 overflow-y-auto px-3 py-4">
                   {links.map((item, index) => (
-                    <div key={index} className="text-center w-full">
+                    <div key={index} className="mb-2">
                       {item.dropdownItems ? (
-                        <div className="py-6">
-                          <p className="font-semibold text-black dark:text-white mb-4 text-2xl">
+                        <div className="space-y-1">
+                          <p className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                             {item.name}
                           </p>
-                          <div className="space-y-4">
+                          <div className="pl-3 space-y-1">
                             {item.dropdownItems.map(
                               (dropdownItem, dropdownIndex) => (
-                                <p
+                                <button
                                   key={dropdownIndex}
-                                  className="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors duration-200 text-xl"
-                                  onClick={() =>
-                                    handleNavigation(dropdownItem.route)
-                                  }
+                                  onClick={() => {
+                                    handleNavigation(dropdownItem.route);
+                                    setMenu(false);
+                                  }}
+                                  className="w-full flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-md transition-colors duration-200"
                                 >
                                   {dropdownItem.name}
-                                </p>
+                                </button>
                               )
                             )}
                           </div>
                         </div>
                       ) : (
-                        <p
-                          className="font-semibold text-black dark:text-white hover:text-primary dark:hover:text-primary cursor-pointer transition-colors duration-200 text-2xl py-6"
-                          onClick={() => handleNavigation(item.route)}
+                        <button
+                          onClick={() => {
+                            handleNavigation(item.route);
+                            setMenu(false);
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-md transition-colors duration-200"
                         >
                           {item.name}
-                        </p>
-                      )}
-                      {index < links.length - 1 && (
-                        <div className="w-1/2 h-px bg-gray-200 dark:bg-slate-800 mx-auto"></div>
+                          {item.badgeCount > 0 && (
+                            <span className="ml-auto bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                              {item.badgeCount}
+                            </span>
+                          )}
+                        </button>
                       )}
                     </div>
                   ))}
                 </nav>
-                <div className="px-6 py-6 bg-gray-50 dark:bg-neutral-900">
+
+                {/* Bottom Actions */}
+                <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Dark Mode
+                    </span>
+                    <ModeToggle />
+                  </div>
+
                   {user ? (
                     <Button
-                      className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
-                      onClick={handleAuthAction}
+                      variant="destructive"
+                      className="w-full justify-center text-sm"
+                      onClick={() => {
+                        handleAuthAction();
+                        setMenu(false);
+                      }}
                     >
-                      Logout
+                      Sign Out
                     </Button>
                   ) : (
-                    <>
+                    <div className="space-y-2">
                       <Button
-                        className="w-full mb-4 bg-white dark:bg-neutral-950 text-primary dark:text-primary border-2 border-primary dark:border-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors duration-200 text-xl py-4"
+                        className="w-full justify-center text-sm bg-primary hover:bg-primary/90"
                         onClick={() => {
                           openAuthModal();
                           setMenu(false);
                         }}
                       >
-                        Sign in
+                        Sign In
                       </Button>
                       <Button
-                        className="w-full text-xl py-4 bg-primary dark:bg-primary hover:bg-primary/90 dark:hover:bg-primary/90 text-white dark:text-white"
+                        variant="outline"
+                        className="w-full justify-center text-sm"
                         onClick={() => {
                           openAuthModal();
                           setMenu(false);
                         }}
                       >
-                        Sign up
+                        Create Account
                       </Button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

@@ -48,7 +48,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   handleCompanyClick,
 }) => {
   const filterEarnings = (earnings: EarningsEntry[]) => {
-    console.log(earnings)
+    console.log(earnings);
     return earnings.filter((entry) => {
       // Market Cap filtering
       if (filters.marketCap.length > 0) {
@@ -93,9 +93,9 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-neutral-950 relative rounded-lg shadow-sm dark:shadow-neutral-900/50">
+      <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
         {/* Header */}
-        <div className="sticky top-0 z-10 grid grid-cols-5 py-1 bg-gray-100 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800">
+        <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounded">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="py-1 text-center">
               <Skeleton className="h-3.5 w-12 mx-auto rounded-md" />
@@ -105,11 +105,11 @@ const MonthView: React.FC<MonthViewProps> = ({
 
         {/* Calendar Grid */}
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-neutral-800">
+          <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
             {[...Array(35)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-neutral-950 p-2 min-h-[120px] space-y-2"
+                className="bg-white dark:bg-slate-900 p-2 min-h-[120px] space-y-2"
               >
                 {/* Date */}
                 <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     onClick: () => void;
   }) => (
     <div
-      className="flex flex-col bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-neutral-900/50 hover:border-gray-800 dark:hover:border-neutral-700 cursor-pointer"
+      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -214,15 +214,15 @@ const MonthView: React.FC<MonthViewProps> = ({
             className="p-0"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
             <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
               {symbol}
             </span>
           </div>
         )}
       </div>
-      <div className="w-full bg-gray-50 dark:bg-neutral-900 py-0.5 border-t border-gray-200 dark:border-neutral-800">
-        <span className="text-[8px] font-medium text-gray-800 dark:text-white block text-center truncate px-0.5">
+      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+        <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
           {symbol}
         </span>
       </div>
@@ -240,7 +240,8 @@ const MonthView: React.FC<MonthViewProps> = ({
     const firstDayOfWeek = firstOfMonth.getDay(); // 0 = Sunday, 1 = Monday, ..., 5 = Friday
 
     // If first day is a weekday, include the previous days of that business week
-    if (firstDayOfWeek !== 0 && firstDayOfWeek !== 6) { // If weekday
+    if (firstDayOfWeek !== 0 && firstDayOfWeek !== 6) {
+      // If weekday
       // Calculate how many days to go back to get to Monday
       const daysToMonday = firstDayOfWeek - 1;
       for (let i = daysToMonday; i > 0; i--) {
@@ -252,7 +253,8 @@ const MonthView: React.FC<MonthViewProps> = ({
     // Add all weekdays of current month
     for (let i = 1; i <= daysInMonth; i++) {
       const currentDate = new Date(year, month, i);
-      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) { // Skip weekends
+      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+        // Skip weekends
         days.push(currentDate);
       }
     }
@@ -260,7 +262,8 @@ const MonthView: React.FC<MonthViewProps> = ({
     // Complete the last week if necessary
     const lastDate = days[days.length - 1];
     const lastDayOfWeek = lastDate.getDay();
-    if (lastDayOfWeek !== 5) { // If not Friday
+    if (lastDayOfWeek !== 5) {
+      // If not Friday
       const daysToAdd = 5 - lastDayOfWeek;
       for (let i = 1; i <= daysToAdd; i++) {
         const nextMonthDate = new Date(year, month + 1, i);
@@ -288,7 +291,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   const NoEarnings = () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 dark:border-neutral-800 rounded-sm">
+    <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-sm">
       <div className="flex flex-row items-center gap-1">
         <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
@@ -314,14 +317,14 @@ const MonthView: React.FC<MonthViewProps> = ({
     if (transcripts.length === 0) return null;
 
     // const displayTranscripts = transcripts.slice(0, 7);
-    const displayTranscripts = transcripts
+    const displayTranscripts = transcripts;
     // const remainingCount = transcripts.length - 7;
 
     return (
       <div
         className={`rounded-md overflow-hidden ${bgColor} dark:bg-opacity-20`}
       >
-        <div className="w-full bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
+        <div className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
           <div className="flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1 min-w-0">
               <Icon className="w-3 h-3 flex-shrink-0 text-gray-600 dark:text-gray-300" />
@@ -330,7 +333,7 @@ const MonthView: React.FC<MonthViewProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="h-3 w-[1px] bg-gray-300 dark:bg-gray-600" />
+              <div className="h-3 w-[1px] bg-gray-300 dark:bg-slate-600" />
               <div className="flex items-center">
                 <span className="text-[9px] font-medium bg-black/5 dark:bg-white/10 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
                   {transcripts.length}
@@ -370,8 +373,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-neutral-950 relative rounded-lg shadow-sm dark:shadow-neutral-900/50">
-      <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 rounded">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 relative rounded-lg shadow-sm dark:shadow-slate-800/50">
+      <div className="sticky top-0 z-10 grid grid-cols-5 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 rounded">
         {weekDays.map((day) => (
           <div
             key={day}
@@ -383,7 +386,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-        <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-neutral-800">
+        <div className="grid grid-cols-5 gap-px bg-gray-200 dark:bg-slate-700">
           {getDaysInMonth(currentDate).map((date, index) => {
             const { items: dayContent, totalCount: transcriptRemaining } =
               getLogosForDate(date, transcripts);
@@ -392,13 +395,13 @@ const MonthView: React.FC<MonthViewProps> = ({
             return (
               <div
                 key={index}
-                className={`bg-white dark:bg-neutral-950 p-0.5 text-center flex flex-col min-h-[120px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-neutral-900 ${
+                className={`bg-white dark:bg-slate-900 p-0.5 text-center flex flex-col min-h-[120px] cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-slate-800 ${
                   !isCurrentMonth
-                    ? "text-gray-400 bg-gray-50 dark:bg-neutral-900/50"
+                    ? "text-gray-400 bg-gray-50 dark:bg-slate-800/50"
                     : "text-gray-800 dark:text-gray-200"
                 } ${
                   date.toDateString() === new Date().toDateString()
-                    ? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    ? "bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                     : ""
                 }`}
                 onClick={(e) => {

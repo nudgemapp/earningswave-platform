@@ -111,7 +111,7 @@ const EarningsClient = () => {
   // };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative">
+    <div className="flex-1 flex flex-col overflow-hidden relative mt-12">
       <CalendarNavbar
         onFilter={(filters) => {
           console.log(filters);
