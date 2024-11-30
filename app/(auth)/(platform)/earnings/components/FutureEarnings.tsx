@@ -193,14 +193,18 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [todayPrices, setTodayPrices] = useState<{
+    prevClose: number | null;
     preMarket: number | null;
     regular: number | null;
     afterHours: number | null;
     regularOpen: number | null;
     percentChange: number | null;
     priceDifference: number | null;
-    mostRecentDate: string | null;
+    mostRecentDate?: string | null;
+    atClose?: number | null;
   }>({
+    prevClose: null,
+    atClose: null,
     preMarket: null,
     regular: null,
     afterHours: null,
@@ -209,6 +213,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     priceDifference: null,
     mostRecentDate: null,
   });
+
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
@@ -341,7 +346,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                 <div className="h-[400px] w-full">
                   <StockPriceChart
                     todayData={(data) => {
-                      setTodayPrices(data);
+                      setTodayPrices((prev) => ({ ...prev, ...data }));
                     }}
                     symbol={company.symbol}
                     timeframe={timeframe}
@@ -390,7 +395,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                       Previous Close
                     </th>
                     <td className="py-2">
-                      ${todayPrices.preMarket?.toFixed(2) || "-"}
+                      ${todayPrices.prevClose?.toFixed(2) || "-"}
                     </td>
                   </tr>
                   <tr>

@@ -1,24 +1,12 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  StockData,
-  WebSocketMessage,
-  FinnhubTrade,
-} from "@/app/(auth)/(platform)/earnings/types";
-
-const FINNHUB_WS_URL = `wss://ws.finnhub.io?token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`;
-const MAX_RETRY_DELAY = 30000;
-const INITIAL_RETRY_DELAY = 1000;
-const MAX_RECONNECT_ATTEMPTS = 5;
+import { StockData, WebSocketMessage, FinnhubTrade } from "@/app/(auth)/(platform)/earnings/types";
 
 export const useStockWebSocket = (symbol: string) => {
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const ws = useRef<WebSocket | null>(null);
-  const reconnectAttempts = useRef(0);
-  const reconnectTimeout = useRef<NodeJS.Timeout>();
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   const determineMarketSession = useCallback(
     (date: Date): "pre" | "regular" | "post" => {
@@ -44,94 +32,80 @@ export const useStockWebSocket = (symbol: string) => {
     [determineMarketSession]
   );
 
-  const handleMessage = useCallback(
-    (event: MessageEvent) => {
-      try {
-        const message: WebSocketMessage = JSON.parse(event.data);
-        console.log("WebSocket message received:", message);
-        console.log(
-          "Current queryClient data:",
-          queryClient.getQueryData(["stockPrice", symbol])
-        );
+  const processTradeData = useCallback((trades: FinnhubTrade[]) => {
+    if (!trades.length) return;
 
-        if (message.type === "trade" && message.data.length > 0) {
-          const trade = message.data[0];
-          queryClient.setQueryData(["stockPrice", symbol], (oldData: any) => {
-            const newData = {
-              ...oldData,
-              realtimePrice: trade.p,
-              lastUpdate: new Date().toISOString(),
-              data: oldData?.data
-                ? [...oldData.data, createStockDataPoint(trade)]
-                : [createStockDataPoint(trade)],
-            };
-            console.log("Updated data:", newData);
-            return newData;
-          });
-        }
-      } catch (error) {
-        console.error("Error processing message:", error);
+    // Sort trades by timestamp
+    const sortedTrades = [...trades].sort((a, b) => a.t - b.t);
+    
+    queryClient.setQueryData(["stockPrice", symbol], (oldData: any) => {
+      const newData = oldData?.data || [];
+      
+      // Process each trade
+      sortedTrades.forEach(trade => {
+        newData.push(createStockDataPoint(trade));
+      });
+
+      // Keep only last 1000 data points
+      while (newData.length > 1000) {
+        newData.shift();
       }
-    },
-    [queryClient, symbol, createStockDataPoint]
-  );
 
-  const connect = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.OPEN) return;
+      return {
+        ...oldData,
+        realtimePrice: sortedTrades[sortedTrades.length - 1].p,
+        lastUpdate: new Date().toISOString(),
+        data: newData,
+      };
+    });
+  }, [queryClient, symbol, createStockDataPoint]);
 
+  const handleMessage = useCallback((event: MessageEvent) => {
     try {
-      ws.current?.close();
-      ws.current = new WebSocket(FINNHUB_WS_URL);
-
-      const socket = ws.current;
-
-      socket.onopen = () => {
-        setIsConnected(true);
-        setError(null);
-        reconnectAttempts.current = 0;
-        socket.send(JSON.stringify({ type: "subscribe", symbol }));
-      };
-
-      socket.onclose = () => {
-        setIsConnected(false);
-        if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(
-            INITIAL_RETRY_DELAY * Math.pow(2, reconnectAttempts.current),
-            MAX_RETRY_DELAY
-          );
-          reconnectTimeout.current = setTimeout(() => {
-            reconnectAttempts.current += 1;
-            connect();
-          }, delay);
-        } else {
-          setError("Maximum reconnection attempts reached");
-        }
-      };
-
-      socket.onerror = () => {
-        setError("WebSocket connection failed");
-        socket.close();
-      };
-
-      socket.onmessage = handleMessage;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Connection failed");
+      const message = JSON.parse(event.data);
+      if (message.type === "trade" && Array.isArray(message.data)) {
+        processTradeData(message.data);
+      }
+    } catch (error) {
+      console.error("Error processing message:", error);
     }
-  }, [symbol, handleMessage]);
+  }, [processTradeData]);
 
   useEffect(() => {
-    connect();
+    const connectSSE = async () => {
+      try {
+        // Initialize backend WebSocket
+        await fetch('/api/ws');
+        
+        // Connect to SSE endpoint
+        const eventSource = new EventSource(`/api/ws/events?symbol=${symbol}`);
+        eventSourceRef.current = eventSource;
 
-    return () => {
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-      }
-      if (ws.current?.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ type: "unsubscribe", symbol }));
-        ws.current.close();
+        eventSource.onopen = () => {
+          setIsConnected(true);
+          setError(null);
+        };
+
+        eventSource.onmessage = handleMessage;
+
+        eventSource.onerror = () => {
+          setIsConnected(false);
+          setError("Connection failed");
+          eventSource.close();
+        };
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Connection failed");
       }
     };
-  }, [connect, symbol]);
+
+    connectSSE();
+
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, [symbol, handleMessage]);
 
   return useMemo(
     () => ({

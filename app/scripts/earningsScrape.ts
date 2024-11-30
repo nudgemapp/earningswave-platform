@@ -62,12 +62,14 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
 
     const calendar: EarningsCalendar = await response.json();
 
-    // Process entries in batches
-    const allEntries = Object.entries(calendar).flatMap(([entries]) => {
+    // Fix: Correctly extract entries from the calendar
+    const allEntries = Object.entries(calendar).flatMap(([date, entries]) => {
       if (!Array.isArray(entries)) return [];
       return entries;
     });
 
+    console.log(`Processing ${allEntries.length} entries for ${startDate} to ${endDate}`);
+    
     const results = await processBatch(allEntries, 10, async (entry) => {
       let year: number, quarter: number;
 

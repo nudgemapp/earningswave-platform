@@ -10,6 +10,8 @@ const publicRoutes = [
   "/blog(.*)",
   "/sso-callback(.*)",
   "/api(.*)",
+   "/api/ws",
+    "/api/ws/events"
 ];
 
 export default clerkMiddleware((auth, req) => {

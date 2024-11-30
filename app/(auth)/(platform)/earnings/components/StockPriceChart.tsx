@@ -18,13 +18,15 @@ interface StockChartProps {
   timeframe?: string;
   onTimeframeChange: (tf: string) => void;
   todayData: (data: {
+    prevClose: number | null;
     preMarket: number | null;
     regular: number | null;
     afterHours: number | null;
     regularOpen: number | null;
     percentChange: number | null;
     priceDifference: number | null;
-    mostRecentDate: string | null;
+    mostRecentDate?: string | null;
+    atClose?: number | null;
   }) => void;
 }
 
@@ -261,8 +263,25 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             ); // 00 minutes
           });
 
-          const prevClosePrice = prevDayClose
-            ? parseFloat((prevDayClose[1] as AlphaVantageIntraday)["4. close"])
+          // Find the most recent closing price from a previous trading day
+          const prevClosePrice = entries.find(([date, values]) => {
+            const entryDate = new Date(date);
+            const today = new Date();
+            const isToday = entryDate.toDateString() === today.toDateString();
+            const isClosingTime = entryDate.getHours() === 16 && entryDate.getMinutes() === 0;
+            return isClosingTime && !isToday;
+          })
+            ? parseFloat(
+                (
+                  entries.find(([date, values]) => {
+                    const entryDate = new Date(date);
+                    const today = new Date();
+                    const isToday = entryDate.toDateString() === today.toDateString();
+                    const isClosingTime = entryDate.getHours() === 16 && entryDate.getMinutes() === 0;
+                    return isClosingTime && !isToday;
+                  })![1] as AlphaVantageIntraday
+                )["4. close"]
+              )
             : null;
 
           let preMarketPrice = null;
@@ -344,6 +363,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               : null;
 
           todayData({
+            prevClose: prevClose,
             preMarket: preMarketPrice,
             regular:
               new Date().getHours() >= 9 &&
@@ -351,10 +371,14 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               new Date().getHours() < 16
                 ? regularPrice
                 : latestPrice,
+            atClose: new Date().getHours() >= 16 ? regularPrice : null,
             afterHours: afterHoursPrice,
             regularOpen: regularOpenPrice,
             percentChange,
-            priceDifference,
+            priceDifference:
+              todayPrices.prevClose && realtimeData
+                ? realtimeData.realtimePrice - todayPrices.prevClose
+                : null,
             mostRecentDate: todayDate,
           });
 
@@ -509,6 +533,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Update the regular market price display
   useEffect(() => {
     if (realtimeData?.realtimePrice) {
+      console.log("realtimeData", realtimeData);
+      console.log("todayPrices", todayPrices);
       const percentChange = todayPrices.prevClose
         ? ((realtimeData.realtimePrice - todayPrices.prevClose) /
             todayPrices.prevClose) *
