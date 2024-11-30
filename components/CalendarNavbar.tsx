@@ -72,9 +72,8 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     const currentYear = new Date().getFullYear();
     return Array.from({ length: 3 }, (_, i) => currentYear - 1 + i);
   }, []);
-
-  const monthParam = searchParams.get("month");
-  const yearParam = searchParams.get("year");
+  const monthParam = searchParams?.get("month");
+  const yearParam = searchParams?.get("year");
 
   useEffect(() => {
     const currentDate = new Date();
@@ -83,7 +82,7 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
     // If month or year is not set in the URL, update the URL with default values
     if (!monthParam || !yearParam) {
-      const params = new URLSearchParams(searchParams);
+      const params = searchParams ? new URLSearchParams(searchParams) : new URLSearchParams();
       if (!monthParam)
         params.set("month", defaultMonth.toString().padStart(2, "0"));
       if (!yearParam) params.set("year", defaultYear.toString());
@@ -103,9 +102,8 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     }
     updateURL(newDate);
   };
-
   const updateURL = (date: Date) => {
-    const params = new URLSearchParams(searchParams);
+    const params = searchParams ? new URLSearchParams(searchParams) : new URLSearchParams();
     params.set("month", (date.getMonth() + 1).toString().padStart(2, "0"));
     params.set("year", date.getFullYear().toString());
     router.push(`?${params.toString()}`);

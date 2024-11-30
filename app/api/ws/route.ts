@@ -6,9 +6,8 @@ export async function GET() {
     return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
   }
 
-  const finnhubWS = getFinnhubWS();
+  getFinnhubWS();
   
-  // Return connection status
   return NextResponse.json({ 
     status: 'WebSocket service initialized'
   });

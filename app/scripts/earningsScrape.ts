@@ -64,6 +64,7 @@ async function scrapeEarningsForMonth(startDate: string, endDate: string) {
 
     // Fix: Correctly extract entries from the calendar
     const allEntries = Object.entries(calendar).flatMap(([date, entries]) => {
+      console.log(date);
       if (!Array.isArray(entries)) return [];
       return entries;
     });

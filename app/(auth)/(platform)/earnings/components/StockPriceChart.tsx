@@ -250,20 +250,12 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         if (result["Time Series (1min)"]) {
           const entries = Object.entries(result["Time Series (1min)"]);
           const mostRecentDate = entries[0][0].split(" ")[0];
-          // Find previous day's closing price (4:00 PM EST)
-          const prevDate = new Date(mostRecentDate);
+         
 
-          const prevDayClose = entries.find(([date]) => {
-            const entryDate = new Date(date);
-            return (
-              entryDate.getDate() === prevDate.getDate() &&
-              entryDate.getHours() === 16 && // 4 PM
-              entryDate.getMinutes() === 0
-            ); // 00 minutes
-          });
+          
 
           // Find the most recent closing price from a previous trading day
-          const prevClosePrice = entries.find(([date, values]) => {
+          const prevClosePrice = entries.find(([date]) => {
             const entryDate = new Date(date);
             const today = new Date();
             const isToday = entryDate.toDateString() === today.toDateString();
@@ -272,7 +264,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           })
             ? parseFloat(
                 (
-                  entries.find(([date, values]) => {
+                  entries.find(([date]) => {
                     const entryDate = new Date(date);
                     const today = new Date();
                     const isToday = entryDate.toDateString() === today.toDateString();

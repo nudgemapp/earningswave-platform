@@ -1,6 +1,19 @@
 import { NextRequest } from 'next/server';
 import { getFinnhubWS } from "@/services/FinnhubWebSocketService";
 
+// Add these interfaces at the top of the file
+interface Trade {
+  p: number;    // price
+  s: string;    // symbol
+  t: number;    // timestamp
+  v: number;    // volume
+}
+
+interface WebSocketMessage {
+  type: string;
+  data?: Trade[];
+}
+
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const symbol = searchParams.get('symbol');
@@ -23,7 +36,7 @@ export async function GET(req: NextRequest) {
     writer.close().catch(console.error);
   });
 
-  const tradeBuffer: any[] = [];
+  const tradeBuffer: Trade[] = [];
   let flushTimeout: NodeJS.Timeout | null = null;
 
   const safeWrite = async (data: string) => {
@@ -54,7 +67,7 @@ export async function GET(req: NextRequest) {
     }
   };
 
-  const messageHandler = (data: any) => {
+  const messageHandler = (data: WebSocketMessage) => {
     if (!isStreamActive) return;
 
     if (data.type === 'trade' && data.data) {

@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import fetch from "node-fetch";
 
 const prisma = new PrismaClient();
-const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
 interface FinnhubCompanyProfile {
   address?: string;
