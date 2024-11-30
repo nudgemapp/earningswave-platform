@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -192,6 +192,20 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
+   // Add state to track current time
+   const [currentTime, setCurrentTime] = useState(new Date());
+   // Add useEffect for time updates
+   useEffect(() => {
+     // Update time every minute
+     const timer = setInterval(() => {
+       setCurrentTime(new Date());
+     }, 60000); // 60000ms = 1 minute
+
+     // Cleanup interval on unmount
+     return () => clearInterval(timer);
+   }, []); // Empty dependency array since we want this to run once on mount
+  const isAfterHours = currentTime.getHours() >= 16;
+
   const [todayPrices, setTodayPrices] = useState<{
     prevClose: number | null;
     preMarket: number | null;
@@ -387,8 +401,19 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                       Current Price
                     </th>
                     <td className="py-2">
-                      ${todayPrices.regular?.toFixed(2) || "-"}
-                    </td>
+                    $
+                          {(isAfterHours
+                            ? todayPrices.atClose
+                            : todayPrices.regular) &&
+                          todayPrices.regular &&
+                          todayPrices.regular < 0
+                            ? "-"
+                            : ""}
+                          {Math.abs(
+                            (isAfterHours
+                              ? todayPrices.atClose
+                              : todayPrices.regular) || 0
+                          ).toFixed(2)}                    </td>
                   </tr>
                   <tr>
                     <th className="py-2 text-gray-700 dark:text-gray-200">

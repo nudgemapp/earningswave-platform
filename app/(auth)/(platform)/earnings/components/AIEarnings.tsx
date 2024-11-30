@@ -13,7 +13,6 @@ interface AIEarningsAnalysisProps {
 }
 
 const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
-  console.log(company);
 
   // Get the most recent completed transcript
   const latestTranscript = company.recentTranscripts?.find(
@@ -26,13 +25,11 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
     return `Q${transcript.quarter} ${transcript.year}`;
   };
 
-  console.log(latestTranscript);
 
   const { data: aiSummary, isLoading: aiSummaryLoading } = useGetAISummary(
     latestTranscript?.id
   );
 
-  console.log(aiSummary);
 
   // useEffect(() => {
   //   const fetchAiAnalysis = async () => {

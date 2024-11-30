@@ -246,7 +246,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         const response = await fetch(endpoint);
         if (!response.ok) throw new Error("Failed to fetch today's prices");
         const result = await response.json();
-        console.log("result", result);
 
         if (result["Time Series (1min)"]) {
           const entries = Object.entries(result["Time Series (1min)"]);
@@ -520,36 +519,56 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     if (realtimeData?.realtimePrice && todayPrices.prevClose) {
       const priceDiff = realtimeData.realtimePrice - todayPrices.prevClose;
       const percentChange = (priceDiff / todayPrices.prevClose) * 100;
+     
 
-      setTodayPrices((prev) => ({
+      setTodayPrices((prev) => {
+
+        todayData({
+          ...prev,
+          regular: realtimeData.realtimePrice,
+          priceDifference: priceDiff,
+          percentChange: percentChange,
+        });
+
+        return ({
         ...prev,
         regular: realtimeData.realtimePrice,
         priceDifference: priceDiff,
         percentChange: percentChange,
-      }));
+      })});
     }
   }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
 
   // Update the regular market price display
   useEffect(() => {
     if (realtimeData?.realtimePrice) {
-      console.log("realtimeData", realtimeData);
-      console.log("todayPrices", todayPrices);
+      
       const percentChange = todayPrices.prevClose
         ? ((realtimeData.realtimePrice - todayPrices.prevClose) /
             todayPrices.prevClose) *
           100
         : null;
 
-      console.log("percentage", percentChange);
-      setTodayPrices((prev) => ({
-        ...prev,
-        regular: realtimeData.realtimePrice,
-        percentChange,
-        priceDifference: todayPrices.prevClose
-          ? realtimeData.realtimePrice - todayPrices.prevClose
-          : null,
-      }));
+      setTodayPrices((prev) => {
+
+
+        todayData({
+          ...prev,
+          regular: realtimeData.realtimePrice,
+          percentChange,
+          priceDifference: todayPrices.prevClose
+            ? realtimeData.realtimePrice - todayPrices.prevClose
+            : null,        });
+
+        return({
+          ...prev,
+          regular: realtimeData.realtimePrice,
+          percentChange,
+          priceDifference: todayPrices.prevClose
+            ? realtimeData.realtimePrice - todayPrices.prevClose
+            : null,
+        })
+      });
     }
   }, [realtimeData?.realtimePrice]);
 

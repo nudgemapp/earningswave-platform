@@ -48,7 +48,6 @@ const MonthView: React.FC<MonthViewProps> = ({
   handleCompanyClick,
 }) => {
   const filterEarnings = (earnings: EarningsEntry[]) => {
-    console.log(earnings);
     return earnings.filter((entry) => {
       // Market Cap filtering
       if (filters.marketCap.length > 0) {
