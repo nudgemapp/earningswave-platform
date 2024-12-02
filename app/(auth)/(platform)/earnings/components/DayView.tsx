@@ -141,7 +141,10 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
       const timing = hours < 9.5 ? "BMO" : hours >= 16 ? "AMC" : "DMH";
 
       if (!acc[timing]) acc[timing] = [];
-      acc[timing].push(earning);
+      // Only add if symbol doesn't already exist in this timing group
+      if (!acc[timing].some(e => e.symbol === earning.symbol)) {
+        acc[timing].push(earning);
+      }
       return acc;
     }, {} as Record<string, EarningsEntry[]>);
   }, [filteredData]);

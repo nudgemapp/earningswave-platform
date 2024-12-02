@@ -236,12 +236,16 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const getDateContent = weekDates.map((date) => {
     const currentDay = date.toISOString().split("T")[0];
 
-    const dayTranscripts = filteredEarnings.filter((transcript) => {
+    const dayTranscripts = filteredEarnings.reduce((acc: EarningsEntry[], transcript) => {
       const transcriptDate = new Date(transcript.earningsDate)
         .toISOString()
         .split("T")[0];
-      return transcriptDate === currentDay;
-    });
+      
+      if (transcriptDate === currentDay && !acc.some(t => t.symbol === transcript.symbol)) {
+        acc.push(transcript);
+      }
+      return acc;
+    }, []);
 
     return {
       dayTranscripts,

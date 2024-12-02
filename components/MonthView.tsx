@@ -430,20 +430,24 @@ const MonthView: React.FC<MonthViewProps> = ({
                         date={date}
                         title="Pre-Market"
                         icon={Sun}
-                        transcripts={dayContent.filter((t) => {
-                          const time = t.earningsTime.split(":")[0];
-                          return parseInt(time) < 9; // Before 9am is pre-market
-                        })}
+                        transcripts={dayContent
+                          .filter((t) => {
+                            const time = t.earningsTime.split(":")[0];
+                            return parseInt(time) < 9; // Before 9am is pre-market
+                          })
+                          .filter((t, i, arr) => arr.findIndex(x => x.symbol === t.symbol) === i)}
                         bgColor="bg-blue-200/40"
                       />
                       <MarketTimingGroup
                         date={date}
                         title="After Hours"
                         icon={Moon}
-                        transcripts={dayContent.filter((t) => {
-                          const time = t.earningsTime.split(":")[0];
-                          return parseInt(time) >= 16; // After 4pm is after-market
-                        })}
+                        transcripts={dayContent
+                          .filter((t) => {
+                            const time = t.earningsTime.split(":")[0];
+                            return parseInt(time) >= 16; // After 4pm is after-market
+                          })
+                          .filter((t, i, arr) => arr.findIndex(x => x.symbol === t.symbol) === i)}
                         bgColor="bg-orange-50"
                       />
                     </div>
