@@ -3,7 +3,11 @@ import { EventEmitter } from 'events';
 
 export class FinnhubWebSocketService {
   unsubscribe(symbol: string) {
-      throw new Error('Method not implemented.');
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ type: 'unsubscribe', symbol }));
+      this.subscribedSymbols.delete(symbol);
+      this.events.emit('unsubscribed', symbol);
+    }
   }
   private static instance: FinnhubWebSocketService;
   private ws: WebSocket | null = null;
@@ -41,18 +45,20 @@ export class FinnhubWebSocketService {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log(`❌ Max reconnection attempts (${this.maxReconnectAttempts}) reached`);
       this.events.emit('error', new Error('Max reconnection attempts reached'));
+      this.isReconnecting = false;
       return;
     }
 
     this.isReconnecting = true;
+    this.reconnectAttempts++;
 
     // Calculate delay with exponential backoff
     const delay = Math.min(
-      this.initialRetryDelay * Math.pow(2, this.reconnectAttempts),
+      this.initialRetryDelay * Math.pow(2, this.reconnectAttempts - 1),
       this.maxRetryDelay
     );
 
-    console.log(`⏳ Attempting reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+    console.log(`⏳ Attempting reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
@@ -60,13 +66,17 @@ export class FinnhubWebSocketService {
 
     this.reconnectTimeout = setTimeout(async () => {
       try {
-        this.reconnectAttempts++;
         await this.connect();
       } catch (error) {
         console.error('❌ Reconnection attempt failed:', error);
-        this.handleReconnect(); // Try again if failed
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.isReconnecting = false;
+          this.handleReconnect();
+        }
       } finally {
-        this.isReconnecting = false;
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          this.isReconnecting = false;
+        }
       }
     }, delay);
   }
