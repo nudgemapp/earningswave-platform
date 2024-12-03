@@ -144,7 +144,7 @@ func getTickerData(ticker, date string) (*EarningsData, error) {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <Button className="border-none rounded-[12px] text-lg py-3 px-6 bg-primary hover:bg-primary/90 text-white shadow-sm transition-all duration-300">
+              <Button className="border-none rounded-[12px] text-lg py-3 px-6 bg-white hover:bg-gray-100 text-black shadow-sm transition-all duration-300">
                 Get Sample API
               </Button>
             </motion.div>
