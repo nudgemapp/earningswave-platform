@@ -28,7 +28,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
-import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
+// import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 // import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
@@ -366,7 +366,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </CardHeader>
           <CardContent className="space-y-6 px-4 pb-4">
             {/* Stock Chart with Suspense */}
-            {/* <Suspense fallback={<StockChartSkeleton />}>
+            <Suspense fallback={<StockChartSkeleton />}>
               <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4 pb-8">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
@@ -379,7 +379,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   />
                 </div>
               </div>
-            </Suspense> */}
+            </Suspense>
 
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row justify-center w-full gap-4">
