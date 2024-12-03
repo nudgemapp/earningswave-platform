@@ -123,7 +123,7 @@ const ApiClientPage = () => {
                   }
                   variant="outline"
                 >
-                  Talk to Sales
+                  Get API
                 </Button>
               </motion.div>
             </motion.div>

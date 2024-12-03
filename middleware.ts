@@ -6,12 +6,11 @@ const publicRoutes = [
   "/",
   "/about-us",
   "/pricing",
-  "/docs",
   "/blog(.*)",
   "/sso-callback(.*)",
   "/api(.*)",
-   "/api/ws",
-    "/api/ws/events"
+  "/api/ws",
+  "/api/ws/events",
 ];
 
 export default clerkMiddleware((auth, req) => {

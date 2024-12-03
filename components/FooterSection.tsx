@@ -21,7 +21,6 @@ function FooterSection() {
     ],
     // support: [
     //   { name: "Help Center", url: "#" },
-    //   { name: "API docs", url: "/api" },
     //   { name: "System status", url: "#" },
     // ],
   };

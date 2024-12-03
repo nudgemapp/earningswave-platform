@@ -17,7 +17,7 @@ export default function Home() {
       {/* <div className="pt-20 bg-white dark:bg-slate-900">
         <HeroSection />
       </div> */}
-      <div className="mt-8 md:mt-[81px] flex flex-col gap-12 md:gap-[150px] px-4 md:px-[100px] bg-white dark:bg-slate-900">
+      <div className="mt-4 md:mt-[48px] flex flex-col gap-12 md:gap-[150px] px-4 md:px-[100px] bg-white dark:bg-slate-900">
         {/* <MarqueeSection /> */}
         {/* <CRMSection /> */}
         {/* <DataModellingSection /> */}

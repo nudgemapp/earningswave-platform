@@ -28,6 +28,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
+import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 // import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
@@ -192,18 +193,18 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
-   // Add state to track current time
-   const [currentTime, setCurrentTime] = useState(new Date());
-   // Add useEffect for time updates
-   useEffect(() => {
-     // Update time every minute
-     const timer = setInterval(() => {
-       setCurrentTime(new Date());
-     }, 60000); // 60000ms = 1 minute
+  // Add state to track current time
+  const [currentTime, setCurrentTime] = useState(new Date());
+  // Add useEffect for time updates
+  useEffect(() => {
+    // Update time every minute
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // 60000ms = 1 minute
 
-     // Cleanup interval on unmount
-     return () => clearInterval(timer);
-   }, []); // Empty dependency array since we want this to run once on mount
+    // Cleanup interval on unmount
+    return () => clearInterval(timer);
+  }, []); // Empty dependency array since we want this to run once on mount
   const isAfterHours = currentTime.getHours() >= 16;
 
   const [todayPrices, setTodayPrices] = useState<{
@@ -243,6 +244,14 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   );
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
+
+  const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
+    company?.id
+  );
+
+  console.log(liveCallData);
+
+  console.log(isLoadingLiveCall);
 
   if (isLoadingCompany) {
     return (
@@ -401,19 +410,20 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                       Current Price
                     </th>
                     <td className="py-2">
-                    $
-                          {(isAfterHours
-                            ? todayPrices.atClose
-                            : todayPrices.regular) &&
-                          todayPrices.regular &&
-                          todayPrices.regular < 0
-                            ? "-"
-                            : ""}
-                          {Math.abs(
-                            (isAfterHours
-                              ? todayPrices.atClose
-                              : todayPrices.regular) || 0
-                          ).toFixed(2)}                    </td>
+                      $
+                      {(isAfterHours
+                        ? todayPrices.atClose
+                        : todayPrices.regular) &&
+                      todayPrices.regular &&
+                      todayPrices.regular < 0
+                        ? "-"
+                        : ""}
+                      {Math.abs(
+                        (isAfterHours
+                          ? todayPrices.atClose
+                          : todayPrices.regular) || 0
+                      ).toFixed(2)}{" "}
+                    </td>
                   </tr>
                   <tr>
                     <th className="py-2 text-gray-700 dark:text-gray-200">

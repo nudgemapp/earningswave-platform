@@ -10,7 +10,6 @@ import Image from "next/image";
 import lightImg from "@/public/images/ew-logo-noBG.png";
 import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import { useEarningsStore } from "@/store/EarningsStore";
-import NotificationButton from "./NotificationButton";
 import { ModeToggle } from "./theme-toggle";
 import { useTheme } from "next-themes";
 import darkImg from "@/public/images/ew-logo-dark-noBG.png";
@@ -19,6 +18,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { IconUser } from "@tabler/icons-react";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { dark } from "@clerk/themes";
+// import NotificationButton from "./NotificationButton";
 
 // import TickerSearch from "./tickerSearch";
 
@@ -56,7 +56,6 @@ function NavBar() {
       name: "Company",
       dropdownItems: [
         { name: "About Us", route: "/about-us" },
-        { name: "Docs", route: "/docs" },
         { name: "Blog", route: "/blog" },
       ],
     },
@@ -215,7 +214,7 @@ function NavBar() {
                     </kbd> */}
                   </Button>
                 </motion.div>
-                {user && <NotificationButton />}
+                {/* {user && <NotificationButton />} */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
