@@ -193,11 +193,8 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
-  // Add state to track current time
   const [currentTime, setCurrentTime] = useState(new Date());
-  // Add useEffect for time updates
   useEffect(() => {
-    // Update time every minute
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000); // 60000ms = 1 minute
@@ -238,18 +235,12 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const selectedTranscript = useEarningsStore(
     (state) => state.selectedTranscript
   );
-
-  console.log("userId", userId);
   const { data: company, isLoading: isLoadingCompany } = useGetCompany(
     SelectedCompany?.companyId
   );
 
-  // console.log(company);
-
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
-
-  console.log(isWatchlisted);
 
   // const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
   //   company?.id
@@ -381,7 +372,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
             </Suspense>
 
-            <div className="flex flex-row items-center gap-4">
+            {/* <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row justify-center w-full gap-4">
                 <Button
                   className="w-full border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -395,10 +386,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   <span className="text-gray-700 dark:text-gray-200">{`${company.symbol} Website`}</span>
                 </Button>
               </div>
-            </div>
+            </div> */}
 
             {/* Company Info Table */}
-            <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
+            {/* <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {company.name}
               </h3>
@@ -447,7 +438,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </div> */}
 
             {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&
