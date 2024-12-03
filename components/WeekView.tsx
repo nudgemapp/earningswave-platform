@@ -115,7 +115,6 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
     };
   }, [currentDate]);
 
-  // Fetch data for the week
   const { data, isLoading, error } = useGetWeekView();
 
   const filterEarnings = (earnings: EarningsEntry[]) => {
@@ -236,16 +235,22 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
   const getDateContent = weekDates.map((date) => {
     const currentDay = date.toISOString().split("T")[0];
 
-    const dayTranscripts = filteredEarnings.reduce((acc: EarningsEntry[], transcript) => {
-      const transcriptDate = new Date(transcript.earningsDate)
-        .toISOString()
-        .split("T")[0];
-      
-      if (transcriptDate === currentDay && !acc.some(t => t.symbol === transcript.symbol)) {
-        acc.push(transcript);
-      }
-      return acc;
-    }, []);
+    const dayTranscripts = filteredEarnings.reduce(
+      (acc: EarningsEntry[], transcript) => {
+        const transcriptDate = new Date(transcript.earningsDate)
+          .toISOString()
+          .split("T")[0];
+
+        if (
+          transcriptDate === currentDay &&
+          !acc.some((t) => t.symbol === transcript.symbol)
+        ) {
+          acc.push(transcript);
+        }
+        return acc;
+      },
+      []
+    );
 
     return {
       dayTranscripts,
@@ -330,7 +335,7 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
     if (transcripts.length === 0) return null;
 
     // const displayedTranscripts = transcripts.slice(0, 7);
-    const displayedTranscripts =transcripts
+    const displayedTranscripts = transcripts;
     // const remainingCount = transcripts.length - 7;
 
     const hasMore = window.innerWidth < 768 && transcripts.length > 12;

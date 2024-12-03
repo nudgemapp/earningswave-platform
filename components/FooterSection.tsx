@@ -154,8 +154,8 @@ function FooterSection() {
           </p>
           <p className="leading-relaxed">
             Any content on this site or related pages is not intended to provide
-            legal, tax, investment, or insurance advice. EarningsWave Inc. is
-            not registered as a securities broker-dealer or an investment
+            legal, tax, investment, or insurance advice. Sycamore Software LLC.
+            is not registered as a securities broker-dealer or an investment
             adviser with the U.S. Securities and Exchange Commission, the
             Financial Industry Regulatory Authority (“FINRA”), or any state
             securities regulatory authority. Nothing on EarningsWave should be
