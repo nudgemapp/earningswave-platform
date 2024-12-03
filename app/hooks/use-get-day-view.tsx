@@ -56,14 +56,14 @@ export const useGetDayView = (date: Date) => {
       if (!response.ok) throw new Error("Failed to fetch day view data");
 
       const data = await response.json();
-      
+
       // Filter out blacklisted symbols
-      data.earnings = data.earnings.filter(
-        (entry: EarningsEntry) => {
-          const symbol = entry.symbol.toUpperCase();
-          return !BLACKLISTED_SYMBOLS.some(blacklisted => blacklisted.toUpperCase() === symbol);
-        }
-      );
+      data.earnings = data.earnings.filter((entry: EarningsEntry) => {
+        const symbol = entry.symbol.toUpperCase();
+        return !BLACKLISTED_SYMBOLS.some(
+          (blacklisted) => blacklisted.toUpperCase() === symbol
+        );
+      });
       return data;
     },
     enabled: !!date,

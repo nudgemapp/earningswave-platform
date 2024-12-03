@@ -27,7 +27,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
 // import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 // import AIEarningsAnalysis from "./AIEarnings";
 
@@ -37,27 +36,16 @@ interface FutureEarningsProps {
     transcriptId: string;
   };
 }
-const formatDate = (dateString: string | Date) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
-// Define an extended Company type that includes recentTranscripts
 type ExtendedCompany = Company & {
   recentTranscripts?: Transcript[];
 };
 
-// Add this type definition near the top of the file
 type WatchlistMutation = {
   isPending: boolean;
   mutateAsync: (companyId: string) => Promise<void>;
 };
 
-// Update the CompanyHeader props interface
 interface CompanyHeaderProps {
   company: ExtendedCompany;
   onBack: () => void;
@@ -90,10 +78,6 @@ const TranscriptsSkeleton = () => (
   </div>
 );
 
-// ???
-// use scrollarea here form ShadowNoneIcon
-
-// Update the CompanyHeader component with the proper type
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({
   company,
   onBack,
@@ -202,7 +186,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     // Cleanup interval on unmount
     return () => clearInterval(timer);
   }, []); // Empty dependency array since we want this to run once on mount
-  const isAfterHours = currentTime.getHours() >= 16;
+  // const isAfterHours = currentTime.getHours() >= 16;
 
   const [todayPrices, setTodayPrices] = useState<{
     prevClose: number | null;
@@ -372,84 +356,14 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </div>
             </Suspense>
 
-            {/* <div className="flex flex-row items-center gap-4">
-              <div className="flex flex-row justify-center w-full gap-4">
-                <Button
-                  className="w-full border border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
-                  variant="ghost"
-                  onClick={() =>
-                    company.weburl
-                      ? window.open(company.weburl, "_blank")
-                      : null
-                  }
-                >
-                  <span className="text-gray-700 dark:text-gray-200">{`${company.symbol} Website`}</span>
-                </Button>
-              </div>
-            </div> */}
-
-            {/* Company Info Table */}
-            {/* <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {company.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {company.description}
-              </p>
-              <table className="w-full mt-4 text-sm text-left text-gray-500 dark:text-gray-400">
-                <tbody>
-                  <tr>
-                    <th className="py-2 text-gray-700 dark:text-gray-200">
-                      Current Price
-                    </th>
-                    <td className="py-2">
-                      $
-                      {(isAfterHours
-                        ? todayPrices.atClose
-                        : todayPrices.regular) &&
-                      todayPrices.regular &&
-                      todayPrices.regular < 0
-                        ? "-"
-                        : ""}
-                      {Math.abs(
-                        (isAfterHours
-                          ? todayPrices.atClose
-                          : todayPrices.regular) || 0
-                      ).toFixed(2)}{" "}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th className="py-2 text-gray-700 dark:text-gray-200">
-                      Previous Close
-                    </th>
-                    <td className="py-2">
-                      ${todayPrices.prevClose?.toFixed(2) || "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th className="py-2 text-gray-700 dark:text-gray-200">
-                      Next Earnings
-                    </th>
-                    <td className="py-2">
-                      {company.recentTranscripts?.[0]?.scheduledAt
-                        ? formatDate(company.recentTranscripts[0].scheduledAt)
-                        : "-"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div> */}
-
             {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&
               company.recentTranscripts.length > 0 && (
                 <Suspense fallback={<TranscriptsSkeleton />}>
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      Recent Transcripts
-                    </h3>
                     <CompanyTranscripts
                       transcripts={company.recentTranscripts}
+                      company={company}
                     />
                   </div>
                 </Suspense>

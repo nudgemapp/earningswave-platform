@@ -43,6 +43,7 @@ interface CompanyQueryResult {
     epsEstimate: number | null;
     revenueActual: number | null;
     revenueEstimate: number | null;
+    audioUrl: string | null;
   }> | null;
 }
 
@@ -117,7 +118,8 @@ export async function GET(
               'epsActual', CAST(t."epsActual" AS FLOAT),
               'epsEstimate', CAST(t."epsEstimate" AS FLOAT),
               'revenueActual', CAST(t."revenueActual" AS FLOAT),
-              'revenueEstimate', CAST(t."revenueEstimate" AS FLOAT)
+              'revenueEstimate', CAST(t."revenueEstimate" AS FLOAT),
+              'audioUrl', t."audioUrl"
             )
           )
           FROM (

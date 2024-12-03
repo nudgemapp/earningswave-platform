@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCalendarStore } from "@/store/CalendarStore";
 import React from "react";
+import { BLACKLISTED_SYMBOLS } from "../constants/blacklist";
 
 interface Company {
   id: string;
@@ -79,22 +80,22 @@ export const useGetMonthView = () => {
 
       if (!response.ok) throw new Error("Failed to fetch month view data");
 
-      // // Filter out blacklisted symbols
-      // const filteredData = data.filter(
-      //   (entry: EarningsEntry) => {
-      //     const symbol = entry.symbol.toUpperCase();
-      //     return !BLACKLISTED_SYMBOLS.some(blacklisted => blacklisted.toUpperCase() === symbol);
-      //   }
-      // );
+      const data = (await response
+        .json()
+        .then((data: { earnings: EarningsEntry[] }) => {
+          // Filter out blacklisted symbols
+          const filteredEarnings = data.earnings.filter(
+            (entry: EarningsEntry) => {
+              const symbol = entry.symbol.toUpperCase();
+              return !BLACKLISTED_SYMBOLS.some(
+                (blacklisted) => blacklisted.toUpperCase() === symbol
+              );
+            }
+          );
+          return filteredEarnings;
+        })) as EarningsEntry[];
 
-      // data = filteredData;
-
-      const data = (await response.json().then((data:{earnings:EarningsEntry[]})=>{
-
-        return data.earnings
-      })) as EarningsEntry[];
-
-      return data
+      return data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
