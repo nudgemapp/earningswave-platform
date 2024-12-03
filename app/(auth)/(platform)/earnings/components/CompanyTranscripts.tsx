@@ -500,18 +500,6 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                   {transcript.status === "COMPLETED" && (
                     <div className="border-t border-gray-100 dark:border-slate-800">
                       <div className="p-3 space-y-2">
-                        {/* Top button - AI Summary with purple theme */}
-                        <button
-                          onClick={() => {
-                            /* Handle AI Summary */
-                          }}
-                          className="w-full py-2 px-4 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
-                          <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-                          AI Summary
-                        </button>
-
-                        {/* Bottom row buttons - keeping original style */}
                         <div className="flex gap-2">
                           <button
                             onClick={() =>
@@ -532,6 +520,15 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                             Transcript
                           </button>
                         </div>
+                        <button
+                          onClick={() => {
+                            /* Handle AI Summary */
+                          }}
+                          className="w-full py-2 px-4 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center justify-center gap-2"
+                        >
+                          <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                          AI Summary
+                        </button>
                       </div>
                     </div>
                   )}

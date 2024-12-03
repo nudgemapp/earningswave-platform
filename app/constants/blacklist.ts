@@ -1,7 +1,3 @@
-import { SpeakerLoudIcon } from "@radix-ui/react-icons";
-import { ListStart } from "lucide-react";
-import PDFStructureContent from "pdfkit/js/structure_content";
-
 // List of delisted/defunct stock symbols that should be filtered out
 export const BLACKLISTED_SYMBOLS: string[] = [
   "TDTH",

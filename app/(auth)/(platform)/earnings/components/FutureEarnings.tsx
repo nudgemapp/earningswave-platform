@@ -178,6 +178,7 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  console.log(currentTime);
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -209,6 +210,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     priceDifference: null,
     mostRecentDate: null,
   });
+  console.log(todayPrices);
 
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
