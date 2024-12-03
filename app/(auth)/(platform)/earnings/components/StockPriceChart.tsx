@@ -44,8 +44,6 @@ interface StockData {
   marketSession: "pre" | "regular" | "post";
 }
 
-
-
 interface RealtimeStockData {
   realtimePrice: number;
   lastUpdate: string;
@@ -53,16 +51,14 @@ interface RealtimeStockData {
 }
 
 interface FinnhubCandle {
-  c: number[];  // close prices
-  h: number[];  // high prices
-  l: number[];  // low prices
-  o: number[];  // open prices
-  s: string;    // status
-  t: number[];  // timestamps
-  v: number[];  // volume
+  c: number[]; // close prices
+  h: number[]; // high prices
+  l: number[]; // low prices
+  o: number[]; // open prices
+  s: string; // status
+  t: number[]; // timestamps
+  v: number[]; // volume
 }
-
-
 
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
@@ -106,46 +102,47 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Memoize timeframe buttons
   const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
 
-
-
-
   const isMarketHoliday = (date: Date): boolean => {
-    const dateString = date.toISOString().split('T')[0];
-    return MARKET_HOLIDAYS.some(holiday => holiday.date === dateString && holiday.closed);
+    const dateString = date.toISOString().split("T")[0];
+    return MARKET_HOLIDAYS.some(
+      (holiday) => holiday.date === dateString && holiday.closed
+    );
   };
 
   const adjustToMarketDay = (date: Date): Date => {
     const adjustedDate = new Date(date);
-    while (adjustedDate.getDay() === 0 || adjustedDate.getDay() === 6 || isMarketHoliday(adjustedDate)) {
+    while (
+      adjustedDate.getDay() === 0 ||
+      adjustedDate.getDay() === 6 ||
+      isMarketHoliday(adjustedDate)
+    ) {
       adjustedDate.setDate(adjustedDate.getDate() - 1);
     }
     return adjustedDate;
   };
 
-
-
-
   const fetchTodayPrices = async () => {
     if (!symbol) return;
 
     try {
-      const data = await fetch(`/api/companies/recentPrice?symbol=${symbol}`).then((res: Response) => res.json() as Promise<StockQuote>);
+      const data = await fetch(
+        `/api/companies/recentPrice?symbol=${symbol}`
+      ).then((res: Response) => res.json() as Promise<StockQuote>);
       const todayDate = new Date();
       const adjustedDate = adjustToMarketDay(todayDate);
 
       // Convert to string in YYYY-MM-DD format
-      const todayDateString = adjustedDate.toISOString().split('T')[0];
+      const todayDateString = adjustedDate.toISOString().split("T")[0];
 
       const preMarketPrice = null;
       const afterHoursPrice = null;
 
       // Check if current time is after hours, weekend, or holiday
       const isAfterMarketHours = new Date().getHours() >= 16;
-      const isWeekend = adjustedDate.getDay() === 0 || adjustedDate.getDay() === 6;
+      const isWeekend =
+        adjustedDate.getDay() === 0 || adjustedDate.getDay() === 6;
       const isHoliday = isMarketHoliday(adjustedDate);
       const isMarketClosed = isAfterMarketHours || isWeekend || isHoliday;
-
-      
 
       todayData({
         preMarket: preMarketPrice,
@@ -181,7 +178,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) {
-      console.log('No data received in getTimeframeData');
+      console.log("No data received in getTimeframeData");
       return [];
     }
 
@@ -190,27 +187,29 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       const pointDate = new Date(point.date);
 
       switch (timeframe) {
-        case '1D':
-          return pointDate.getDate() === now.getDate() &&
+        case "1D":
+          return (
+            pointDate.getDate() === now.getDate() &&
             pointDate.getMonth() === now.getMonth() &&
-            pointDate.getFullYear() === now.getFullYear();
+            pointDate.getFullYear() === now.getFullYear()
+          );
 
-        case '1W':
+        case "1W":
           const oneWeekAgo = new Date(now);
           oneWeekAgo.setDate(now.getDate() - 7);
           return pointDate >= oneWeekAgo;
 
-        case '1M':
+        case "1M":
           const oneMonthAgo = new Date(now);
           oneMonthAgo.setMonth(now.getMonth() - 1);
           return pointDate >= oneMonthAgo;
 
-        case '6M':
+        case "6M":
           const sixMonthsAgo = new Date(now);
           sixMonthsAgo.setMonth(now.getMonth() - 6);
           return pointDate >= sixMonthsAgo;
 
-        case '1Y':
+        case "1Y":
           const oneYearAgo = new Date(now);
           oneYearAgo.setFullYear(now.getFullYear() - 1);
           return pointDate >= oneYearAgo;
@@ -219,11 +218,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           return true;
       }
     });
-    console.log('filteredData', filteredData);
+    console.log("filteredData", filteredData);
 
     return filteredData;
   };
-
 
   // Update the yDomain calculation in the useMemo hook
   const yDomain = useMemo(() => {
@@ -240,37 +238,27 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     ];
   }, [filteredData]);
 
-
-
-
-
-
-
-
   // Update todayPrices based on realtime data
   useEffect(() => {
     if (realtimeData?.realtimePrice && todayPrices.prevClose) {
       const priceDiff = realtimeData.realtimePrice - todayPrices.prevClose;
       const percentChange = (priceDiff / todayPrices.prevClose) * 100;
 
-
       setTodayPrices((prev) => {
-
         todayData({
           ...prev,
           regular: realtimeData.realtimePrice,
           priceDifference: priceDiff,
           percentChange: percentChange,
         });
-        
 
-        return ({
+        return {
           ...prev,
           afterHours: isAfterHours ? realtimeData.realtimePrice : null,
           regular: realtimeData.realtimePrice,
           priceDifference: priceDiff,
           percentChange: percentChange,
-        })
+        };
       });
     }
   }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
@@ -278,16 +266,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Update the regular market price display
   useEffect(() => {
     if (realtimeData?.realtimePrice) {
-
       const percentChange = todayPrices.prevClose
         ? ((realtimeData.realtimePrice - todayPrices.prevClose) /
-          todayPrices.prevClose) *
-        100
+            todayPrices.prevClose) *
+          100
         : null;
 
       setTodayPrices((prev) => {
-
-
         todayData({
           ...prev,
           regular: realtimeData.realtimePrice,
@@ -297,14 +282,14 @@ const StockPriceChart: React.FC<StockChartProps> = ({
             : null,
         });
 
-        return ({
+        return {
           ...prev,
           regular: realtimeData.realtimePrice,
           percentChange,
           priceDifference: todayPrices.prevClose
             ? realtimeData.realtimePrice - todayPrices.prevClose
             : null,
-        })
+        };
       });
     }
   }, [realtimeData?.realtimePrice]);
@@ -329,11 +314,16 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   // Use currentTime instead of new Date()
   const isAfterHours = currentTime.getHours() >= 16;
 
-  const fetchFinnhubTimeSeriesData = async (symbol: string, timeframe: string = "1D"): Promise<(StockData & { time: string })[]> => {
+  const fetchFinnhubTimeSeriesData = async (
+    symbol: string,
+    timeframe: string = "1D"
+  ): Promise<(StockData & { time: string })[]> => {
     try {
       // Get current date in EST
       const now = new Date();
-      const estNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+      const estNow = new Date(
+        now.toLocaleString("en-US", { timeZone: "America/New_York" })
+      );
 
       // Calculate start and end dates based on timeframe
       let startDate = new Date(estNow);
@@ -370,34 +360,39 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         if (currentDay === 0 || currentDay === 6 || isMarketHoliday(estNow)) {
           startDate = adjustToMarketDay(startDate);
           endDate = adjustToMarketDay(endDate);
-        } else if (estNow.getHours() < 9 || (estNow.getHours() === 9 && estNow.getMinutes() < 30)) {
-          startDate = adjustToMarketDay(new Date(startDate.setDate(startDate.getDate() - 1)));
-          endDate = adjustToMarketDay(new Date(endDate.setDate(endDate.getDate() - 1)));
+        } else if (
+          estNow.getHours() < 9 ||
+          (estNow.getHours() === 9 && estNow.getMinutes() < 30)
+        ) {
+          startDate = adjustToMarketDay(
+            new Date(startDate.setDate(startDate.getDate() - 1))
+          );
+          endDate = adjustToMarketDay(
+            new Date(endDate.setDate(endDate.getDate() - 1))
+          );
         }
       }
 
       const startTime = Math.floor(startDate.getTime() / 1000);
       const endTime = Math.floor(endDate.getTime() / 1000);
 
-      
-
       const response = await fetch(
         `/api/timeFrame?symbol=${symbol}&resolution=${resolution}&from=${startTime}&to=${endTime}`
       );
 
-      if (!response.ok) throw new Error('Failed to fetch Finnhub data');
+      if (!response.ok) throw new Error("Failed to fetch Finnhub data");
 
       const result: FinnhubCandle = await response.json();
 
-      if (result.s !== 'ok') {
-        throw new Error('Invalid data received from Finnhub');
+      if (result.s !== "ok") {
+        throw new Error("Invalid data received from Finnhub");
       }
 
-      
-      if (isAfterHours) { // After 4pm EST
+      if (isAfterHours) {
+        // After 4pm EST
         const latestClosePrice = result.c[result.c.length - 1];
 
-        setTodayPrices(prev => ({
+        setTodayPrices((prev) => ({
           ...prev,
           afterHours: latestClosePrice,
         }));
@@ -409,10 +404,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         const minutes = date.getMinutes();
         const timeInMinutes = hours * 60 + minutes;
 
-        const timeStr = date.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
+        const timeStr = date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
         });
 
         let marketSession: StockData["marketSession"] = "regular";
@@ -433,45 +428,52 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           low: result.l[index],
           volume: result.v[index],
           gain: result.c[index] > result.o[index],
-          marketSession
+          marketSession,
         };
       });
 
-      return transformedData.sort((a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
+      return transformedData.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
-
     } catch (error) {
-      console.error('Error fetching Finnhub time series:', error);
+      console.error("Error fetching Finnhub time series:", error);
       return [];
     }
   };
 
   const getChartData = async () => {
     try {
-     
       const data = await fetchFinnhubTimeSeriesData(symbol, timeframe);
       // Only check for closing price if it's after hours
       if (isAfterHours) {
         // Get current date in EST
         const now = new Date();
-        const estNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+        const estNow = new Date(
+          now.toLocaleString("en-US", { timeZone: "America/New_York" })
+        );
 
         // Format date to match holiday.ts format (MM-DD-YYYY)
-        const formattedDate = `${(estNow.getMonth() + 1).toString().padStart(2, '0')}-${estNow.getDate().toString().padStart(2, '0')}-${estNow.getFullYear()}`;
+        const formattedDate = `${(estNow.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}-${estNow
+          .getDate()
+          .toString()
+          .padStart(2, "0")}-${estNow.getFullYear()}`;
 
         // Check if today is a holiday with early closing
-        const holiday = MARKET_HOLIDAYS.find(h => h.date === formattedDate);
+        const holiday = MARKET_HOLIDAYS.find((h) => h.date === formattedDate);
         const closingTime = holiday?.closingTime || "16:00"; // Default to 4:00 PM EST if not early close
 
         // Get the last price at market close
         const lastCloseData = data
-          .filter(point => {
+          .filter((point) => {
             const pointDate = new Date(point.date);
             const hours = pointDate.getHours();
             const minutes = pointDate.getMinutes();
-            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-            
+            const timeStr = `${hours.toString().padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}`;
+
             // Match exact closing time (either 4:00 PM or early close time)
             return point.marketSession === "regular" && timeStr === closingTime;
           })
@@ -479,42 +481,39 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
         // If we have closing data, update the prices
 
-        
         if (lastCloseData) {
-          setTodayPrices(prev => {
+          setTodayPrices((prev) => {
             const updatedPrices = {
               ...prev,
               atClose: lastCloseData.close,
             };
-            
+
             todayData(updatedPrices);
             return updatedPrices;
           });
         }
       }
 
-
       if (!data || data.length === 0) {
-        console.log('No data received from Finnhub');
+        console.log("No data received from Finnhub");
         return;
       }
       const timeframeData = getTimeframeData(data);
 
       setFilteredData(timeframeData);
-      setIsLoading(false); 
-
+      setIsLoading(false);
     } catch (error) {
-      console.error('Error in testFinnhubData:', error);
+      console.error("Error in testFinnhubData:", error);
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if(error) {
-      console.log('Error ', error);
+    if (error) {
+      console.log("Error ", error);
     }
-    getChartData(); 
-    
+    getChartData();
+
     const interval = setInterval(() => {
       getChartData();
     }, 60000); // Call every minute (60000ms)
@@ -536,47 +535,45 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           {!isLoading && (
             <div className="flex items-center gap-6">
               <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
-
                 {/* Regular Market Price with enhanced styling */}
                 <div className="px-6">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-
                       <div className="flex items-baseline gap-1">
                         <span
-                          className={`font-bold text-3xl ${todayPrices.percentChange &&
-                              todayPrices.percentChange > 0
+                          className={`font-bold text-3xl ${
+                            todayPrices.percentChange &&
+                            todayPrices.percentChange > 0
                               ? "text-emerald-600 dark:text-emerald-500"
                               : "text-red-600 dark:text-red-500"
-                            }`}
+                          }`}
                         >
                           $
                           {(isAfterHours
                             ? todayPrices.atClose
                             : todayPrices.regular) &&
-                            todayPrices.regular &&
-                            todayPrices.regular < 0
+                          todayPrices.regular &&
+                          todayPrices.regular < 0
                             ? "-"
                             : ""}
                           {Math.abs(
                             (isAfterHours
                               ? todayPrices.atClose
                               : todayPrices.regular) || 0
-                          ).toFixed(2)} 
-                        
+                          ).toFixed(2)}
                         </span>
-                        
                       </div>
-                      
+
                       {todayPrices.percentChange !== null &&
                         todayPrices.priceDifference !== null &&
                         realtimeData?.realtimePrice &&
                         new Date().getHours() < 16 && (
                           <span
-                            className={`text-sm font-medium ${todayPrices.percentChange > 0
+                            className={`text-sm font-medium ${
+                              todayPrices.percentChange > 0
                                 ? "text-emerald-600 dark:text-emerald-500"
                                 : "text-red-600 dark:text-red-500"
-                              }`}
+                            }`}
                           >
                             {todayPrices.percentChange > 0 ? "▲" : "▼"} $
                             {todayPrices.priceDifference.toFixed(2)} (
@@ -585,61 +582,63 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                         )}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                          As of {(() => {
-                            const estHour = currentTime.getHours();
-                            if (estHour >= 16) {
-                              return '4:00 PM';
-                            }
-                            return currentTime.toLocaleTimeString('en-US', {
-                              hour: '2-digit', 
-                              minute: '2-digit',
-                              timeZone: 'America/New_York',
-                              hour12: true
-                            });
-                          })()} EST. {
-                            (() => {
-                              const estHour = currentTime.getHours();
-                              const estMinutes = currentTime.getMinutes();
-                              if (estHour < 9 || (estHour === 9 && estMinutes < 30)) {
-                                return 'Market Closed';
-                              } else if (estHour >= 16) {
-                                return 'Market Closed';
-                              } else {
-                                return 'Market Open';
-                              }
-                            })()
-                          }
-                        </div>
+                      As of{" "}
+                      {(() => {
+                        const estHour = currentTime.getHours();
+                        if (estHour >= 16) {
+                          return "4:00 PM";
+                        }
+                        return currentTime.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "America/New_York",
+                          hour12: true,
+                        });
+                      })()}{" "}
+                      EST.{" "}
+                      {(() => {
+                        const estHour = currentTime.getHours();
+                        const estMinutes = currentTime.getMinutes();
+                        if (estHour < 9 || (estHour === 9 && estMinutes < 30)) {
+                          return "Market Closed";
+                        } else if (estHour >= 16) {
+                          return "Market Closed";
+                        } else {
+                          return "Market Open";
+                        }
+                      })()}
+                    </div>
                     {(new Date().getHours() >= 16 ||
                       new Date().getHours() < 9 ||
                       (new Date().getHours() === 9 &&
                         new Date().getMinutes() < 30)) && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                          At close,{" "}
-                          {todayPrices.mostRecentDate
-                            ? new Date(
+                      <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                        At close,{" "}
+                        {todayPrices.mostRecentDate
+                          ? new Date(
                               new Date(todayPrices.mostRecentDate).getTime() +
-                              24 * 60 * 60 * 1000
+                                24 * 60 * 60 * 1000
                             ).toLocaleDateString("en-US", {
                               month: "long",
                               day: "numeric",
                               year: "numeric",
                             })
-                            : "MM/DD/YYYY"}{" "}
-                          at 4:00pm EST, USD
-                          <div className="w-4 h-4 rounded-full border-2 border-gray-400 dark:border-gray-500 flex items-center justify-center">
-                            <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300">
-                              !
-                            </span>
-                          </div>
-                        </span>
-                      )}
+                          : "MM/DD/YYYY"}{" "}
+                        at 4:00pm EST, USD
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-400 dark:border-gray-500 flex items-center justify-center">
+                          <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300">
+                            !
+                          </span>
+                        </div>
+                      </span>
+                    )}
 
                     {todayPrices.afterHours &&
-                      ((new Date().getHours() >= 16 ||
+                      (new Date().getHours() >= 16 ||
                         new Date().getHours() < 9 ||
                         (new Date().getHours() === 9 &&
-                          new Date().getMinutes() < 30)) || true) && (
+                          new Date().getMinutes() < 30) ||
+                        true) && (
                         <div className="flex items-center gap-2">
                           <span
                             className={` text-sm text-gray-500 dark:text-gray-400`}
@@ -647,24 +646,28 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                             After Hours
                           </span>
                           <span
-                            className={` text-sm ${todayPrices.afterHours >
-                                (todayPrices.atClose || 0)
+                            className={` text-sm ${
+                              todayPrices.afterHours >
+                              (todayPrices.atClose || 0)
                                 ? "text-emerald-600 dark:text-emerald-500"
                                 : "text-red-600 dark:text-red-500"
-                              }`}
+                            }`}
                           >
                             ${todayPrices.afterHours.toFixed(2)}
                           </span>
                           {todayPrices.regular && (
                             <span
-                              className={`text-sm font-medium ${todayPrices.afterHours > (todayPrices.atClose || 0)
+                              className={`text-sm font-medium ${
+                                todayPrices.afterHours >
+                                (todayPrices.atClose || 0)
                                   ? "text-emerald-600 dark:text-emerald-500"
                                   : "text-red-600 dark:text-red-500"
-                                }`}
+                              }`}
                             >
                               $
                               {Math.abs(
-                                todayPrices.afterHours - (todayPrices.atClose || 0)
+                                todayPrices.afterHours -
+                                  (todayPrices.atClose || 0)
                               ).toFixed(2)}{" "}
                               (
                               {(
@@ -680,11 +683,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                       )}
                   </div>
                 </div>
-
-
               </div>
-
-
             </div>
           )}
         </div>
@@ -817,10 +816,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                           </span>
                         </p>
                         <div
-                          className={`space-y-1 ${data.gain
+                          className={`space-y-1 ${
+                            data.gain
                               ? "text-emerald-600 dark:text-emerald-500"
                               : "text-red-600 dark:text-red-500"
-                            }`}
+                          }`}
                         >
                           <p className="text-sm font-semibold">
                             ${data.close.toFixed(2)}
@@ -850,10 +850,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                       : "#ef4444"
                   }
                   strokeWidth={1.5}
-                  fill={`url(#${todayPrices.percentChange && todayPrices.percentChange > 0
+                  fill={`url(#${
+                    todayPrices.percentChange && todayPrices.percentChange > 0
                       ? "colorUpGradient"
                       : "colorDownGradient"
-                    })`}
+                  })`}
                   connectNulls={true}
                   isAnimationActive={false}
                   dot={false}

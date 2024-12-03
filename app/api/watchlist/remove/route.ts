@@ -4,7 +4,7 @@ import prisma from "../../../../lib/prismadb";
 
 export async function DELETE(req: Request) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }

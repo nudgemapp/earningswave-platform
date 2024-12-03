@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { companyId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -30,6 +30,8 @@ export async function GET(
         id: true,
       },
     });
+
+    console.log(watchlistEntry);
 
     const response = NextResponse.json({
       isWatchlisted: !!watchlistEntry,

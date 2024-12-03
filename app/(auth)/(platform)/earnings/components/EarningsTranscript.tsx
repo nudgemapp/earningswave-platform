@@ -15,7 +15,7 @@ import React from "react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useUserSubscription } from "@/app/hooks/use-user-subscription"
+import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
@@ -38,8 +38,12 @@ const EarningsTranscript = () => {
   const { isSignedIn } = useAuth();
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
   const { user } = useUser();
+  console.log(user?.id);
+
   const { data: subscription } = useUserSubscription(user?.id);
   const subscriptionModal = useSubscriptionModal();
+
+  console.log(subscription);
 
   console.log(transcript);
   // console.log(subscription);
@@ -63,7 +67,6 @@ const EarningsTranscript = () => {
       doc.addPage();
       yPosition = margin;
     };
-
 
     // Helper function to process text content
     const processTextContent = (

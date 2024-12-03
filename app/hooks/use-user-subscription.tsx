@@ -12,8 +12,11 @@ export const useUserSubscription = (userId: string | undefined) => {
   return useQuery<SubscriptionWithStatus>({
     queryKey: ["subscription", userId],
     queryFn: async () => {
+      // console.log(userId);
       if (!userId) throw new Error("No user ID provided");
       const response = await fetch(`/api/subscriptions/${userId}`);
+
+      // console.log(response);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -23,6 +26,8 @@ export const useUserSubscription = (userId: string | undefined) => {
       }
 
       const data = await response.json();
+
+      // console.log(data);
 
       // If no subscription found, return a default inactive state
       if (data.status === "inactive") {

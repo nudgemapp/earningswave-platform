@@ -4,15 +4,20 @@ import prisma from "../../../../lib/prismadb";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+
+    console.log("req", req);
+    console.log("userId", userId);
 
     const { companyId } = await req.json();
     if (!companyId) {
       return new NextResponse("Company ID is required", { status: 400 });
     }
+
+    console.log("companyId", companyId);
 
     // Check if entry already exists
     const existingEntry = await prisma.watchlistEntry.findUnique({
@@ -24,9 +29,13 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log("existingEntry", existingEntry);
+
     if (existingEntry) {
       return new NextResponse("Already in watchlist", { status: 400 });
     }
+
+    console.log("creating new entry");
 
     // Create new watchlist entry
     const watchlistEntry = await prisma.watchlistEntry.create({
@@ -35,6 +44,10 @@ export async function POST(req: Request) {
         companyId,
       },
     });
+
+    console.log("created watchlistEntry");
+
+    console.log("watchlistEntry", watchlistEntry);
 
     return NextResponse.json(watchlistEntry);
   } catch (error) {

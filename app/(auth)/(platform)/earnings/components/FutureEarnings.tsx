@@ -239,19 +239,21 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     (state) => state.selectedTranscript
   );
 
+  console.log("userId", userId);
   const { data: company, isLoading: isLoadingCompany } = useGetCompany(
     SelectedCompany?.companyId
   );
+
+  // console.log(company);
+
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
-  const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
-    company?.id
-  );
+  console.log(isWatchlisted);
 
-  console.log(liveCallData);
-
-  console.log(isLoadingLiveCall);
+  // const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
+  //   company?.id
+  // );
 
   if (isLoadingCompany) {
     return (
@@ -364,7 +366,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </CardHeader>
           <CardContent className="space-y-6 px-4 pb-4">
             {/* Stock Chart with Suspense */}
-            <Suspense fallback={<StockChartSkeleton />}>
+            {/* <Suspense fallback={<StockChartSkeleton />}>
               <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4 pb-8">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
@@ -377,7 +379,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   />
                 </div>
               </div>
-            </Suspense>
+            </Suspense> */}
 
             <div className="flex flex-row items-center gap-4">
               <div className="flex flex-row justify-center w-full gap-4">

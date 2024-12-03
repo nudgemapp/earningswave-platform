@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
+import { auth } from "@clerk/nextjs/server";
 
 interface CompanyQueryResult {
   id: string;
@@ -49,6 +50,9 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  // const { userId } = await auth();
+  // console.log("userId", userId);
+
   if (!params.id) {
     return new NextResponse("Missing company ID", { status: 400 });
   }
