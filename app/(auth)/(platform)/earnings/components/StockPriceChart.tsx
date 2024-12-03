@@ -145,11 +145,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       const isHoliday = isMarketHoliday(adjustedDate);
       const isMarketClosed = isAfterMarketHours || isWeekend || isHoliday;
 
+      
+
       todayData({
         preMarket: preMarketPrice,
         regular: data.c,
         atClose: isMarketClosed ? data.c : null,
-        afterHours: afterHoursPrice,
+        afterHours: isMarketClosed ? data.c : null,
         regularOpen: data.o,
         percentChange: data.dp,
         priceDifference: data.d,
@@ -391,6 +393,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         throw new Error('Invalid data received from Finnhub');
       }
 
+      
+      if (isAfterHours) { // After 4pm EST
+        const latestClosePrice = result.c[result.c.length - 1];
+
+        setTodayPrices(prev => ({
+          ...prev,
+          afterHours: latestClosePrice,
+        }));
+      }
       // Transform the data into StockData format with time
       const transformedData = result.t.map((timestamp, index) => {
         const date = new Date(timestamp * 1000);
@@ -467,11 +478,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           .slice(-1)[0];
 
         // If we have closing data, update the prices
+
+        
         if (lastCloseData) {
           setTodayPrices(prev => {
             const updatedPrices = {
               ...prev,
-              atClose: lastCloseData.close
+              atClose: lastCloseData.close,
             };
             
             todayData(updatedPrices);
