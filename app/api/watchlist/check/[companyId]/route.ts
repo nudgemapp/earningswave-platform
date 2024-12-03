@@ -31,8 +31,6 @@ export async function GET(
       },
     });
 
-    console.log(watchlistEntry);
-
     const response = NextResponse.json({
       isWatchlisted: !!watchlistEntry,
     });

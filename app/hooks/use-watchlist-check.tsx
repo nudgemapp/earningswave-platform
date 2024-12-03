@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useApiClient } from "@/lib/apiClient";
 
+interface WatchlistCheckResponse {
+  isWatchlisted: boolean;
+}
+
 export const useWatchlistCheck = (companyId: string) => {
   const apiClient = useApiClient();
 
@@ -9,7 +13,7 @@ export const useWatchlistCheck = (companyId: string) => {
     queryFn: async () => {
       if (!companyId) return false;
 
-      const response = await apiClient.get<any>(
+      const response = await apiClient.get<WatchlistCheckResponse>(
         `/watchlist/check/${companyId}`
       );
       if (response.status !== 200) {

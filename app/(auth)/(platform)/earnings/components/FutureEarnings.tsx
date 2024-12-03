@@ -62,7 +62,7 @@ interface CompanyHeaderProps {
   company: ExtendedCompany;
   onBack: () => void;
   onWatchlistClick: () => void;
-  isWatchlisted: boolean;
+  isWatchlisted: boolean | undefined;
   isCheckingWatchlist: boolean;
   addToWatchlist: WatchlistMutation;
   removeFromWatchlist: WatchlistMutation;
