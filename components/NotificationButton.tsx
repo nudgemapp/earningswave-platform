@@ -14,7 +14,11 @@ interface Notification {
   read: boolean;
 }
 
-export default function NotificationButton() {
+export default function NotificationButton({
+  handleApiClick,
+}: {
+  handleApiClick: () => void;
+}) {
   const [notifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -24,16 +28,6 @@ export default function NotificationButton() {
     ).length;
     setUnreadCount(unreadNotifications);
   }, [notifications]);
-
-  const handleApiClick = async () => {
-    try {
-      const response = await fetch("/api/finnhub/test-script");
-      const data = await response.json();
-      console.log("API Response:", data);
-    } catch (error) {
-      console.error("Error fetching from API:", error);
-    }
-  };
 
   return (
     <Popover>

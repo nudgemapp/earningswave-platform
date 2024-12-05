@@ -1,15 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
-// import { Transcript } from "@prisma/client";
 
 interface AISummaryResponse {
-  analysis: string;
-  keyPoints?: Record<string, unknown>;
-  sentiment?: {
-    overall: string;
-    score?: number;
-    details?: Record<string, string>;
+  summary: {
+    overview: string;
+    quarterHighlights?: string;
+    challenges?: string;
   };
-  lastUpdated?: Date;
+  keyHighlights: Array<{
+    category: string;
+    title: string;
+    description: string;
+    impact: string;
+  }>;
+  performanceAnalysis: Array<{
+    metric: string;
+    value: string;
+    analysis: string;
+    trend: "positive" | "neutral" | "negative";
+  }>;
+  forwardGuidance: {
+    outlook: string;
+    keyInitiatives: string[];
+    risks: string[];
+  };
+  sentiment: {
+    score: number;
+    label: "bullish" | "neutral" | "bearish";
+    rationale: string;
+  };
 }
 
 export const useGetAISummary = (transcriptId: string | undefined) => {
@@ -23,22 +41,18 @@ export const useGetAISummary = (transcriptId: string | undefined) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: transcriptId,
-          //   symbol: "EXAMPLE",
-          //   estimate: 0,
-          //   lastYearEPS: 0,
-          //   reportDate: new Date().toISOString(),
-          //   fiscalDateEnding: new Date().toISOString(),
-        }),
+        body: JSON.stringify({ id: transcriptId }),
       });
 
-      if (!response.ok) throw new Error("Failed to fetch AI analysis");
+      if (!response.ok) {
+        throw new Error("Failed to fetch AI analysis");
+      }
 
-      return await response.json();
+      const data = await response.json();
+      return data;
     },
     enabled: !!transcriptId,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60, // 1 hour
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });

@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       const analysisAge =
         Date.now() - existingTranscript.aiLastUpdated.getTime();
       if (analysisAge < 24 * 60 * 60 * 1000) {
+        console.log("Returning cached analysis");
         // 24 hours
         return NextResponse.json({
           summary: existingTranscript.aiSummary,
@@ -78,6 +79,8 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    console.log(transcript.status);
 
     // Generate AI analysis
     const prompt =
@@ -121,7 +124,8 @@ export async function POST(request: Request) {
       where: { id },
       data: {
         aiSummary: analysis.summary.overview,
-        aiKeyPoints: analysis,
+        aiKeyPoints: analysis.keyHighlights,
+        aiSentimentAnalysis: analysis.sentiment,
         aiLastUpdated: new Date(),
       },
     });

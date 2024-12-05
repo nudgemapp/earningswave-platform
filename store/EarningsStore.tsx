@@ -19,6 +19,8 @@ interface EarningsState {
   watchlistItems: WatchlistEntry[];
   selectedTranscript: string | null;
   setSelectedTranscript: (transcriptId: string | null) => void;
+  selectedAiTranscript: string | null;
+  setSelectedAiTranscript: (transcriptId: string | null) => void;
 }
 
 export const useEarningsStore = create<EarningsState>((set) => ({
@@ -60,5 +62,10 @@ export const useEarningsStore = create<EarningsState>((set) => ({
     set({
       selectedTranscript: transcriptId,
       showWatchlist: false, // Close watchlist when transcript is selected
+    }),
+  selectedAiTranscript: null,
+  setSelectedAiTranscript: (transcriptId) =>
+    set({
+      selectedAiTranscript: transcriptId,
     }),
 }));

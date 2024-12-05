@@ -38,15 +38,9 @@ const EarningsTranscript = () => {
   const { isSignedIn } = useAuth();
   const { data: transcript, isLoading } = useGetTranscriptData(transcriptId);
   const { user } = useUser();
-  console.log(user?.id);
 
   const { data: subscription } = useUserSubscription(user?.id);
   const subscriptionModal = useSubscriptionModal();
-
-  console.log(subscription);
-
-  console.log(transcript);
-  // console.log(subscription);
 
   const handleBack = () => {
     setSelectedTranscript(null);

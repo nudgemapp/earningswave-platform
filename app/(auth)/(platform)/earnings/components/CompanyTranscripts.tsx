@@ -4,9 +4,6 @@ import {
   CalendarIcon,
   CheckCircle,
   Clock,
-  FileText,
-  Globe,
-  Sparkles,
   Pause,
   Play,
   RotateCcw,
@@ -14,10 +11,13 @@ import {
   SkipForward,
 } from "lucide-react";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { formatCurrency } from "@/lib/utils";
 import { useState, useRef } from "react";
+import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
+import { useUserSubscription } from "@/app/hooks/use-user-subscription";
+import AIEarningsAnalysis from "./AIEarnings";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -149,9 +149,18 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
   transcripts,
   company,
 }) => {
-  const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const authModal = useAuthModal();
-  const { setSelectedTranscript } = useEarningsStore();
+  const subscriptionModal = useSubscriptionModal();
+  const {
+    setSelectedTranscript,
+    selectedAiTranscript,
+    setSelectedAiTranscript,
+  } = useEarningsStore();
+
+  const { data: subscription } = useUserSubscription(user?.id);
+
+  const hasActiveSubscription = subscription?.isActive;
 
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
@@ -163,7 +172,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
   };
 
   const handleTranscriptClick = (transcriptId: string) => {
-    if (!isSignedIn) {
+    if (!user) {
       authModal.onOpen();
       return;
     }
@@ -179,7 +188,20 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
     );
   };
 
-  console.log(transcripts);
+  const handleAiSummary = (transcriptId: string) => {
+    if (!user) {
+      authModal.onOpen();
+      return;
+    }
+
+    if (hasActiveSubscription) {
+      setSelectedAiTranscript(
+        selectedAiTranscript === transcriptId ? null : transcriptId
+      );
+    } else {
+      subscriptionModal.onOpen();
+    }
+  };
 
   const upcomingTranscripts = transcripts.filter(
     (t) => t.status === "SCHEDULED"
@@ -509,27 +531,40 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                             }
                             className="flex-1 py-2 px-4 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center justify-center gap-2"
                           >
-                            <Globe className="w-4 h-4 text-gray-500" />
                             Website
                           </button>
                           <button
                             onClick={() => handleTranscriptClick(transcript.id)}
                             className="flex-1 py-2 px-4 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-200 flex items-center justify-center gap-2"
                           >
-                            <FileText className="w-4 h-4 text-gray-500" />
                             Transcript
                           </button>
                         </div>
                         <button
-                          onClick={() => {
-                            /* Handle AI Summary */
-                          }}
-                          className="w-full py-2 px-4 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center justify-center gap-2"
+                          onClick={() => handleAiSummary(transcript.id)}
+                          className={`w-full py-2 px-4 ${
+                            selectedAiTranscript === transcript.id
+                              ? "bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200"
+                              : "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
+                          } rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors duration-200 flex items-center justify-center gap-2`}
                         >
-                          <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                           AI Summary
                         </button>
                       </div>
+
+                      {/* AI Summary Panel */}
+                      {selectedAiTranscript === transcript.id && (
+                        <div className="border-t border-gray-100 dark:border-slate-800">
+                          <div className="p-4">
+                            <AIEarningsAnalysis
+                              company={{
+                                ...company,
+                                recentTranscripts: [transcript],
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

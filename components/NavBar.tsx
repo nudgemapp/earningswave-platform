@@ -106,6 +106,16 @@ function NavBar() {
     return () => document.removeEventListener("keydown", down);
   }, [toggle]);
 
+  const handleApiClick = async () => {
+    try {
+      const response = await fetch("/api/finnhub/test-script");
+      const data = await response.json();
+      console.log("API Response:", data);
+    } catch (error) {
+      console.error("Error fetching from API:", error);
+    }
+  };
+
   return (
     <AnimatePresence>
       {mounted && (
@@ -214,7 +224,7 @@ function NavBar() {
                     </kbd> */}
                   </Button>
                 </motion.div>
-                {/* {user && <NotificationButton />} */}
+                {/* {user && <NotificationButton handleApiClick={handleApiClick} />} */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
