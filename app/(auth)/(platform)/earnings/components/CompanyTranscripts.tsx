@@ -22,7 +22,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
-import AIEarningsAnalysis from "./AIEarnings";
+// import AIEarningsAnalysis from "./AIEarnings";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -226,12 +226,12 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
   // const recentTranscripts = transcripts.filter((t) => t.status === "COMPLETED");
 
   const [finnhubData, setFinnhubData] = useState<FinnhubEarnings[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchFinnhubData = async () => {
       try {
-        setIsLoading(true);
+        // setIsLoading(true);
         // Get dates from today to 5 years in future
         const from = new Date().toISOString().split("T")[0];
         const to = new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000)
@@ -249,7 +249,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
       } catch (error) {
         console.error("Error fetching Finnhub data:", error);
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
 
@@ -635,12 +635,12 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                       {selectedAiTranscript === transcript.id && (
                         <div className="border-t border-gray-100 dark:border-slate-800">
                           <div className="p-4">
-                            <AIEarningsAnalysis
+                            {/* <AIEarningsAnalysis
                               company={{
                                 ...company,
                                 recentTranscripts: [transcript],
                               }}
-                            />
+                            /> */}
                           </div>
                         </div>
                       )}
