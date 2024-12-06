@@ -42,12 +42,28 @@ interface FinnhubEarnings {
 }
 
 const AudioPlayer = ({ audioUrl }: { audioUrl: string }) => {
+  const { user } = useUser();
+  const authModal = useAuthModal();
+  const subscriptionModal = useSubscriptionModal();
+  const { data: subscription } = useUserSubscription(user?.id);
+  const hasActiveSubscription = subscription?.isActive;
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const togglePlayPause = () => {
+    if (!user) {
+      authModal.onOpen();
+      return;
+    }
+
+    if (!hasActiveSubscription) {
+      subscriptionModal.onOpen();
+      return;
+    }
+
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
