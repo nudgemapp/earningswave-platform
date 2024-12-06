@@ -234,55 +234,19 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
   if (isLoadingCompany) {
     return (
-      <div className="space-y-6">
-        <Card className="w-full shadow-sm dark:shadow-slate-800/50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-neutral-800">
-          <CardHeader className="space-y-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                <Skeleton className="w-8 h-8 rounded-full" />
-                <Skeleton className="w-12 h-12 rounded" />
-                <div className="min-w-0 space-y-2">
-                  <Skeleton className="h-8 w-[200px]" />
-                  <Skeleton className="h-4 w-[100px]" />
-                </div>
+      <div className="space-y-6 p-4">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="w-12 h-12 rounded" />
+              <div className="min-w-0 space-y-2">
+                <Skeleton className="h-8 w-[200px]" />
+                <Skeleton className="h-4 w-[100px]" />
               </div>
             </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Buttons skeleton */}
-            <div className="flex flex-row items-center gap-4">
-              <Skeleton className="h-9 w-24 rounded-full" />
-            </div>
-
-            {/* Chart skeleton */}
-            <div className="space-y-4">
-              <div className="h-[300px] w-full mb-8">
-                <Skeleton className="w-full h-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Transcripts skeleton */}
-        <Card className="w-full dark:bg-slate-900 ">
-          <CardHeader>
-            <Skeleton className="h-6 w-[150px]" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-16 w-16 rounded" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[150px]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -327,10 +291,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   };
 
   return (
-    <div className="space-y-4 mb-20 sm:mb-0">
+    <div className="space-y-4">
       {!selectedTranscript && (
-        <Card className="w-full bg-white dark:bg-slate-900 border-gray-200/50 dark:border-slate-700/50 shadow-sm dark:shadow-slate-800/50">
-          <CardHeader className="space-y-4 pb-4 px-4">
+        <div className="space-y-4">
+          <div className="px-2 pt-2">
             <CompanyHeader
               company={company}
               onBack={handleBack}
@@ -340,11 +304,12 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               addToWatchlist={addToWatchlist}
               removeFromWatchlist={removeFromWatchlist}
             />
-          </CardHeader>
-          <CardContent className="space-y-6 px-4 pb-4">
+          </div>
+
+          <div className="space-y-6 px-2">
             {/* Stock Chart with Suspense */}
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4 pb-8">
+              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
                     todayData={(data) => {
@@ -370,17 +335,15 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                   </div>
                 </Suspense>
               )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Selected Transcript View */}
       {selectedTranscript && (
-        <Card className="w-full dark:bg-slate-900 border-gray-200 dark:border-slate-700">
-          <CardContent className="p-4">
-            <EarningsTranscript />
-          </CardContent>
-        </Card>
+        <div className="px-2">
+          <EarningsTranscript />
+        </div>
       )}
 
       {/* Summary Dialog */}
