@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Anthropic } from "@anthropic-ai/sdk";
 import prisma from "@/lib/prismadb";
 import { Transcript, Company } from "@prisma/client";
+import { AISummary } from "@/app/(auth)/(platform)/earnings/types";
 
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
@@ -14,24 +15,18 @@ type TranscriptWithCompany = Transcript & {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { id } = body;
+    const { id } = await request.json();
 
-    console.log(id);
-    console.log(body);
-
-    // First, check for existing analysis in database
     const existingTranscript = await prisma.transcript.findUnique({
       where: { id },
       select: {
         aiSummary: true,
         aiKeyPoints: true,
+        aiSentimentAnalysis: true,
         aiLastUpdated: true,
         status: true,
       },
     });
-
-    console.log(existingTranscript);
 
     if (!existingTranscript) {
       return NextResponse.json(
@@ -40,25 +35,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // If analysis exists and is less than 24 hours old, return it
+    // If analysis exists, return formatted response
     if (
       existingTranscript.aiSummary &&
       existingTranscript.aiKeyPoints &&
-      existingTranscript.aiLastUpdated
+      existingTranscript.aiSentimentAnalysis
     ) {
-      const analysisAge =
-        Date.now() - existingTranscript.aiLastUpdated.getTime();
-      if (analysisAge < 24 * 60 * 60 * 1000) {
-        console.log("Returning cached analysis");
-        // 24 hours
-        return NextResponse.json({
-          summary: existingTranscript.aiSummary,
-          keyPoints: existingTranscript.aiKeyPoints,
-        });
-      }
+      const aiKeyPoints = existingTranscript.aiKeyPoints as Record<string, any>;
+      const aiSentimentAnalysis =
+        existingTranscript.aiSentimentAnalysis as AISummary["sentiment"];
+
+      const formattedResponse: AISummary = {
+        summary: {
+          overview: existingTranscript.aiSummary,
+          quarterHighlights: aiKeyPoints?.summary?.quarterHighlights || "",
+          challenges: aiKeyPoints?.summary?.challenges || "",
+        },
+        keyHighlights: aiKeyPoints?.keyHighlights || [],
+        performanceAnalysis: aiKeyPoints?.performanceAnalysis || [],
+        forwardGuidance: {
+          outlook: aiKeyPoints?.forwardGuidance?.outlook || "",
+          keyInitiatives: aiKeyPoints?.forwardGuidance?.keyInitiatives || [],
+          risks: aiKeyPoints?.forwardGuidance?.risks || [],
+        },
+        sentiment: aiSentimentAnalysis || {
+          score: 0,
+          label: "neutral",
+          rationale: "",
+        },
+      };
+
+      console.log(formattedResponse);
+
+      return NextResponse.json(formattedResponse);
     }
 
-    // If no valid existing analysis, fetch full transcript data for Claude
+    // Generate new analysis only if needed
     const transcript = await prisma.transcript.findUnique({
       where: { id },
       include: {
@@ -83,15 +95,14 @@ export async function POST(request: Request) {
     console.log(transcript.status);
 
     // Generate AI analysis
-    const prompt =
-      transcript.status === "SCHEDULED"
-        ? generateUpcomingEarningsPrompt(transcript as TranscriptWithCompany)
-        : generateCompletedEarningsPrompt(transcript as TranscriptWithCompany);
+    const prompt = generateCompletedEarningsPrompt(
+      transcript as TranscriptWithCompany
+    );
 
     console.log(prompt);
 
     const response = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
+      model: "claude-3-sonnet-20240229",
       max_tokens: 1000,
       temperature: 0.7,
       messages: [{ role: "user", content: prompt }],
@@ -104,31 +115,31 @@ export async function POST(request: Request) {
       throw new Error("Unexpected response format from Claude API");
     }
 
-    console.log(firstContent);
-
-    let analysis;
-    try {
-      // Remove any potential whitespace or newlines before/after the JSON
-      const jsonText = firstContent.text.trim();
-      analysis = JSON.parse(jsonText);
-    } catch (error) {
-      console.error("JSON parsing error:", error);
-      console.error("Raw response:", firstContent.text);
-      throw new Error("Failed to parse Claude API response as JSON");
-    }
+    // Parse and validate the response
+    const analysis = JSON.parse(firstContent.text.trim()) as AISummary;
 
     console.log(analysis);
 
-    // Update transcript with new analysis
-    await prisma.transcript.update({
+    // Store analysis in database with consistent structure
+    const updatedTranscript = await prisma.transcript.update({
       where: { id },
       data: {
         aiSummary: analysis.summary.overview,
-        aiKeyPoints: analysis.keyHighlights,
+        aiKeyPoints: {
+          summary: {
+            quarterHighlights: analysis.summary.quarterHighlights,
+            challenges: analysis.summary.challenges,
+          },
+          keyHighlights: analysis.keyHighlights,
+          performanceAnalysis: analysis.performanceAnalysis,
+          forwardGuidance: analysis.forwardGuidance,
+        },
         aiSentimentAnalysis: analysis.sentiment,
         aiLastUpdated: new Date(),
       },
     });
+
+    console.log(updatedTranscript);
 
     return NextResponse.json(analysis);
   } catch (error) {
@@ -138,42 +149,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-function generateUpcomingEarningsPrompt(
-  transcript: TranscriptWithCompany
-): string {
-  return `Analyze the upcoming earnings report for ${
-    transcript.company.symbol
-  } (${transcript.company.name}).
-    Current EPS estimate: ${transcript.epsEstimate || "N/A"}
-    Last year EPS actual: ${transcript.epsActual || "N/A"}
-    Report Date: ${transcript.scheduledAt.toISOString()}
-    Quarter: Q${transcript.quarter || "N/A"} ${transcript.year || "N/A"}
-
-    Provide a comprehensive analysis focusing on highlights and lowlights, particularly noting new deals, product launches, business lines, and upcoming challenges. Format the response as JSON with the following structure:
-    {
-      "summary": "Brief introduction analyzing the overall context",
-      "highlights": [
-        {
-          "title": "string",
-          "description": "One sentence highlighting a positive development, deal, or metric"
-        }
-      ],
-      "lowlights": [
-        {
-          "title": "string",
-          "description": "One sentence describing a challenge, risk, or concern"
-        }
-      ],
-      "conclusion": "Brief conclusion synthesizing the key takeaways",
-      "sentiment": {
-        "score": number, // 0 to 1
-        "label": "bullish" | "neutral" | "bearish"
-      }
-    }
-
-    Ensure both highlights and lowlights sections contain exactly 5 items each, with special attention to new business developments and future outlook.`;
 }
 
 function generateCompletedEarningsPrompt(

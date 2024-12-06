@@ -6,45 +6,11 @@ import { Loader2, TrendingUp, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Company, Transcript } from "@prisma/client";
 import { useGetAISummary } from "@/app/hooks/use-get-ai-summary";
+import { AISummary } from "../types";
 
 interface AIEarningsAnalysisProps {
   company: Company & {
     recentTranscripts?: Transcript[];
-  };
-}
-
-// Define interfaces for the AI Summary data structure
-interface AIKeyHighlight {
-  title: string;
-  description: string;
-}
-
-interface AIPerformanceAnalysis {
-  metric: string;
-  value: string;
-  trend: "positive" | "negative" | "neutral";
-  analysis: string;
-}
-
-interface AIForwardGuidance {
-  outlook: string;
-  risks: string[];
-}
-
-interface AISummaryData {
-  keyPoints?: {
-    summary: {
-      overview: string;
-      challenges?: string;
-    };
-    sentiment?: {
-      label: string;
-      score: number;
-      rationale: string;
-    };
-    keyHighlights?: AIKeyHighlight[];
-    forwardGuidance?: AIForwardGuidance;
-    performanceAnalysis?: AIPerformanceAnalysis[];
   };
 }
 
@@ -53,15 +19,9 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
     (t) => t.status === "COMPLETED"
   );
 
-  const {
-    data: aiSummary,
-    isLoading,
-    error,
-  } = useGetAISummary(latestTranscript?.id);
+  const { data, isLoading, error } = useGetAISummary(latestTranscript?.id);
 
-  console.log(aiSummary);
-
-  console.log(latestTranscript);
+  console.log(data);
 
   if (!latestTranscript) return null;
 
@@ -74,21 +34,21 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+        <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20">
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-purple-600/5 dark:from-purple-400/10 dark:to-purple-500/10" />
 
-          <CardContent className="relative z-10 p-6">
+          <div className="relative z-10">
             {isLoading ? (
               <LoadingState />
             ) : error ? (
               <ErrorState error={error as Error} />
-            ) : aiSummary ? (
-              <ContentState aiSummary={aiSummary as unknown as AISummaryData} />
+            ) : data ? (
+              <ContentState aiSummary={data} />
             ) : (
               <EmptyState />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
@@ -111,12 +71,12 @@ const EmptyState = () => (
   </div>
 );
 
-const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
+const ContentState = ({ aiSummary }: { aiSummary: AISummary }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5, delay: 0.2 }}
-    className="space-y-6"
+    className="space-y-6 p-6"
   >
     {/* Overview Section */}
     <motion.div
@@ -130,29 +90,44 @@ const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
         Key Takeaways
       </h3>
       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-        {aiSummary.keyPoints?.summary?.overview}
+        {aiSummary.summary.overview}
       </p>
     </motion.div>
 
-    {/* Challenges Section */}
-    {aiSummary.keyPoints?.summary?.challenges && (
+    {/* Quarter Highlights & Challenges Section - Improved layout */}
+    {(aiSummary.summary.quarterHighlights || aiSummary.summary.challenges) && (
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.35 }}
-        className="space-y-4"
+        className="grid gap-4 md:grid-cols-2"
       >
-        <h4 className="text-md font-medium text-purple-800 dark:text-purple-200">
-          Challenges
-        </h4>
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-          {aiSummary.keyPoints.summary.challenges}
-        </p>
+        {aiSummary.summary.quarterHighlights && (
+          <div className="p-4 rounded-lg bg-white/50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+            <h4 className="text-md font-medium text-purple-800 dark:text-purple-200 mb-2">
+              Quarter Highlights
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              {aiSummary.summary.quarterHighlights}
+            </p>
+          </div>
+        )}
+
+        {aiSummary.summary.challenges && (
+          <div className="p-4 rounded-lg bg-white/50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+            <h4 className="text-md font-medium text-purple-800 dark:text-purple-200 mb-2">
+              Challenges
+            </h4>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              {aiSummary.summary.challenges}
+            </p>
+          </div>
+        )}
       </motion.div>
     )}
 
     {/* Sentiment Section */}
-    {aiSummary.keyPoints?.sentiment && (
+    {aiSummary.sentiment && (
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -162,29 +137,32 @@ const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
         <h4 className="text-md font-medium text-purple-800 dark:text-purple-200">
           Sentiment
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-          {`Label: ${aiSummary.keyPoints.sentiment.label}, Score: ${aiSummary.keyPoints.sentiment.score}`}
-        </p>
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-          {aiSummary.keyPoints.sentiment.rationale}
-        </p>
+        <div className="space-y-2">
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            <span className="font-medium">Overall: </span>
+            {aiSummary.sentiment.label} (Score: {aiSummary.sentiment.score})
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            {aiSummary.sentiment.rationale}
+          </p>
+        </div>
       </motion.div>
     )}
 
-    {/* Highlights Section */}
-    <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.45 }}
-      className="space-y-4"
-    >
-      <h4 className="text-md font-medium text-purple-800 dark:text-purple-200 flex items-center gap-2">
-        <Lightbulb className="w-4 h-4" />
-        Key Highlights
-      </h4>
-      <div className="grid gap-4 md:grid-cols-2">
-        {aiSummary.keyPoints?.keyHighlights?.map(
-          (highlight: AIKeyHighlight, index: number) => (
+    {/* Key Highlights Section */}
+    {aiSummary.keyHighlights && (
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.45 }}
+        className="space-y-4"
+      >
+        <h4 className="text-md font-medium text-purple-800 dark:text-purple-200 flex items-center gap-2">
+          <Lightbulb className="w-4 h-4" />
+          Key Highlights
+        </h4>
+        <div className="grid gap-4">
+          {aiSummary.keyHighlights.map((highlight, index) => (
             <motion.div
               key={index}
               initial={{ x: -20, opacity: 0 }}
@@ -195,17 +173,63 @@ const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
               <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
                 {highlight.title}
               </h5>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 {highlight.description}
               </p>
+              <p className="text-sm text-purple-600 dark:text-purple-400">
+                Impact: {highlight.impact}
+              </p>
             </motion.div>
-          )
-        )}
-      </div>
-    </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    )}
+
+    {/* Performance Analysis Section */}
+    {aiSummary.performanceAnalysis && (
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.65 }}
+        className="space-y-4"
+      >
+        <h4 className="text-md font-medium text-purple-800 dark:text-purple-200">
+          Performance Analysis
+        </h4>
+        <div className="grid gap-4">
+          {aiSummary.performanceAnalysis.map((analysis, index) => (
+            <motion.div
+              key={index}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.7 + index * 0.1 }}
+              className="p-4 rounded-lg bg-white/50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800"
+            >
+              <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
+                {analysis.metric}
+              </h5>
+              <p
+                className={`text-sm ${
+                  analysis.trend === "positive"
+                    ? "text-green-600 dark:text-green-400"
+                    : analysis.trend === "negative"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-gray-600 dark:text-gray-400"
+                } font-medium`}
+              >
+                {analysis.value}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {analysis.analysis}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    )}
 
     {/* Forward Guidance Section */}
-    {aiSummary.keyPoints?.forwardGuidance && (
+    {aiSummary.forwardGuidance && (
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -216,68 +240,51 @@ const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
           Forward Guidance
         </h4>
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-          {aiSummary.keyPoints.forwardGuidance.outlook}
+          {aiSummary.forwardGuidance.outlook}
         </p>
-        <ul className="space-y-2">
-          {aiSummary.keyPoints.forwardGuidance.risks.map(
-            (risk: string, index: number) => (
-              <motion.li
-                key={index}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.7 + index * 0.1 }}
-                className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 dark:bg-purple-500" />
-                {risk}
-              </motion.li>
-            )
-          )}
-        </ul>
-      </motion.div>
-    )}
 
-    {/* Performance Analysis Section */}
-    {aiSummary.keyPoints?.performanceAnalysis && (
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.65 }}
-        className="space-y-4"
-      >
-        <h4 className="text-md font-medium text-purple-800 dark:text-purple-200">
-          Performance Analysis
-        </h4>
-        <div className="grid gap-4 md:grid-cols-2">
-          {aiSummary.keyPoints.performanceAnalysis.map(
-            (analysis: AIPerformanceAnalysis, index: number) => (
-              <motion.div
-                key={index}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.7 + index * 0.1 }}
-                className="p-4 rounded-lg bg-white/50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800"
-              >
-                <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
-                  {analysis.metric}
-                </h5>
-                <p
-                  className={`text-sm ${
-                    analysis.trend === "positive"
-                      ? "text-green-600"
-                      : analysis.trend === "negative"
-                      ? "text-red-600"
-                      : "text-gray-600"
-                  } dark:text-gray-300`}
+        <div className="space-y-4">
+          <div>
+            <h5 className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
+              Key Initiatives
+            </h5>
+            <ul className="space-y-2">
+              {aiSummary.forwardGuidance.keyInitiatives.map(
+                (initiative, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
+                    className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 dark:bg-green-500" />
+                    {initiative}
+                  </motion.li>
+                )
+              )}
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
+              Potential Risks
+            </h5>
+            <ul className="space-y-2">
+              {aiSummary.forwardGuidance.risks.map((risk, index) => (
+                <motion.li
+                  key={index}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2"
                 >
-                  {analysis.value}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {analysis.analysis}
-                </p>
-              </motion.div>
-            )
-          )}
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 dark:bg-red-500" />
+                  {risk}
+                </motion.li>
+              ))}
+            </ul>
+          </div>
         </div>
       </motion.div>
     )}

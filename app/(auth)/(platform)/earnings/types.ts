@@ -93,3 +93,33 @@ export interface WebSocketMessage {
   data: FinnhubTrade[];
   type: string;
 }
+
+export interface AISummary {
+  summary: {
+    overview: string;
+    quarterHighlights: string;
+    challenges: string;
+  };
+  keyHighlights: Array<{
+    category: string;
+    title: string;
+    description: string;
+    impact: string;
+  }>;
+  performanceAnalysis: Array<{
+    metric: string;
+    value: string;
+    analysis: string;
+    trend: "positive" | "neutral" | "negative";
+  }>;
+  forwardGuidance: {
+    outlook: string;
+    keyInitiatives: string[];
+    risks: string[];
+  };
+  sentiment: {
+    score: number;
+    label: "bullish" | "neutral" | "bearish";
+    rationale: string;
+  };
+}

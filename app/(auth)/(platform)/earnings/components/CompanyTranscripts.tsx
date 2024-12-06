@@ -22,7 +22,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
-// import AIEarningsAnalysis from "./AIEarnings";
+import AIEarningsAnalysis from "./AIEarnings";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -634,14 +634,12 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
                       {/* AI Summary Panel */}
                       {selectedAiTranscript === transcript.id && (
                         <div className="border-t border-gray-100 dark:border-slate-800">
-                          <div className="p-4">
-                            {/* <AIEarningsAnalysis
-                              company={{
-                                ...company,
-                                recentTranscripts: [transcript],
-                              }}
-                            /> */}
-                          </div>
+                          <AIEarningsAnalysis
+                            company={{
+                              ...company,
+                              recentTranscripts: [transcript],
+                            }}
+                          />
                         </div>
                       )}
                     </div>

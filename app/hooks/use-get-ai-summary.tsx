@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 interface AISummaryResponse {
   summary: {
     overview: string;
-    quarterHighlights?: string;
-    challenges?: string;
+    quarterHighlights: string;
+    challenges: string;
   };
   keyHighlights: Array<{
     category: string;
@@ -49,6 +49,7 @@ export const useGetAISummary = (transcriptId: string | undefined) => {
       }
 
       const data = await response.json();
+      console.log(data);
       return data;
     },
     enabled: !!transcriptId,
