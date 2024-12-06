@@ -37,3 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 .trigger
+
+# custom ignores
+@transcript-sync
+app/api/finnhub/transcript-sync/route.ts

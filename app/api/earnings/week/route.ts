@@ -108,8 +108,6 @@ export async function GET(request: Request) {
       },
     }));
 
-    console.log("Total earnings count:", transformedEarnings.length);
-
     return NextResponse.json({
       earnings: transformedEarnings,
     });

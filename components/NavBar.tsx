@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { IconUser } from "@tabler/icons-react";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { dark } from "@clerk/themes";
-// import NotificationButton from "./NotificationButton";
+import NotificationButton from "./NotificationButton";
 
 // import TickerSearch from "./tickerSearch";
 
@@ -106,15 +106,15 @@ function NavBar() {
     return () => document.removeEventListener("keydown", down);
   }, [toggle]);
 
-  const handleApiClick = async () => {
-    try {
-      const response = await fetch("/api/finnhub/test-script");
-      const data = await response.json();
-      console.log("API Response:", data);
-    } catch (error) {
-      console.error("Error fetching from API:", error);
-    }
-  };
+  // const handleApiClick = async () => {
+  //   try {
+  //     const response = await fetch("/api/finnhub/test-script");
+  //     const data = await response.json();
+  //     console.log("API Response:", data);
+  //   } catch (error) {
+  //     console.error("Error fetching from API:", error);
+  //   }
+  // };
 
   return (
     <AnimatePresence>

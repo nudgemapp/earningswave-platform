@@ -1,0 +1,212 @@
+// import { NextResponse } from "next/server";
+// import { PrismaClient } from "@prisma/client";
+// import { MarketTime, TranscriptStatus } from "@prisma/client";
+
+// // Create a single PrismaClient instance to be reused
+// const prisma = new PrismaClient();
+
+// // Utility function for controlled delays
+// const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// // Process company in batches
+// async function processBatch(companies: any[], batchSize: number = 5) {
+//   const errors: string[] = [];
+//   let totalUpdates = 0;
+
+//   for (let i = 0; i < companies.length; i += batchSize) {
+//     const batch = companies.slice(i, i + batchSize);
+
+//     // Process companies in parallel with controlled concurrency
+//     const promises = batch.map((company) => processCompany(company));
+//     const results = await Promise.allSettled(promises);
+
+//     // Process results
+//     results.forEach((result, index) => {
+//       if (result.status === "fulfilled") {
+//         totalUpdates += result.value.updates;
+//       } else {
+//         errors.push(
+//           `Error processing company ${batch[index].symbol}: ${result.reason}`
+//         );
+//       }
+//     });
+
+//     // Add delay between batches to respect rate limits
+//     await delay(2000);
+//   }
+
+//   return { totalUpdates, errors };
+// }
+
+// // Process individual company
+// async function processCompany(company: any) {
+//   let updates = 0;
+
+//   // Fetch transcript list and earnings data in parallel
+//   const [transcriptListData, earningsData] = await Promise.all([
+//     fetch(
+//       `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//     ).then((res) => res.json()),
+//     fetch(
+//       `https://finnhub.io/api/v1/calendar/earnings?from=2023-02-01&to=2026-03-01&symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//     ).then((res) => res.json()),
+//   ]);
+
+//   const earningsTranscripts =
+//     transcriptListData.transcripts?.filter((t: any) => t.quarter > 0) || [];
+
+//   // Process transcripts in smaller batches
+//   for (let i = 0; i < earningsTranscripts.length; i += 3) {
+//     const transcriptBatch = earningsTranscripts.slice(i, i + 3);
+//     await Promise.all(
+//       transcriptBatch.map(async (t: any) => {
+//         try {
+//           const transcriptData = await fetch(
+//             `https://finnhub.io/api/v1/stock/transcripts?id=${t.id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+//           ).then((res) => res.json());
+
+//           console.log(transcriptData);
+
+//           const marketTime = t.time.includes("AM")
+//             ? MarketTime.BMO
+//             : MarketTime.AMC;
+//           const matchingEarnings = earningsData.earningsCalendar?.find(
+//             (e: any) => e.quarter === t.quarter && e.year === t.year
+//           );
+
+//           // Combine transcript and earnings data in a single upsert
+//           await prisma.transcript.upsert({
+//             where: { id: t.id },
+//             create: {
+//               // ... existing create fields ...
+//               id: t.id,
+//               companyId: company.id,
+//               title: t.title,
+//               scheduledAt: new Date(t.time),
+//               quarter: t.quarter,
+//               year: t.year,
+//               audioUrl: transcriptData.audio,
+//               MarketTime: marketTime,
+//               status: TranscriptStatus.COMPLETED,
+//               fullText: transcriptData.transcript
+//                 .map((s: any) => `${s.name}: ${s.speech.join(" ")}`)
+//                 .join("\n"),
+//               speakers: transcriptData.participant,
+//               // Add earnings data if available
+//               ...(matchingEarnings && {
+//                 epsActual: matchingEarnings.epsActual,
+//                 epsEstimate: matchingEarnings.epsEstimate,
+//                 revenueActual: matchingEarnings.revenueActual,
+//                 revenueEstimate: matchingEarnings.revenueEstimate,
+//               }),
+//               participants: {
+//                 create: await Promise.all(
+//                   transcriptData.participant.map(async (p: any) => {
+//                     // Check if participant already exists
+//                     const existingParticipant =
+//                       await prisma.participant.findUnique({
+//                         where: {
+//                           transcriptId_name: {
+//                             transcriptId: t.id,
+//                             name: p.name,
+//                           },
+//                         },
+//                       });
+
+//                     if (existingParticipant) {
+//                       return null; // Skip creation if participant exists
+//                     }
+
+//                     return {
+//                       name: p.name,
+//                       role: p.role,
+//                       description: p.description,
+//                       speeches: {
+//                         create: transcriptData.transcript
+//                           .filter((s: any) => s.name === p.name)
+//                           .map((s: any, idx: number) => ({
+//                             content: s.speech.join(" "),
+//                             sequence: idx,
+//                             sessionType: s.session,
+//                           })),
+//                       },
+//                     };
+//                   })
+//                 ).then((participants) => participants.filter(Boolean)), // Filter out nulls
+//               },
+//             },
+//             update: {
+//               // ... existing update fields ...
+//               title: t.title,
+//               quarter: t.quarter,
+//               year: t.year,
+//               audioUrl: transcriptData.audio,
+//               fullText: transcriptData.transcript
+//                 .map((s: any) => `${s.name}: ${s.speech.join(" ")}`)
+//                 .join("\n"),
+//               speakers: transcriptData.participant,
+//               MarketTime: marketTime,
+//               ...(matchingEarnings && {
+//                 epsActual: matchingEarnings.epsActual,
+//                 epsEstimate: matchingEarnings.epsEstimate,
+//                 revenueActual: matchingEarnings.revenueActual,
+//                 revenueEstimate: matchingEarnings.revenueEstimate,
+//               }),
+//             },
+//           });
+
+//           updates++;
+//         } catch (err) {
+//           console.error(`Error processing transcript ${t.id}:`, err);
+//           throw err;
+//         }
+//       })
+//     );
+
+//     // Small delay between transcript batches
+//     await delay(1000);
+//   }
+
+//   return { updates };
+// }
+
+// export async function GET() {
+//   try {
+//     const companies = await prisma.company.findMany({
+//       where: {
+//         OR: [{ mic: "XNAS" }, { mic: "XNYS" }],
+//       },
+//     });
+
+//     console.log(`Found ${companies.length} companies to process`);
+
+//     const { totalUpdates, errors } = await processBatch(companies);
+
+//     // Log final statistics
+//     console.log(`\nFinal Statistics:`);
+//     console.log(`Total companies processed: ${companies.length}`);
+//     console.log(`Successful transcript updates: ${totalUpdates}`);
+//     console.log(`Failed updates: ${errors.length}`);
+
+//     return NextResponse.json({
+//       success: true,
+//       message: "Data processing completed",
+//       stats: {
+//         totalCompanies: companies.length,
+//         updates: totalUpdates,
+//         errors: errors.length,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("API Error:", error);
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         error: error instanceof Error ? error.message : "Unknown error",
+//       },
+//       { status: 500 }
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }

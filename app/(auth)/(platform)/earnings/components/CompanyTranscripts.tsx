@@ -1,5 +1,10 @@
 import React from "react";
-import { Company, Transcript } from "@prisma/client";
+import {
+  Company,
+  MarketTime,
+  Transcript,
+  TranscriptStatus,
+} from "@prisma/client";
 import {
   CalendarIcon,
   CheckCircle,
@@ -11,10 +16,10 @@ import {
   SkipForward,
 } from "lucide-react";
 import { useEarningsStore } from "@/store/EarningsStore";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { formatCurrency } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import AIEarningsAnalysis from "./AIEarnings";
@@ -22,6 +27,18 @@ import AIEarningsAnalysis from "./AIEarnings";
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
   company: Company;
+}
+
+interface FinnhubEarnings {
+  date: string;
+  epsActual: number;
+  epsEstimate: number;
+  hour: string;
+  quarter: number;
+  revenueActual: number;
+  revenueEstimate: number;
+  symbol: string;
+  year: number;
 }
 
 const AudioPlayer = ({ audioUrl }: { audioUrl: string }) => {
@@ -203,9 +220,71 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
     }
   };
 
-  const upcomingTranscripts = transcripts.filter(
-    (t) => t.status === "SCHEDULED"
-  );
+  // const upcomingTranscripts = transcripts.filter(
+  //   (t) => t.status === "SCHEDULED"
+  // );
+  // const recentTranscripts = transcripts.filter((t) => t.status === "COMPLETED");
+
+  const [finnhubData, setFinnhubData] = useState<FinnhubEarnings[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchFinnhubData = async () => {
+      try {
+        setIsLoading(true);
+        // Get dates from today to 5 years in future
+        const from = new Date().toISOString().split("T")[0];
+        const to = new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0];
+
+        const response = await fetch(
+          `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch Finnhub data");
+
+        const data = await response.json();
+        setFinnhubData(data.earningsCalendar || []);
+      } catch (error) {
+        console.error("Error fetching Finnhub data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (company.symbol) {
+      fetchFinnhubData();
+    }
+  }, [company.symbol]);
+
+  // Replace upcomingTranscripts definition with Finnhub data transformation
+  const upcomingTranscripts = finnhubData.map((earning) => ({
+    id: `${earning.symbol}_${earning.year}_Q${earning.quarter}`,
+    companyId: company.id,
+    title: `${earning.symbol} Q${earning.quarter} ${earning.year} Earnings Call`,
+    status: "SCHEDULED" as TranscriptStatus,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    scheduledAt: new Date(`${earning.date}T23:59:59.999Z`),
+    quarter: earning.quarter,
+    year: earning.year,
+    audioUrl: null,
+    MarketTime:
+      earning.hour.toUpperCase() === "AMC" ? "AMC" : ("BMO" as MarketTime),
+    epsEstimate: earning.epsEstimate,
+    epsActual: earning.epsActual,
+    revenueEstimate: earning.revenueEstimate,
+    revenueActual: earning.revenueActual,
+    fullText: null,
+    speakers: null,
+    aiSummary: null,
+    aiKeyPoints: null,
+    aiSentimentAnalysis: null,
+    aiLastUpdated: null,
+  }));
+
+  // Filter recentTranscripts to only show completed ones
   const recentTranscripts = transcripts.filter((t) => t.status === "COMPLETED");
 
   return (
@@ -220,7 +299,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
             {upcomingTranscripts.map((transcript) => (
               <button
                 key={transcript.id}
-                onClick={() => handleTranscriptClick(transcript.id)}
+                // onClick={() => handleTranscriptClick(transcript.id)}
                 className="w-full text-left group"
               >
                 <div className="overflow-hidden border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 transition-all duration-200 shadow-sm hover:shadow-md">
@@ -369,7 +448,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
       {recentTranscripts.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Recent Transcripts
+            Recent Earnings
           </h2>
           <div className="space-y-4">
             {recentTranscripts.map((transcript) => (
