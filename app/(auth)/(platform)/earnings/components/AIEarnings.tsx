@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, TrendingUp, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Company, Transcript } from "@prisma/client";

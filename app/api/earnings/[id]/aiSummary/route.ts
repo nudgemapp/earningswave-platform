@@ -41,7 +41,29 @@ export async function POST(request: Request) {
       existingTranscript.aiKeyPoints &&
       existingTranscript.aiSentimentAnalysis
     ) {
-      const aiKeyPoints = existingTranscript.aiKeyPoints as Record<string, any>;
+      const aiKeyPoints = existingTranscript.aiKeyPoints as {
+        summary: {
+          quarterHighlights: string;
+          challenges: string;
+        };
+        keyHighlights: Array<{
+          category: string;
+          title: string;
+          description: string;
+          impact: string;
+        }>;
+        performanceAnalysis: Array<{
+          metric: string;
+          value: string;
+          analysis: string;
+          trend: "positive" | "neutral" | "negative";
+        }>;
+        forwardGuidance: {
+          outlook: string;
+          keyInitiatives: string[];
+          risks: string[];
+        };
+      };
       const aiSentimentAnalysis =
         existingTranscript.aiSentimentAnalysis as AISummary["sentiment"];
 
