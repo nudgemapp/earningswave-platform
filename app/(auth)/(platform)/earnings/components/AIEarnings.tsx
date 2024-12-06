@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
+import { Loader2, TrendingUp, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Company, Transcript } from "@prisma/client";
 import { useGetAISummary } from "@/app/hooks/use-get-ai-summary";
@@ -10,6 +10,41 @@ import { useGetAISummary } from "@/app/hooks/use-get-ai-summary";
 interface AIEarningsAnalysisProps {
   company: Company & {
     recentTranscripts?: Transcript[];
+  };
+}
+
+// Define interfaces for the AI Summary data structure
+interface AIKeyHighlight {
+  title: string;
+  description: string;
+}
+
+interface AIPerformanceAnalysis {
+  metric: string;
+  value: string;
+  trend: "positive" | "negative" | "neutral";
+  analysis: string;
+}
+
+interface AIForwardGuidance {
+  outlook: string;
+  risks: string[];
+}
+
+interface AISummaryData {
+  keyPoints?: {
+    summary: {
+      overview: string;
+      challenges?: string;
+    };
+    sentiment?: {
+      label: string;
+      score: number;
+      rationale: string;
+    };
+    keyHighlights?: AIKeyHighlight[];
+    forwardGuidance?: AIForwardGuidance;
+    performanceAnalysis?: AIPerformanceAnalysis[];
   };
 }
 
@@ -48,7 +83,7 @@ const AIEarningsAnalysis: React.FC<AIEarningsAnalysisProps> = ({ company }) => {
             ) : error ? (
               <ErrorState error={error as Error} />
             ) : aiSummary ? (
-              <ContentState aiSummary={aiSummary} />
+              <ContentState aiSummary={aiSummary as unknown as AISummaryData} />
             ) : (
               <EmptyState />
             )}
@@ -76,7 +111,7 @@ const EmptyState = () => (
   </div>
 );
 
-const ContentState = ({ aiSummary }: { aiSummary: any }) => (
+const ContentState = ({ aiSummary }: { aiSummary: AISummaryData }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -149,7 +184,7 @@ const ContentState = ({ aiSummary }: { aiSummary: any }) => (
       </h4>
       <div className="grid gap-4 md:grid-cols-2">
         {aiSummary.keyPoints?.keyHighlights?.map(
-          (highlight: any, index: number) => (
+          (highlight: AIKeyHighlight, index: number) => (
             <motion.div
               key={index}
               initial={{ x: -20, opacity: 0 }}
@@ -215,7 +250,7 @@ const ContentState = ({ aiSummary }: { aiSummary: any }) => (
         </h4>
         <div className="grid gap-4 md:grid-cols-2">
           {aiSummary.keyPoints.performanceAnalysis.map(
-            (analysis: any, index: number) => (
+            (analysis: AIPerformanceAnalysis, index: number) => (
               <motion.div
                 key={index}
                 initial={{ x: -20, opacity: 0 }}
