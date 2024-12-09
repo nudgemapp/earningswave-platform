@@ -27,8 +27,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-// import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
-// import AIEarningsAnalysis from "./AIEarnings";
+import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -228,9 +227,11 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
-  // const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
-  //   company?.id
-  // );
+  const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
+    company?.id
+  );
+
+  console.log(liveCallData);
 
   if (isLoadingCompany) {
     return (

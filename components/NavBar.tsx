@@ -69,6 +69,11 @@ function NavBar() {
       name: "Pricing",
       badgeCount: 0,
     },
+    {
+      route: "/chat",
+      name: "Chat",
+      badgeCount: 0,
+    },
   ];
 
   const toggleMenu = () => {
