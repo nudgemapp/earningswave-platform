@@ -19,17 +19,16 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
-import { cn } from "@/lib/utils";
 
-// import { sanitizeUIMessages } from "@/lib/utils";
+import { sanitizeUIMessages } from "@/lib/utils";
 
 import { PreviewAttachment } from "./preview-attachment";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SuggestedActions } from "@/components/chat/suggested-actions";
+import { SuggestedActions } from "./suggested-actions";
 import equal from "fast-deep-equal";
-import { ArrowUpIcon, PaperclipIcon } from "lucide-react";
-import { StopIcon } from "@radix-ui/react-icons";
+import { cx } from "class-variance-authority";
+import { ArrowUpIcon, PaperclipIcon, StopCircleIcon } from "lucide-react";
 
 function PureMultimodalInput({
   chatId,
@@ -230,59 +229,36 @@ function PureMultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className={cn(
+        className={cx(
           "min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted",
           className
         )}
         rows={3}
         autoFocus
-        onKeyDown={(event: any) => {
-          //   if (event.key === 'Enter' && !event.shiftKey) {
-          //     event.preventDefault();
-          //     if (isLoading) {
-          //       toast.error('Please wait for the model to finish its response!');
-          //     } else {
-          //       submitForm();
-          //     }
-          //   }
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
+              submitForm();
+            }
+          }
         }}
       />
 
       {isLoading ? (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
-          onClick={(event: any) => {
-            event.preventDefault();
-            stop();
-            // setMessages((messages) => sanitizeUIMessages(messages));
-          }}
-        >
-          <StopIcon />
-        </Button>
+        <StopButton stop={stop} setMessages={setMessages} />
       ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
-          onClick={(event: any) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
+        <SendButton
+          input={input}
+          submitForm={submitForm}
+          uploadQueue={uploadQueue}
+        />
       )}
 
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
-        onClick={(event: any) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
+      <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
     </div>
   );
 }
@@ -297,3 +273,80 @@ export const MultimodalInput = memo(
     return true;
   }
 );
+
+function PureAttachmentsButton({
+  fileInputRef,
+  isLoading,
+}: {
+  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
+  isLoading: boolean;
+}) {
+  return (
+    <Button
+      className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
+      onClick={(event) => {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }}
+      variant="outline"
+      disabled={isLoading}
+    >
+      <PaperclipIcon size={14} />
+    </Button>
+  );
+}
+
+const AttachmentsButton = memo(PureAttachmentsButton);
+
+function PureStopButton({
+  stop,
+  setMessages,
+}: {
+  stop: () => void;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
+}) {
+  return (
+    <Button
+      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      onClick={(event) => {
+        event.preventDefault();
+        stop();
+        setMessages((messages) => sanitizeUIMessages(messages));
+      }}
+    >
+      <StopCircleIcon size={14} />
+    </Button>
+  );
+}
+
+const StopButton = memo(PureStopButton);
+
+function PureSendButton({
+  submitForm,
+  input,
+  uploadQueue,
+}: {
+  submitForm: () => void;
+  input: string;
+  uploadQueue: Array<string>;
+}) {
+  return (
+    <Button
+      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      onClick={(event) => {
+        event.preventDefault();
+        submitForm();
+      }}
+      disabled={input.length === 0 || uploadQueue.length > 0}
+    >
+      <ArrowUpIcon size={14} />
+    </Button>
+  );
+}
+
+const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
+  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
+    return false;
+  if (!prevProps.input !== !nextProps.input) return false;
+  return true;
+});

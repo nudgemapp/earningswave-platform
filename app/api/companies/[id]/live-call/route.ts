@@ -39,7 +39,7 @@ export async function GET(
     // const today = new Date();
     // const from = today.toISOString().split("T")[0];
     const from = "2024-01-01";
-    const to = "2024-12-03";
+    const to = "2024-12-30";
 
     const response = await fetch(
       `https://finnhub.io/api/v1/stock/earnings-call-live?` +
@@ -47,18 +47,13 @@ export async function GET(
         `token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
     );
 
-    console.log(response);
-
     if (!response.ok) {
       throw new Error(`Finnhub API error: ${response.statusText}`);
     }
 
     const data: LiveCallResponse = await response.json();
-
-    console.log(data);
     // Transform the data to include only relevant information
     const transformedData = {
-      hasLiveCall: data.event.length > 0,
       calls: data.event.map((call) => ({
         symbol: call.symbol,
         scheduledTime: call.time,

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Anthropic } from "@anthropic-ai/sdk";
 import prisma from "@/lib/prismadb";
 import { Transcript, Company } from "@prisma/client";
-import { AISummary } from "@/app/(auth)/(platform)/earnings/types";
+import { AISummary } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,

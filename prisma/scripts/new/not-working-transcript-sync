@@ -1,0 +1,248 @@
+import { NextResponse } from "next/server";
+import { PrismaClient, MarketTime } from "@prisma/client";
+
+interface TranscriptSpeech {
+  name: string;
+  speech: string[];
+  session?: string;
+}
+
+interface FinnhubEarningsEntry {
+  date: string;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  hour: string;
+  quarter: number;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  symbol: string;
+  year: number;
+}
+
+interface FinnhubEarningsResponse {
+  earningsCalendar: FinnhubEarningsEntry[];
+}
+
+export async function GET() {
+  const prisma = new PrismaClient();
+
+  try {
+    // Fetch earnings calendar from Finnhub
+    const startDate = "2024-12-08";
+    const endDate = "2024-12-11";
+    const earningsResponse = await fetch(
+      `https://finnhub.io/api/v1/calendar/earnings?from=${startDate}&to=${endDate}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
+    const earningsData =
+      (await earningsResponse.json()) as FinnhubEarningsResponse;
+
+    console.log("Earnings data:", earningsData);
+
+    // Create a map of earnings data for quick lookup
+    const earningsMap = new Map(
+      (earningsData.earningsCalendar || []).map(
+        (earning: FinnhubEarningsEntry) => [
+          `${earning.symbol}_${earning.year}_${earning.quarter}`,
+          earning,
+        ]
+      )
+    );
+
+    // Process each earnings entry
+    for (const earning of earningsData.earningsCalendar || []) {
+      // Check if company exists in our database
+      const company = await prisma.company.findFirst({
+        where: { symbol: earning.symbol },
+      });
+
+      if (!company) {
+        console.log(
+          `Company ${earning.symbol} not found in database, skipping`
+        );
+        continue;
+      }
+
+      console.log(`Processing earnings for ${earning.symbol}`);
+
+      // Fetch transcript list for this company
+      const transcriptListResponse = await fetch(
+        `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${earning.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+      );
+      const transcriptListData = await transcriptListResponse.json();
+
+      console.log("Transcript list data:", transcriptListData);
+
+      // Filter for 2024 transcripts only
+      const transcripts2024 = (transcriptListData.transcripts || []).filter(
+        (t: any) => t.year === 2024
+      );
+
+      console.log(
+        `Found ${transcripts2024.length} transcripts from 2024 for ${earning.symbol}`
+      );
+
+      // Process each 2024 transcript
+      for (const transcriptInfo of transcripts2024) {
+        try {
+          // Fetch full transcript details
+          const transcriptResponse = await fetch(
+            `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptInfo.id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+          );
+          const transcriptData = await transcriptResponse.json();
+
+          console.log(transcriptData);
+
+          // Look up corresponding earnings data
+          const earningsKey = `${earning.symbol}_${transcriptInfo.year}_${transcriptInfo.quarter}`;
+          const earningsInfo = earningsMap.get(earningsKey) as
+            | FinnhubEarningsEntry
+            | undefined;
+
+          // Determine market time
+          const date = new Date(transcriptInfo.time);
+          const timeInET = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/New_York",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: false,
+          }).format(date);
+
+          const [hours, minutes] = timeInET.split(":").map(Number);
+          const timeInMinutes = hours * 60 + minutes;
+          const marketTime = timeInMinutes < 570 ? "BMO" : "AMC";
+
+          // Create date without time component
+          const scheduledDate = new Date(transcriptInfo.time);
+          scheduledDate.setHours(0, 0, 0, 0);
+
+          // Use a transaction to ensure data consistency
+          await prisma.$transaction(async (tx) => {
+            // First, create or update the transcript
+            const transcript = await tx.transcript.upsert({
+              where: {
+                id: transcriptInfo.id,
+              },
+              update: {
+                title: transcriptInfo.title,
+                quarter: transcriptInfo.quarter || null,
+                year: transcriptInfo.year || null,
+                audioUrl: transcriptData.audio || null,
+                MarketTime: marketTime as MarketTime,
+                status: "COMPLETED",
+                fullText: transcriptData.transcript
+                  ?.map(
+                    (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                  )
+                  .join("\n"),
+                speakers: transcriptData.participant,
+                // Add earnings data
+                epsActual: earningsInfo?.epsActual || null,
+                epsEstimate: earningsInfo?.epsEstimate || null,
+                revenueActual: earningsInfo?.revenueActual || null,
+                revenueEstimate: earningsInfo?.revenueEstimate || null,
+              },
+              create: {
+                id: transcriptInfo.id,
+                companyId: company.id,
+                scheduledAt: scheduledDate,
+                title: transcriptInfo.title,
+                quarter: transcriptInfo.quarter || null,
+                year: transcriptInfo.year || null,
+                audioUrl: transcriptData.audio || null,
+                MarketTime: marketTime as MarketTime,
+                status: "COMPLETED",
+                fullText: transcriptData.transcript
+                  ?.map(
+                    (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                  )
+                  .join("\n"),
+                speakers: transcriptData.participant,
+                // Add earnings data
+                epsActual: earningsInfo?.epsActual || null,
+                epsEstimate: earningsInfo?.epsEstimate || null,
+                revenueActual: earningsInfo?.revenueActual || null,
+                revenueEstimate: earningsInfo?.revenueEstimate || null,
+              },
+            });
+
+            // Create or update participants and their speeches
+            for (const p of transcriptData.participant) {
+              const participant = await tx.participant.upsert({
+                where: {
+                  transcriptId_name: {
+                    transcriptId: transcript.id,
+                    name: p.name,
+                  },
+                },
+                update: {
+                  role: p.role || null,
+                  description: p.description || null,
+                },
+                create: {
+                  transcriptId: transcript.id,
+                  name: p.name,
+                  role: p.role || null,
+                  description: p.description || null,
+                },
+              });
+
+              // Find all speeches for this participant
+              const participantSpeeches = transcriptData.transcript
+                .filter((t: TranscriptSpeech) => t.name === p.name)
+                .map((t: TranscriptSpeech, idx: number) => ({
+                  content: t.speech.join("\n"),
+                  sequence: idx,
+                  sessionType: t.session || null,
+                  participantId: participant.id,
+                }));
+
+              // Upsert speeches for this participant
+              for (const speech of participantSpeeches) {
+                await tx.speech.upsert({
+                  where: {
+                    participantId_sequence: {
+                      participantId: participant.id,
+                      sequence: speech.sequence,
+                    },
+                  },
+                  update: {
+                    content: speech.content,
+                    sessionType: speech.sessionType,
+                  },
+                  create: {
+                    participantId: participant.id,
+                    content: speech.content,
+                    sequence: speech.sequence,
+                    sessionType: speech.sessionType,
+                  },
+                });
+              }
+            }
+          });
+
+          console.log(
+            `Successfully processed transcript ${transcriptInfo.id} with earnings data`
+          );
+        } catch (error) {
+          console.error(
+            `Error processing transcript ${transcriptInfo.id}:`,
+            error
+          );
+        }
+      }
+    }
+
+    return NextResponse.json({
+      message: "Successfully processed earnings and transcripts",
+      earningsProcessed: earningsData.earningsCalendar?.length || 0,
+    });
+  } catch (error) {
+    console.error("Error processing earnings and transcripts:", error);
+    return NextResponse.json(
+      { error: "Failed to process earnings and transcripts", details: error },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}

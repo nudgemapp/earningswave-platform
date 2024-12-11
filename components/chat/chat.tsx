@@ -4,18 +4,19 @@ import type { Attachment, Message } from "ai";
 import { useChat } from "ai/react";
 import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import { useSWRConfig } from "swr";
 import { useWindowSize } from "usehooks-ts";
 
+import { Block, type UIBlock } from "./block";
+import { BlockStreamHandler } from "./block-stream-handler";
+import { MultimodalInput } from "./multimodal-input";
+import { Messages } from "./messages";
+import { VisibilityType } from "./visibility-selector";
 import { ChatHeader } from "./chat-header";
 
-// import { Block, type UIBlock } from "./block";
-// import { BlockStreamHandler } from "./block-stream-handler";
-import { Messages } from "./messages";
-import { fetcher } from "@/lib/utils";
-import { MultimodalInput } from "./multimodal-input";
-import { VisibilityType } from "./visibility-selector";
-// import { Messages } from './messages';
+// import { ChatHeader } from '@/components/chat-header';
+// import type { Vote } from '@/lib/db/schema';
+// import { fetcher } from "@/lib/utils";
 
 export function Chat({
   id,
@@ -55,7 +56,7 @@ export function Chat({
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();
 
-  const [block, setBlock] = useState<any>({
+  const [block, setBlock] = useState<UIBlock>({
     documentId: "init",
     content: "",
     title: "",
@@ -69,7 +70,10 @@ export function Chat({
     },
   });
 
-  const { data: votes } = useSWR<Array<any>>(`/api/vote?chatId=${id}`, fetcher);
+  // const { data: votes } = useSWR<Array<Vote>>(
+  //   `/api/vote?chatId=${id}`,
+  //   fetcher,
+  // );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
@@ -88,7 +92,7 @@ export function Chat({
           block={block}
           setBlock={setBlock}
           isLoading={isLoading}
-          votes={votes}
+          // votes={votes}
           messages={messages}
           setMessages={setMessages}
           reload={reload}
@@ -115,7 +119,7 @@ export function Chat({
       </div>
 
       <AnimatePresence>
-        {/* {block?.isVisible && (
+        {block?.isVisible && (
           <Block
             chatId={id}
             input={input}
@@ -131,13 +135,13 @@ export function Chat({
             messages={messages}
             setMessages={setMessages}
             reload={reload}
-            votes={votes}
+            // votes={votes}
             isReadonly={isReadonly}
           />
-        )} */}
+        )}
       </AnimatePresence>
 
-      {/* <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} /> */}
+      <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
     </>
   );
 }

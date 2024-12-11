@@ -27,7 +27,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
+import LiveEarningsCall from "./LiveEarningsCall";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -177,7 +177,6 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  console.log(currentTime);
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -209,7 +208,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     priceDifference: null,
     mostRecentDate: null,
   });
-  console.log(todayPrices);
 
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
@@ -224,14 +222,10 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     SelectedCompany?.companyId
   );
 
+  console.log(company);
+
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
-
-  const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
-    company?.id
-  );
-
-  console.log(liveCallData);
 
   if (isLoadingCompany) {
     return (
@@ -323,6 +317,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                 </div>
               </div>
             </Suspense>
+
+            <LiveEarningsCall companyId={company.id} />
 
             {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&

@@ -22,6 +22,8 @@ model User {
   subscription Subscription? @relation("UserSubscription")
   invoices     Invoice[]    @relation("UserInvoices")
   watchlist    WatchlistEntry[]
+  chats        Chat[]       @relation("UserChats")
+  documents    Document[]   @relation("UserDocuments")
 
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -245,4 +247,67 @@ model Earnings {
   @@index([earningsDate])
   @@index([symbol, earningsDate])
 }
+
+model Chat {
+  id          String    @id @default(uuid())
+  title       String    @db.Text  // Changed to Text for longer titles
+  userId      String
+  user        User      @relation("UserChats", fields: [userId], references: [id], onDelete: Cascade)
+  messages    Message[] @relation("ChatMessages")
+  visibility  String    @default("private") // "public" or "private"
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, createdAt]) // Added compound index for user's chat listing
+  @@index([userId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id], onDelete: Cascade)
+  role      String   // "user" or "assistant"
+  content   Json     // Already using Json type which is good
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatId, createdAt]) // Added compound index for message ordering
+  @@index([chatId])
+}
+
+model Document {
+  id        String       @id @default(uuid())
+  title     String       @db.Text
+  content   String       @db.Text
+  userId    String
+  user      User        @relation("UserDocuments", fields: [userId], references: [id], onDelete: Cascade)
+  // suggestions Suggestion[] @relation("DocumentSuggestions")
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([id, createdAt]) // Added to match example's composite primary key
+  @@index([userId, createdAt]) // Added compound index for user's document listing
+  @@index([userId])
+}
+
+// model Suggestion {
+//   id                String    @id @default(uuid())
+//   documentId        String
+//   document          Document  @relation("DocumentSuggestions", fields: [documentId], references: [id], onDelete: Cascade)
+//   originalText      String    @db.Text
+//   suggestedText    String    @db.Text
+//   description      String?   @db.Text
+//   isResolved       Boolean   @default(false)
+//   userId           String
+//   user             User      @relation("UserSuggestions", fields: [userId], references: [id], onDelete: Cascade)
+  
+//   createdAt        DateTime  @default(now())
+//   updatedAt        DateTime  @updatedAt
+
+//   @@index([documentId])
+//   @@index([userId])
+// }
 

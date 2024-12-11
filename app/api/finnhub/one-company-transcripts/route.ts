@@ -9,139 +9,169 @@ interface TranscriptSpeech {
 
 export async function GET() {
   const prisma = new PrismaClient();
-  const symbol = "KULR";
+
+  const symbols = [
+    "JPM",
+    "VHC",
+    "FHN",
+    "KEY",
+    "CMA",
+    "EHAB",
+    "VNCE",
+    "AMT",
+    "GHC",
+    "T",
+    "SBAC",
+    "AKAM",
+    "PLAY",
+    "NWSA",
+    "NFLX",
+    "DASH",
+    "TW",
+    "BLK",
+    "AMG",
+    "FHN",
+    "EXPD",
+    "ASYS",
+  ];
+  // For single symbol, you would just use: const symbols = ["NVDA"];
 
   try {
-    // Get company from database
-    const company = await prisma.company.findFirst({
-      where: { symbol },
-    });
+    for (const symbol of symbols) {
+      // Get company from database
+      const company = await prisma.company.findFirst({
+        where: { symbol },
+      });
 
-    if (!company) {
-      throw new Error("Company not found");
-    }
+      if (!company) {
+        console.log(`Company not found: ${symbol}`);
+        continue; // Skip to next symbol if company not found
+      }
 
-    // Fetch transcript list
-    const transcriptListResponse = await fetch(
-      `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-    );
-    const transcriptListData = await transcriptListResponse.json();
+      // Fetch transcript list
+      const transcriptListResponse = await fetch(
+        `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+      );
+      const transcriptListData = await transcriptListResponse.json();
 
-    // Process each transcript
-    for (const transcriptInfo of transcriptListData.transcripts || []) {
-      try {
-        // Fetch full transcript details
-        const transcriptResponse = await fetch(
-          `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptInfo.id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-        );
-        const transcriptData = await transcriptResponse.json();
+      console.log(`Processing transcripts for ${symbol}:`, transcriptListData);
 
-        console.log(transcriptData);
+      // Process each transcript
+      for (const transcriptInfo of transcriptListData.transcripts || []) {
+        try {
+          // Fetch full transcript details
+          const transcriptResponse = await fetch(
+            `https://finnhub.io/api/v1/stock/transcripts?id=${transcriptInfo.id}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+          );
+          const transcriptData = await transcriptResponse.json();
 
-        // Determine market time
-        const date = new Date(transcriptInfo.time);
-        const timeInET = new Intl.DateTimeFormat("en-US", {
-          timeZone: "America/New_York",
-          hour: "numeric",
-          minute: "numeric",
-          hour12: false,
-        }).format(date);
+          console.log(transcriptData);
 
-        const [hours, minutes] = timeInET.split(":").map(Number);
-        const timeInMinutes = hours * 60 + minutes;
-        const marketTime = timeInMinutes < 570 ? "BMO" : "AMC";
+          // Determine market time
+          const date = new Date(transcriptInfo.time);
+          const timeInET = new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/New_York",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: false,
+          }).format(date);
 
-        // Create date without time component
-        const scheduledDate = new Date(transcriptInfo.time);
-        scheduledDate.setHours(0, 0, 0, 0);
+          const [hours, minutes] = timeInET.split(":").map(Number);
+          const timeInMinutes = hours * 60 + minutes;
+          const marketTime = timeInMinutes < 570 ? "BMO" : "AMC";
 
-        // Use a transaction to ensure data consistency
-        await prisma.$transaction(async (tx) => {
-          // First, create or update the transcript
-          const transcript = await tx.transcript.upsert({
-            where: {
-              id: transcriptInfo.id,
-            },
-            update: {
-              title: transcriptInfo.title,
-              quarter: transcriptInfo.quarter || null,
-              year: transcriptInfo.year || null,
-              audioUrl: transcriptData.audio || null,
-              MarketTime: marketTime as MarketTime,
-              status: "COMPLETED",
-              fullText: transcriptData.transcript
-                ?.map(
-                  (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
-                )
-                .join("\n"),
-              speakers: transcriptData.participant,
-            },
-            create: {
-              id: transcriptInfo.id,
-              companyId: company.id,
-              scheduledAt: scheduledDate,
-              title: transcriptInfo.title,
-              quarter: transcriptInfo.quarter || null,
-              year: transcriptInfo.year || null,
-              audioUrl: transcriptData.audio || null,
-              MarketTime: marketTime as MarketTime,
-              status: "COMPLETED",
-              fullText: transcriptData.transcript
-                ?.map(
-                  (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
-                )
-                .join("\n"),
-              speakers: transcriptData.participant,
-            },
-          });
+          // Create date without time component
+          const scheduledDate = new Date(transcriptInfo.time);
+          scheduledDate.setHours(0, 0, 0, 0);
 
-          // Delete existing participants and their speeches
-          await tx.participant.deleteMany({
-            where: { transcriptId: transcript.id },
-          });
-
-          // Create participants and their speeches
-          for (const p of transcriptData.participant) {
-            const participant = await tx.participant.create({
-              data: {
-                transcriptId: transcript.id,
-                name: p.name,
-                role: p.role || null,
-                description: p.description || null,
+          // Use a transaction to ensure data consistency
+          await prisma.$transaction(async (tx) => {
+            // First, create or update the transcript
+            const transcript = await tx.transcript.upsert({
+              where: {
+                id: transcriptInfo.id,
+              },
+              update: {
+                title: transcriptInfo.title,
+                quarter: transcriptInfo.quarter || null,
+                year: transcriptInfo.year || null,
+                audioUrl: transcriptData.audio || null,
+                MarketTime: marketTime as MarketTime,
+                status: "COMPLETED",
+                fullText: transcriptData.transcript
+                  ?.map(
+                    (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                  )
+                  .join("\n"),
+                speakers: transcriptData.participant,
+              },
+              create: {
+                id: transcriptInfo.id,
+                companyId: company.id,
+                scheduledAt: scheduledDate,
+                title: transcriptInfo.title,
+                quarter: transcriptInfo.quarter || null,
+                year: transcriptInfo.year || null,
+                audioUrl: transcriptData.audio || null,
+                MarketTime: marketTime as MarketTime,
+                status: "COMPLETED",
+                fullText: transcriptData.transcript
+                  ?.map(
+                    (t: TranscriptSpeech) => `${t.name}: ${t.speech.join(" ")}`
+                  )
+                  .join("\n"),
+                speakers: transcriptData.participant,
               },
             });
 
-            // Find all speeches for this participant
-            const participantSpeeches = transcriptData.transcript
-              .filter((t: TranscriptSpeech) => t.name === p.name)
-              .map((t: TranscriptSpeech, idx: number) => ({
-                content: t.speech.join("\n"),
-                sequence: idx,
-                sessionType: t.session || null,
-                participantId: participant.id,
-              }));
+            // Delete existing participants and their speeches
+            await tx.participant.deleteMany({
+              where: { transcriptId: transcript.id },
+            });
 
-            // Create speeches for this participant
-            if (participantSpeeches.length > 0) {
-              await tx.speech.createMany({
-                data: participantSpeeches,
+            // Create participants and their speeches
+            for (const p of transcriptData.participant) {
+              const participant = await tx.participant.create({
+                data: {
+                  transcriptId: transcript.id,
+                  name: p.name,
+                  role: p.role || null,
+                  description: p.description || null,
+                },
               });
-            }
-          }
-        });
 
-        console.log(`Successfully processed transcript ${transcriptInfo.id}`);
-      } catch (error) {
-        console.error(
-          `Error processing transcript ${transcriptInfo.id}:`,
-          error
-        );
+              // Find all speeches for this participant
+              const participantSpeeches = transcriptData.transcript
+                .filter((t: TranscriptSpeech) => t.name === p.name)
+                .map((t: TranscriptSpeech, idx: number) => ({
+                  content: t.speech.join("\n"),
+                  sequence: idx,
+                  sessionType: t.session || null,
+                  participantId: participant.id,
+                }));
+
+              // Create speeches for this participant
+              if (participantSpeeches.length > 0) {
+                await tx.speech.createMany({
+                  data: participantSpeeches,
+                });
+              }
+            }
+          });
+
+          console.log(`Successfully processed transcript ${transcriptInfo.id}`);
+        } catch (error) {
+          console.error(
+            `Error processing transcript ${transcriptInfo.id}:`,
+            error
+          );
+        }
       }
     }
 
     return NextResponse.json({
-      message: "Successfully processed transcripts",
-      transcriptsProcessed: transcriptListData.transcripts?.length || 0,
+      message: "Successfully processed transcripts for all companies",
+      companiesProcessed: symbols.length,
     });
   } catch (error) {
     console.error("Error processing transcripts:", error);

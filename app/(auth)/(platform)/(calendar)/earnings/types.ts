@@ -123,3 +123,69 @@ export interface AISummary {
     rationale: string;
   };
 }
+
+export interface User {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Chat {
+  id: string;
+  title: string;
+  userId: string;
+  user?: User;
+  messages?: Message[];
+  visibility: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Message {
+  id: string;
+  chatId: string;
+  chat?: Chat;
+  role: string;
+  content: JSON;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Document {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+  user?: User;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// API Response types
+export interface ChatResponse {
+  chat: Chat;
+  messages: Message[];
+}
+
+export interface APIError {
+  message: string;
+  code?: string;
+  status?: number;
+}
+
+export interface Suggestion {
+  id: string;
+  documentId: string;
+  originalText: string;
+  suggestedText: string;
+  description?: string | null;
+  isResolved: boolean;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  document?: Document;
+  user?: User;
+}
