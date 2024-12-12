@@ -61,8 +61,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
 
   const { data: liveCallData, isLoading } = useGetLiveCall(companyId);
 
-  console.log(liveCallData);
-
   useEffect(() => {
     if (liveCallData?.calls?.[0]) {
       setCurrentCall(liveCallData.calls[0]);
@@ -101,6 +99,20 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
   //   };
   // }, []);
 
+  // const formatTime = (time: number) => {
+  //   const minutes = Math.floor(time / 60);
+  //   const seconds = Math.floor(time % 60);
+  //   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  // };
+
+  // const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (audioRef.current) {
+  //     const time = Number(e.target.value);
+  //     audioRef.current.currentTime = time;
+  //     setCurrentTime(time);
+  //   }
+  // };
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -119,14 +131,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     }
   };
 
-  // const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (audioRef.current) {
-  //     const time = Number(e.target.value);
-  //     audioRef.current.currentTime = time;
-  //     setCurrentTime(time);
-  //   }
-  // };
-
   const LiveIndicator = () => (
     <div className="flex items-center gap-2">
       <motion.div
@@ -144,12 +148,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       <span className="text-xs font-medium text-red-500">LIVE</span>
     </div>
   );
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   if (isLoading) {
     return <LiveEarningsCallSkeleton />;
