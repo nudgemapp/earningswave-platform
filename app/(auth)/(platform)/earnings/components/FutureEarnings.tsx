@@ -29,8 +29,6 @@ import {
 } from "@/components/ui/hover-card";
 import LiveEarningsCall from "./LiveEarningsCall";
 import { useInView } from "react-intersection-observer";
-// import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
-// import AIEarningsAnalysis from "./AIEarnings";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -261,6 +259,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     triggerOnce: true,
   });
 
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   if (isLoadingCompany) {
     return (
       <div className="space-y-6 p-4">
@@ -336,24 +336,23 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </div>
 
           <div className="space-y-6 px-2">
-            {/* Optimize chart loading */}
-            <Suspense fallback={<StockChartSkeleton />}>
-              <StockPriceChart
-                todayData={(data) => {
-                  dispatchPrices({ type: "UPDATE_PRICES", payload: data });
-                }}
-                symbol={company.symbol}
-                timeframe={timeframe}
-                onTimeframeChange={setTimeframe}
-              />
-            </Suspense>
+            {!isDevelopment && (
+              <Suspense fallback={<StockChartSkeleton />}>
+                <StockPriceChart
+                  todayData={(data) => {
+                    dispatchPrices({ type: "UPDATE_PRICES", payload: data });
+                  }}
+                  symbol={company.symbol}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
+              </Suspense>
+            )}
 
-            {/* Lazy load less important components */}
             <Suspense fallback={null}>
               <LiveEarningsCall companyId={company.id} />
             </Suspense>
 
-            {/* Load transcripts only when visible */}
             <div ref={transcriptsRef}>
               {isTranscriptsVisible && hasValidTranscripts(company) && (
                 <Suspense fallback={<TranscriptsSkeleton />}>
