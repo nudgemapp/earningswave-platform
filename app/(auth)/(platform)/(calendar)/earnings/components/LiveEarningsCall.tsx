@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
+import { motion } from "framer-motion";
 
 // interface LiveCall {
 //   symbol: string;
@@ -71,6 +72,8 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [currentCall, setCurrentCall] = useState<any>(null);
   const [timeUntilCall, setTimeUntilCall] = useState<string>("");
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const { data: liveCallData, isLoading } = useGetLiveCall(companyId);
 
@@ -115,6 +118,28 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     return () => clearInterval(interval);
   }, [currentCall?.scheduledTime]);
 
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audio = audioRef.current;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleDurationChange = () => {
+      setDuration(audio.duration);
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("durationchange", handleDurationChange);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("durationchange", handleDurationChange);
+    };
+  }, []);
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -133,11 +158,41 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     }
   };
 
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (audioRef.current) {
+      const time = Number(e.target.value);
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const LiveIndicator = () => (
+    <div className="flex items-center gap-2">
+      <motion.div
+        className="w-2 h-2 bg-red-500 rounded-full"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [1, 0.7, 1],
+        }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+      <span className="text-xs font-medium text-red-500">LIVE</span>
+    </div>
+  );
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   if (isLoading) {
     return <LiveEarningsCallSkeleton />;
   }
-
-  console.log(currentCall);
 
   if (!liveCallData?.calls?.length || !currentCall || !currentCall.audioUrl)
     return null;
@@ -148,8 +203,8 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
+      //   hour: "numeric",
+      //   minute: "2-digit",
       timeZoneName: "short",
     });
   };
@@ -161,7 +216,7 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="rounded-full bg-red-50 dark:bg-red-500/10 p-2">
-              <Clock className="w-5 h-5 text-red-500" />
+              <LiveIndicator />
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
@@ -173,44 +228,76 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
               </div>
             </div>
           </div>
-          {/* <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400">
-              <span className="w-2 h-2 rounded-full bg-red-500 mr-2 animate-pulse" />
-              {timeUntilCall}
-            </span>
-          </div> */}
         </div>
       </div>
 
       {/* Audio Controls */}
       <div className="border-t border-gray-100 dark:border-slate-800 p-4">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={toggleMute}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-          >
-            {isMuted ? (
-              <VolumeX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            )}
-          </button>
-          <button
-            onClick={togglePlay}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors flex items-center gap-2"
-          >
-            {isPlaying ? (
-              <>
-                <Pause className="w-5 h-5" />
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5" />
-                <span>Listen Live</span>
-              </>
-            )}
-          </button>
+        <div className="space-y-4">
+          {/* Progress Bar */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400 min-w-[40px]">
+              {formatTime(currentTime)}
+            </span>
+            <div className="flex-1">
+              <input
+                type="range"
+                min="0"
+                max={duration || 100}
+                value={currentTime}
+                onChange={handleSeek}
+                className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+            <span className="text-sm font-medium text-red-500 dark:text-red-400 min-w-[40px]">
+              LIVE
+            </span>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleMute}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                )}
+              </button>
+              {/* Add volume slider */}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                className="w-24 h-1 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                onChange={(e) => {
+                  if (audioRef.current) {
+                    audioRef.current.volume = Number(e.target.value) / 100;
+                  }
+                }}
+              />
+            </div>
+
+            <button
+              onClick={togglePlay}
+              className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors flex items-center gap-2 shadow-sm"
+            >
+              {isPlaying ? (
+                <>
+                  <Pause className="w-5 h-5" />
+                  <span>Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-5 h-5" />
+                  <span>Listen Live</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
