@@ -175,38 +175,8 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
   </div>
 );
 
-interface PriceState {
-  prevClose: number | null;
-  atClose: number | null;
-  preMarket: number | null;
-  regular: number | null;
-  afterHours: number | null;
-  regularOpen: number | null;
-  percentChange: number | null;
-  priceDifference: number | null;
-  mostRecentDate: string | null;
-}
-
-const usePriceUpdates = (initialState: PriceState) => {
-  return useReducer(
-    (
-      state: PriceState,
-      action: { type: string; payload: Partial<PriceState> }
-    ) => {
-      switch (action.type) {
-        case "UPDATE_PRICES":
-          return { ...state, ...action.payload };
-        default:
-          return state;
-      }
-    },
-    initialState
-  );
-};
-
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  console.log(currentTime);
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -217,7 +187,17 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   }, []); // Empty dependency array since we want this to run once on mount
   // const isAfterHours = currentTime.getHours() >= 16;
 
-  const [todayPrices, dispatchPrices] = usePriceUpdates({
+  const [todayPrices, setTodayPrices] = useState<{
+    prevClose: number | null;
+    preMarket: number | null;
+    regular: number | null;
+    afterHours: number | null;
+    regularOpen: number | null;
+    percentChange: number | null;
+    priceDifference: number | null;
+    mostRecentDate?: string | null;
+    atClose?: number | null;
+  }>({
     prevClose: null,
     atClose: null,
     preMarket: null,
@@ -228,7 +208,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     priceDifference: null,
     mostRecentDate: null,
   });
-  console.log(todayPrices);
 
   const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
@@ -338,14 +317,18 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           <div className="space-y-6 px-2">
             {!isDevelopment && (
               <Suspense fallback={<StockChartSkeleton />}>
-                <StockPriceChart
-                  todayData={(data) => {
-                    dispatchPrices({ type: "UPDATE_PRICES", payload: data });
-                  }}
-                  symbol={company.symbol}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                />
+                <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
+                  <div className="h-[400px] w-full">
+                    <StockPriceChart
+                      todayData={(data) => {
+                        setTodayPrices((prev) => ({ ...prev, ...data }));
+                      }}
+                      symbol={company.symbol}
+                      timeframe={timeframe}
+                      onTimeframeChange={setTimeframe}
+                    />
+                  </div>
+                </div>
               </Suspense>
             )}
 
