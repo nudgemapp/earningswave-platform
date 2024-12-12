@@ -2,28 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Clock,
-  CalendarIcon,
-} from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, CalendarIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 import { motion } from "framer-motion";
-
-// interface LiveCall {
-//   symbol: string;
-//   scheduledTime: string;
-//   quarter: number;
-//   year: number;
-//   eventName: string;
-//   audioUrl: string;
-//   recording: string;
-//   isLive: boolean;
-// }
+import { LiveCall } from "../types";
 
 interface LiveEarningsCallProps {
   companyId: string;
@@ -70,8 +53,9 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [currentCall, setCurrentCall] = useState<any>(null);
-  const [timeUntilCall, setTimeUntilCall] = useState<string>("");
+  const [currentCall, setCurrentCall] = useState<LiveCall["calls"][0] | null>(
+    null
+  );
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
 
@@ -94,29 +78,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       hls.attachMedia(audioRef.current);
     }
   }, [currentCall?.audioUrl]);
-
-  useEffect(() => {
-    const updateTimeUntilCall = () => {
-      if (!currentCall?.scheduledTime) return;
-
-      const now = new Date();
-      const callTime = new Date(currentCall.scheduledTime);
-      const diff = callTime.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setTimeUntilCall("Live Now");
-        return;
-      }
-
-      const minutes = Math.floor(diff / 1000 / 60);
-      const hours = Math.floor(minutes / 60);
-      setTimeUntilCall(`Starts in ${hours}h ${minutes % 60}m`);
-    };
-
-    updateTimeUntilCall();
-    const interval = setInterval(updateTimeUntilCall, 60000);
-    return () => clearInterval(interval);
-  }, [currentCall?.scheduledTime]);
 
   useEffect(() => {
     if (!audioRef.current) return;

@@ -52,6 +52,8 @@ export async function GET(
     }
 
     const data: LiveCallResponse = await response.json();
+    console.log(data);
+
     // Transform the data to include only relevant information
     const transformedData = {
       calls: data.event.map((call) => ({
