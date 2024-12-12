@@ -29,14 +29,11 @@ export async function GET(
       select: { symbol: true },
     });
 
-    console.log(company);
-
     if (!company) {
       return new NextResponse("Company not found", { status: 404 });
     }
 
     // Get today's date and format it
-    // const today = new Date();
     // const from = today.toISOString().split("T")[0];
     // const from = "2024-01-01";
     // const to = "2024-12-30";
@@ -48,7 +45,7 @@ export async function GET(
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
 
-    const from = yesterday.toISOString().split("T")[0];
+    const from = new Date().toISOString().split("T")[0];
     const to = nextWeek.toISOString().split("T")[0];
 
     const response = await fetch(
@@ -62,7 +59,8 @@ export async function GET(
     }
 
     const data: LiveCallResponse = await response.json();
-    console.log(data);
+
+    // console.log(data);
 
     // Transform the data to include only relevant information
     const transformedData = {
