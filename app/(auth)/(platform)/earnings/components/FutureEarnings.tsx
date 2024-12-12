@@ -27,6 +27,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import LiveEarningsCall from "./LiveEarningsCall";
 // import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 // import AIEarningsAnalysis from "./AIEarnings";
 
@@ -322,6 +323,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                 </div>
               </div>
             </Suspense>
+
+            <LiveEarningsCall companyId={company.id} />
 
             {/* Recent Transcripts with Suspense */}
             {company.recentTranscripts &&

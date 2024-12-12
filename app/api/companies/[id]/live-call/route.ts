@@ -22,11 +22,8 @@ export async function GET(
   if (!params.id) {
     return new NextResponse("Missing company ID", { status: 400 });
   }
-  const zaa = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
 
-  console.log(zaa);
   try {
-    // First, get the company symbol from the database
     const company = await prisma.company.findUnique({
       where: { id: params.id },
       select: { symbol: true },
@@ -42,38 +39,21 @@ export async function GET(
     // const today = new Date();
     // const from = today.toISOString().split("T")[0];
     const from = "2024-01-01";
-    const to = "2024-12-03";
+    const to = "2024-12-30";
 
-    // console.log(today);
-    // console.log(from);
-    // console.log(company.symbol);
-
-    // // Get date 30 days from now
-    // const to = new Date(today.setDate(today.getDate() + 30))
-    //   .toISOString()
-    //   .split("T")[0];
-
-    // console.log(to);
-
-    // Fetch live call data from Finnhub
     const response = await fetch(
       `https://finnhub.io/api/v1/stock/earnings-call-live?` +
         `from=${from}&to=${to}&symbol=${company.symbol}&` +
         `token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
     );
 
-    console.log(response);
-
     if (!response.ok) {
       throw new Error(`Finnhub API error: ${response.statusText}`);
     }
 
     const data: LiveCallResponse = await response.json();
-
-    console.log(data);
     // Transform the data to include only relevant information
     const transformedData = {
-      hasLiveCall: data.event.length > 0,
       calls: data.event.map((call) => ({
         symbol: call.symbol,
         scheduledTime: call.time,

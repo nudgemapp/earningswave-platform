@@ -1,12 +1,12 @@
-import WebSocket, { RawData } from 'ws';
-import { EventEmitter } from 'events';
+import WebSocket, { RawData } from "ws";
+import { EventEmitter } from "events";
 
 export class FinnhubWebSocketService {
   unsubscribe(symbol: string) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: 'unsubscribe', symbol }));
+      this.ws.send(JSON.stringify({ type: "unsubscribe", symbol }));
       this.subscribedSymbols.delete(symbol);
-      this.events.emit('unsubscribed', symbol);
+      this.events.emit("unsubscribed", symbol);
     }
   }
   private static instance: FinnhubWebSocketService;
@@ -24,7 +24,7 @@ export class FinnhubWebSocketService {
   private isReconnecting = false;
 
   private constructor() {
-    this.apiKey = process.env.FINNHUB_API_KEY || '';
+    this.apiKey = process.env.FINNHUB_API_KEY || "";
     this.events = new EventEmitter();
     // Don't automatically connect in constructor
   }
@@ -38,13 +38,15 @@ export class FinnhubWebSocketService {
 
   private async handleReconnect(): Promise<void> {
     if (this.isReconnecting) {
-      console.log('Already attempting to reconnect...');
+      console.log("Already attempting to reconnect...");
       return;
     }
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log(`❌ Max reconnection attempts (${this.maxReconnectAttempts}) reached`);
-      this.events.emit('error', new Error('Max reconnection attempts reached'));
+      console.log(
+        `❌ Max reconnection attempts (${this.maxReconnectAttempts}) reached`
+      );
+      this.events.emit("error", new Error("Max reconnection attempts reached"));
       this.isReconnecting = false;
       return;
     }
@@ -58,7 +60,9 @@ export class FinnhubWebSocketService {
       this.maxRetryDelay
     );
 
-    console.log(`⏳ Attempting reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    console.log(
+      `⏳ Attempting reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
 
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
@@ -68,7 +72,7 @@ export class FinnhubWebSocketService {
       try {
         await this.connect();
       } catch (error) {
-        console.error('❌ Reconnection attempt failed:', error);
+        console.error("❌ Reconnection attempt failed:", error);
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.isReconnecting = false;
           this.handleReconnect();
@@ -99,13 +103,13 @@ export class FinnhubWebSocketService {
 
       return new Promise((resolve, reject) => {
         const connectionTimeout = setTimeout(() => {
-          reject(new Error('Connection timeout'));
+          reject(new Error("Connection timeout"));
           this.cleanup();
         }, 10000);
 
-        this.ws!.on('open', () => {
+        this.ws!.on("open", () => {
           clearTimeout(connectionTimeout);
-          console.log('🟢 WebSocket connected');
+          console.log("🟢 WebSocket connected");
           this.reconnectAttempts = 0;
           this.isConnecting = false;
           this.setupHeartbeat();
@@ -113,8 +117,8 @@ export class FinnhubWebSocketService {
           resolve();
         });
 
-        this.ws!.on('error', (error: Error) => {
-          console.error('❌ WebSocket error:', error.message);
+        this.ws!.on("error", (error: Error) => {
+          console.error("❌ WebSocket error:", error.message);
           clearTimeout(connectionTimeout);
           this.isConnecting = false;
           reject(error);
@@ -131,27 +135,29 @@ export class FinnhubWebSocketService {
   private setupEventListeners() {
     if (!this.ws) return;
 
-    this.ws.on('message', (data: RawData) => {
+    this.ws.on("message", (data: RawData) => {
       try {
         const message = JSON.parse(data.toString());
-        this.events.emit('message', message);
+        this.events.emit("message", message);
       } catch (error) {
-        console.error('❌ Error parsing message:', error);
+        console.error("❌ Error parsing message:", error);
       }
     });
 
-    this.ws.on('close', (code, reason) => {
-      console.log(`🔴 WebSocket disconnected - Code: ${code}, Reason: ${reason}`);
-      this.events.emit('disconnected');
+    this.ws.on("close", (code, reason) => {
+      console.log(
+        `🔴 WebSocket disconnected - Code: ${code}, Reason: ${reason}`
+      );
+      this.events.emit("disconnected");
       this.cleanup();
-      
+
       // Only attempt reconnect for unexpected closures
       if (code === 1006 || code === 1001) {
         this.handleReconnect();
       }
     });
 
-    this.ws.on('pong', () => {
+    this.ws.on("pong", () => {
       this.lastPong = Date.now();
     });
   }
@@ -166,7 +172,7 @@ export class FinnhubWebSocketService {
       if (this.ws?.readyState === WebSocket.OPEN) {
         // Check if we haven't received a pong in more than 30 seconds
         if (Date.now() - this.lastPong > 30000) {
-          console.log('❌ No pong received, reconnecting...');
+          console.log("❌ No pong received, reconnecting...");
           this.cleanup();
           this.connect();
           return;
@@ -204,17 +210,17 @@ export class FinnhubWebSocketService {
 
   public async subscribe(symbol: string) {
     if (!symbol) return;
-    
+
     this.subscribedSymbols.add(symbol);
-    
+
     try {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         await this.connect();
       }
-      
+
       if (this.ws?.readyState === WebSocket.OPEN) {
         console.log(`📥 Subscribing to ${symbol}`);
-        this.ws.send(JSON.stringify({ type: 'subscribe', symbol }));
+        this.ws.send(JSON.stringify({ type: "subscribe", symbol }));
       }
     } catch (error) {
       console.error(`❌ Error subscribing to ${symbol}:`, error);
@@ -227,7 +233,7 @@ export class FinnhubWebSocketService {
     Array.from(this.subscribedSymbols).forEach((symbol, index) => {
       setTimeout(() => {
         if (this.ws?.readyState === WebSocket.OPEN) {
-          this.ws.send(JSON.stringify({ type: 'subscribe', symbol }));
+          this.ws.send(JSON.stringify({ type: "subscribe", symbol }));
         }
       }, index * 500);
     });
@@ -241,4 +247,4 @@ export class FinnhubWebSocketService {
 }
 
 // Export a singleton instance
-export const getFinnhubWS = () => FinnhubWebSocketService.getInstance(); 
+export const getFinnhubWS = () => FinnhubWebSocketService.getInstance();
