@@ -8,10 +8,28 @@ import DayView from "./DayView";
 import Watchlist from "./Watchlist";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { TranscriptWithCompany } from "@/app/api/earnings/[id]/aiSummary/route";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
 }
+
+const WatchlistView = React.memo(() => <Watchlist />);
+
+const FutureEarningsView = React.memo(({ company }: { company: any }) => (
+  <FutureEarnings
+    SelectedCompany={{
+      companyId: company.companyId,
+      transcriptId: company.transcriptId || "",
+    }}
+  />
+));
+
+const DayViewWrapper = React.memo(
+  ({ date, onTranscriptClick }: { date: Date; onTranscriptClick: any }) => (
+    <DayView date={date} onTranscriptClick={onTranscriptClick} />
+  )
+);
 
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
@@ -24,21 +42,15 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
     () => (
       <div
         className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
-        key={`${showWatchlist}-${selectedCompany?.companyId}`}
       >
         {showWatchlist ? (
-          <Watchlist />
+          <WatchlistView />
         ) : selectedCompany?.companyId ? (
-          <FutureEarnings
-            SelectedCompany={{
-              companyId: selectedCompany.companyId,
-              transcriptId: selectedCompany.transcriptId || "",
-            }}
-          />
+          <FutureEarningsView company={selectedCompany} />
         ) : selectedDate || isMobile ? (
-          <DayView
+          <DayViewWrapper
             date={selectedDate || new Date()}
-            onTranscriptClick={(transcript) => {
+            onTranscriptClick={(transcript: TranscriptWithCompany) => {
               useEarningsStore.setState({
                 selectedCompany: {
                   companyId: transcript.company.id,
@@ -54,7 +66,13 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
         )}
       </div>
     ),
-    [showWatchlist, selectedCompany, selectedDate, isMobile, className]
+    [
+      showWatchlist,
+      selectedCompany?.companyId,
+      selectedDate,
+      isMobile,
+      className,
+    ]
   );
 
   const shouldShowSheet = useMemo(

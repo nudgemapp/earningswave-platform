@@ -66,7 +66,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   onTimeframeChange,
   todayData,
 }) => {
-  const websocketConnection = useStockWebSocket(symbol);
+  const isDevelopment = process.env.NODE_ENV === "development";
+
+  console.log("isDevelopment", isDevelopment);
+
+  const websocketConnection = isDevelopment
+    ? { error: null }
+    : useStockWebSocket(symbol);
   const { error } = useMemo(() => websocketConnection, [websocketConnection]);
 
   const { data: realtimeData } = useQuery<RealtimeStockData>({
@@ -442,6 +448,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   };
 
   const getChartData = async () => {
+    if (isDevelopment) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const data = await fetchFinnhubTimeSeriesData(symbol, timeframe);
       // Only check for closing price if it's after hours
@@ -509,6 +520,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   };
 
   useEffect(() => {
+    if (isDevelopment) {
+      setIsLoading(false);
+      return;
+    }
+
     if (error) {
       console.log("Error ", error);
     }
@@ -516,9 +532,9 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
     const interval = setInterval(() => {
       getChartData();
-    }, 60000); // Call every minute (60000ms)
+    }, 60000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, [symbol, timeframe]);
 
   // Add a new function to handle timeframe changes

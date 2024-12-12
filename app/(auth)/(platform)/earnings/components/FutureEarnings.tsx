@@ -1,6 +1,12 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, {
+  Suspense,
+  useEffect,
+  useState,
+  useReducer,
+  useRef,
+} from "react";
 import { CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -28,6 +34,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import LiveEarningsCall from "./LiveEarningsCall";
+import { useInView } from "react-intersection-observer";
 // import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 // import AIEarningsAnalysis from "./AIEarnings";
 
@@ -177,6 +184,35 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
   </div>
 );
 
+interface PriceState {
+  prevClose: number | null;
+  atClose: number | null;
+  preMarket: number | null;
+  regular: number | null;
+  afterHours: number | null;
+  regularOpen: number | null;
+  percentChange: number | null;
+  priceDifference: number | null;
+  mostRecentDate: string | null;
+}
+
+const usePriceUpdates = (initialState: PriceState) => {
+  return useReducer(
+    (
+      state: PriceState,
+      action: { type: string; payload: Partial<PriceState> }
+    ) => {
+      switch (action.type) {
+        case "UPDATE_PRICES":
+          return { ...state, ...action.payload };
+        default:
+          return state;
+      }
+    },
+    initialState
+  );
+};
+
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   console.log(currentTime);
@@ -190,17 +226,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   }, []); // Empty dependency array since we want this to run once on mount
   // const isAfterHours = currentTime.getHours() >= 16;
 
-  const [todayPrices, setTodayPrices] = useState<{
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }>({
+  const [todayPrices, dispatchPrices] = usePriceUpdates({
     prevClose: null,
     atClose: null,
     preMarket: null,
@@ -229,9 +255,18 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
-  // const { data: liveCallData, isLoading: isLoadingLiveCall } = useGetLiveCall(
-  //   company?.id
-  // );
+  const hasValidTranscripts = (
+    company: ExtendedCompany | undefined
+  ): company is ExtendedCompany & { recentTranscripts: Transcript[] } => {
+    return Boolean(
+      company?.recentTranscripts && company.recentTranscripts.length > 0
+    );
+  };
+
+  const { ref: transcriptsRef, inView: isTranscriptsVisible } = useInView({
+    threshold: 0,
+    triggerOnce: true,
+  });
 
   if (isLoadingCompany) {
     return (
@@ -308,36 +343,34 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </div>
 
           <div className="space-y-6 px-2">
-            {/* Stock Chart with Suspense */}
+            {/* Optimize chart loading */}
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
-                <div className="h-[400px] w-full">
-                  <StockPriceChart
-                    todayData={(data) => {
-                      setTodayPrices((prev) => ({ ...prev, ...data }));
-                    }}
-                    symbol={company.symbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                  />
-                </div>
-              </div>
+              <StockPriceChart
+                todayData={(data) => {
+                  dispatchPrices({ type: "UPDATE_PRICES", payload: data });
+                }}
+                symbol={company.symbol}
+                timeframe={timeframe}
+                onTimeframeChange={setTimeframe}
+              />
             </Suspense>
 
-            <LiveEarningsCall companyId={company.id} />
+            {/* Lazy load less important components */}
+            <Suspense fallback={null}>
+              <LiveEarningsCall companyId={company.id} />
+            </Suspense>
 
-            {/* Recent Transcripts with Suspense */}
-            {company.recentTranscripts &&
-              company.recentTranscripts.length > 0 && (
+            {/* Load transcripts only when visible */}
+            <div ref={transcriptsRef}>
+              {isTranscriptsVisible && hasValidTranscripts(company) && (
                 <Suspense fallback={<TranscriptsSkeleton />}>
-                  <div className="space-y-3">
-                    <CompanyTranscripts
-                      transcripts={company.recentTranscripts}
-                      company={company}
-                    />
-                  </div>
+                  <CompanyTranscripts
+                    transcripts={company.recentTranscripts}
+                    company={company}
+                  />
                 </Suspense>
               )}
+            </div>
           </div>
         </div>
       )}
