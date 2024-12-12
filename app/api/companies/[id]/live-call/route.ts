@@ -35,6 +35,12 @@ export async function GET(
       return new NextResponse("Company not found", { status: 404 });
     }
 
+    // Get today's date and format it
+    // const today = new Date();
+    // const from = today.toISOString().split("T")[0];
+    // const from = "2024-01-01";
+    // const to = "2024-12-30";
+
     // Calculate yesterday and a week from now
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);

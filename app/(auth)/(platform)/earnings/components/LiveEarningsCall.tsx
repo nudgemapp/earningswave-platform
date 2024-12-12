@@ -196,7 +196,7 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       <div className="border-t border-gray-100 dark:border-slate-800 p-4">
         <div className="space-y-4">
           {/* Progress Bar */}
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400 min-w-[40px]">
               {formatTime(currentTime)}
             </span>
@@ -213,7 +213,7 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
             <span className="text-sm font-medium text-red-500 dark:text-red-400 min-w-[40px]">
               LIVE
             </span>
-          </div>
+          </div> */}
 
           {/* Controls */}
           <div className="flex items-center justify-between">
