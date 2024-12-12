@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  Suspense,
-  useEffect,
-  useState,
-  useReducer,
-  useRef,
-} from "react";
+import React, { Suspense, useEffect, useState, useReducer } from "react";
 import { CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -41,7 +35,6 @@ import { useInView } from "react-intersection-observer";
 interface FutureEarningsProps {
   SelectedCompany: {
     companyId: string;
-    transcriptId: string;
   };
 }
 

@@ -8,28 +8,42 @@ import DayView from "./DayView";
 import Watchlist from "./Watchlist";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { TranscriptWithCompany } from "@/app/api/earnings/[id]/aiSummary/route";
+import { EarningsEntry } from "./DayView";
 
 interface EarningsTranscriptSheetProps {
   className?: string;
 }
 
 const WatchlistView = React.memo(() => <Watchlist />);
+WatchlistView.displayName = "WatchlistView";
 
-const FutureEarningsView = React.memo(({ company }: { company: any }) => (
-  <FutureEarnings
-    SelectedCompany={{
-      companyId: company.companyId,
-      transcriptId: company.transcriptId || "",
-    }}
-  />
-));
-
-const DayViewWrapper = React.memo(
-  ({ date, onTranscriptClick }: { date: Date; onTranscriptClick: any }) => (
-    <DayView date={date} onTranscriptClick={onTranscriptClick} />
+const FutureEarningsView = React.memo(
+  ({
+    company,
+  }: {
+    company: {
+      companyId: string;
+    };
+  }) => (
+    <FutureEarnings
+      SelectedCompany={{
+        companyId: company.companyId,
+      }}
+    />
   )
 );
+FutureEarningsView.displayName = "FutureEarningsView";
+
+const DayViewWrapper = React.memo(
+  ({
+    date,
+    onTranscriptClick,
+  }: {
+    date: Date;
+    onTranscriptClick: (transcript: EarningsEntry) => void;
+  }) => <DayView date={date} onTranscriptClick={onTranscriptClick} />
+);
+DayViewWrapper.displayName = "DayViewWrapper";
 
 const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   className,
@@ -50,7 +64,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
         ) : selectedDate || isMobile ? (
           <DayViewWrapper
             date={selectedDate || new Date()}
-            onTranscriptClick={(transcript: TranscriptWithCompany) => {
+            onTranscriptClick={(transcript: EarningsEntry) => {
               useEarningsStore.setState({
                 selectedCompany: {
                   companyId: transcript.company.id,
