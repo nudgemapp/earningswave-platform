@@ -56,8 +56,8 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
   const [currentCall, setCurrentCall] = useState<LiveCall["calls"][0] | null>(
     null
   );
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  // const [duration, setDuration] = useState(0);
+  // const [currentTime, setCurrentTime] = useState(0);
 
   const { data: liveCallData, isLoading } = useGetLiveCall(companyId);
 
@@ -79,27 +79,27 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     }
   }, [currentCall?.audioUrl]);
 
-  useEffect(() => {
-    if (!audioRef.current) return;
+  // useEffect(() => {
+  //   if (!audioRef.current) return;
 
-    const audio = audioRef.current;
+  //   const audio = audioRef.current;
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-    };
+  //   const handleTimeUpdate = () => {
+  //     setCurrentTime(audio.currentTime);
+  //   };
 
-    const handleDurationChange = () => {
-      setDuration(audio.duration);
-    };
+  //   const handleDurationChange = () => {
+  //     setDuration(audio.duration);
+  //   };
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("durationchange", handleDurationChange);
+  //   audio.addEventListener("timeupdate", handleTimeUpdate);
+  //   audio.addEventListener("durationchange", handleDurationChange);
 
-    return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("durationchange", handleDurationChange);
-    };
-  }, []);
+  //   return () => {
+  //     audio.removeEventListener("timeupdate", handleTimeUpdate);
+  //     audio.removeEventListener("durationchange", handleDurationChange);
+  //   };
+  // }, []);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -119,13 +119,13 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     }
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (audioRef.current) {
-      const time = Number(e.target.value);
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
+  // const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (audioRef.current) {
+  //     const time = Number(e.target.value);
+  //     audioRef.current.currentTime = time;
+  //     setCurrentTime(time);
+  //   }
+  // };
 
   const LiveIndicator = () => (
     <div className="flex items-center gap-2">
