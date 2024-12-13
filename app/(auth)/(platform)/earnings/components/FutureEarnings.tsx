@@ -316,7 +316,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
           <div className="space-y-6 px-2">
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
+              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-3">
                 <div className="h-[400px] w-full">
                   <StockPriceChart
                     todayData={(data) => {
