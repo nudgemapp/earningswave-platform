@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   AreaChart,
   Area,
@@ -66,14 +66,16 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   onTimeframeChange,
   todayData,
 }) => {
-  const websocketConnection = useStockWebSocket(symbol);
-  const { error } = useMemo(() => websocketConnection, [websocketConnection]);
+  const { isConnected, error } = useStockWebSocket(symbol);
 
   const { data: realtimeData } = useQuery<RealtimeStockData>({
     queryKey: ["stockPrice", symbol],
-    enabled: !!symbol,
-    staleTime: Infinity,
+    enabled: !!symbol && isConnected,
+    staleTime: 0, // Always fresh data
+    refetchOnWindowFocus: false, // No need to refetch on focus
   });
+
+  console.log("realtimeData", realtimeData);
 
   const [filteredData, setFilteredData] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -218,7 +220,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           return true;
       }
     });
-    console.log("filteredData", filteredData);
+    // console.log("filteredData", filteredData);
 
     return filteredData;
   };
@@ -527,6 +529,19 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     setFilteredData([]); // Clear existing data
     onTimeframeChange(tf);
   };
+
+  // Cleanup function will be called when component unmounts
+  const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Cleanup function will be called when component unmounts
+    return () => {
+      // Clear any existing intervals or timeouts
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="h-full w-full">
@@ -868,4 +883,4 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   );
 };
 
-export default StockPriceChart;
+export default React.memo(StockPriceChart);

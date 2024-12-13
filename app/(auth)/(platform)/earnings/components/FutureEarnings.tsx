@@ -317,22 +317,20 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </div>
 
           <div className="space-y-6 px-2">
-            {!isDevelopment && (
-              <Suspense fallback={<StockChartSkeleton />}>
-                <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
-                  <div className="h-[400px] w-full">
-                    <StockPriceChart
-                      todayData={(data) => {
-                        setTodayPrices((prev) => ({ ...prev, ...data }));
-                      }}
-                      symbol={company.symbol}
-                      timeframe={timeframe}
-                      onTimeframeChange={setTimeframe}
-                    />
-                  </div>
+            <Suspense fallback={<StockChartSkeleton />}>
+              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
+                <div className="h-[400px] w-full">
+                  <StockPriceChart
+                    todayData={(data) => {
+                      setTodayPrices((prev) => ({ ...prev, ...data }));
+                    }}
+                    symbol={company.symbol}
+                    timeframe={timeframe}
+                    onTimeframeChange={setTimeframe}
+                  />
                 </div>
-              </Suspense>
-            )}
+              </div>
+            </Suspense>
 
             <Suspense fallback={null}>
               <LiveEarningsCall companyId={company.id} />

@@ -10,6 +10,7 @@ const isPublicRoute = createRouteMatcher([
   "/api(.*)",
   "/api/ws",
   "/api/ws/events",
+  "/api/websocket",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

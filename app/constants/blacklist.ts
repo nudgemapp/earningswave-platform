@@ -275,4 +275,6 @@ export const BLACKLISTED_SYMBOLS: string[] = [
   "GAU",
   "SNRE",
   "ABP",
+  "SUNE",
+  "IAUX",
 ];
