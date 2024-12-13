@@ -92,9 +92,16 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
     const date = new Date(currentDate);
     date.setHours(0, 0, 0, 0);
 
+    // If it's Saturday or Sunday, move to next Monday
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 6 || dayOfWeek === 0) {
+      // 6 is Saturday, 0 is Sunday
+      date.setDate(date.getDate() + (dayOfWeek === 6 ? 2 : 1));
+    }
+
     // Calculate Monday's date
     const mondayDate = new Date(date);
-    const day = date.getDay();
+    const day = mondayDate.getDay();
     mondayDate.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
 
     // Generate array of dates for the week (Mon-Fri)
