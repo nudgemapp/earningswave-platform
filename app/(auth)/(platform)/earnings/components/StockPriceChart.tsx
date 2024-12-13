@@ -679,68 +679,48 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         </div>
 
         {/* Timeframe Controls - Always Visible */}
-        <div className="w-full xs:w-auto grid grid-cols-5 xs:flex gap-0.5 p-0.5 bg-gray-100/80 dark:bg-slate-800/80 rounded-lg">
-          {timeframeButtons.map((tf) => (
-            <button
-              key={tf}
-              onClick={() => handleTimeframeChange(tf)}
-              className={`px-2 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                timeframe === tf
-                  ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              {tf}
-            </button>
-          ))}
+        <div className="w-full">
+          <div className="flex items-center bg-gray-50/80 dark:bg-slate-800/80 rounded-md p-[2px] shadow-sm">
+            {timeframeButtons.map((tf) => (
+              <button
+                key={tf}
+                onClick={() => handleTimeframeChange(tf)}
+                className={`flex-1 text-xs font-medium px-3 py-[5px] rounded-[3px] transition-all duration-200 ${
+                  timeframe === tf
+                    ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200/50 dark:ring-slate-600/50"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
+                }`}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Chart Section - Shows Loading State or Chart */}
-      <div className="flex-1 min-h-[300px] max-h-[400px] relative">
+      {/* Chart Section - Cleaner implementation */}
+      <div className="flex-1 min-h-[300px] relative">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-pulse flex flex-col items-center gap-4">
-              <div className="h-8 w-8 rounded-full border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 animate-spin" />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Loading chart...
-              </span>
-            </div>
+            <div className="h-5 w-5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
+            {/* Chart implementation with improved styling */}
             <AreaChart
               data={filteredData}
-              margin={{ top: 10, right: 10, left: -22, bottom: 20 }}
+              margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
             >
-              <defs>
-                <linearGradient
-                  id="colorUpGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.12} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
-                </linearGradient>
-                <linearGradient
-                  id="colorDownGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.12} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.01} />
-                </linearGradient>
-              </defs>
+              {/* ... rest of the chart implementation */}
+              {/* Update CartesianGrid for more subtle grid lines */}
               <CartesianGrid
-                strokeDasharray="3 3"
+                strokeDasharray="2 4"
                 vertical={false}
                 stroke="#e5e7eb"
-                className="dark:stroke-gray-700/50"
+                className="dark:stroke-gray-700/30"
               />
+
+              {/* More subtle axis styling */}
               <YAxis
                 domain={yDomain}
                 tickLine={false}
@@ -752,11 +732,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 tickFormatter={(value) => `$${value.toFixed(2)}`}
                 width={65}
                 tick={{
-                  fontSize: 11,
-                  fill: "#64748b",
-                  dx: -2,
+                  fontSize: 10,
+                  fill: "#94a3b8",
                 }}
-                className="text-gray-500 dark:text-gray-400"
+                className="text-gray-400"
                 allowDataOverflow={false}
                 scale="linear"
                 padding={{ top: 20, bottom: 20 }}
@@ -803,44 +782,17 @@ const StockPriceChart: React.FC<StockChartProps> = ({
               />
               <Tooltip
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
+                  if (active && payload?.[0]) {
                     const data = payload[0].payload as StockData;
-                    const date = new Date(data.date);
                     return (
-                      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                          {date.toLocaleDateString(undefined, {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}{" "}
-                          <span className="text-gray-500 dark:text-gray-400">
-                            {date.toLocaleTimeString(undefined, {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            })}
-                          </span>
-                        </p>
-                        <div
-                          className={`space-y-1 ${
-                            data.gain
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}
-                        >
-                          <p className="text-sm font-semibold">
+                      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-3 border border-gray-100 dark:border-gray-700">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             ${data.close.toFixed(2)}
                           </p>
-                          <div className="text-xs space-y-0.5 pt-1 border-t border-gray-100 dark:border-gray-700">
-                            <p>O: ${data.open.toFixed(2)}</p>
-                            <p>H: ${data.high.toFixed(2)}</p>
-                            <p>L: ${data.low.toFixed(2)}</p>
-                            <p className="text-gray-500 dark:text-gray-400">
-                              Vol: {(data.volume / 1e6).toFixed(2)}M
-                            </p>
-                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(data.date).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                     );

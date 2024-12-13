@@ -55,7 +55,7 @@ const EarningsTranscriptSheet: React.FC<EarningsTranscriptSheetProps> = ({
   const content = useMemo(
     () => (
       <div
-        className={`h-screen p-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
+        className={`h-screen py-4 overflow-y-auto bg-white dark:bg-slate-900 ${className}`}
       >
         {showWatchlist ? (
           <WatchlistView />
