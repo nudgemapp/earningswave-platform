@@ -328,7 +328,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       );
 
       // Calculate start and end dates based on timeframe
-      let startDate = new Date(estNow);
+      const startDate = new Date(estNow);
       let endDate = new Date(estNow);
       let resolution = "1"; // Default 1 minute resolution for 1D
 
