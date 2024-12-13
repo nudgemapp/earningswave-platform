@@ -240,8 +240,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     triggerOnce: true,
   });
 
-  const isDevelopment = process.env.NODE_ENV === "development";
-
   if (isLoadingCompany) {
     return (
       <div className="space-y-6 p-4">
