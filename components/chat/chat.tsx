@@ -49,9 +49,12 @@ export function Chat({
     body: { id, modelId: selectedModelId },
     initialMessages,
     onFinish: () => {
-      mutate("/api/history");
+      mutate("/api/chat/history");
     },
   });
+
+  console.log(id);
+  console.log(messages);
 
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();

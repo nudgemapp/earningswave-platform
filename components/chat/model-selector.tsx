@@ -2,7 +2,6 @@
 
 import { startTransition, useMemo, useOptimistic, useState } from "react";
 
-// import { saveModelId } from '@/app/(chat)/actions';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,9 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { models } from '@/lib/ai/models';
+import { models } from "@/lib/ai/models";
 import { cn } from "@/lib/utils";
-import { CheckCircle, ChevronDown } from "lucide-react";
+import { CheckCircleIcon, ChevronDownIcon } from "lucide-react";
+import { saveModelId } from "@/app/(auth)/(platform)/(ai-chat)/chat/actions";
 
 export function ModelSelector({
   selectedModelId,
@@ -24,10 +24,10 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] =
     useOptimistic(selectedModelId);
 
-  //   const selectedModel = useMemo(
-  //     () => models.find((model) => model.id === optimisticModelId),
-  //     [optimisticModelId],
-  //   );
+  const selectedModel = useMemo(
+    () => models.find((model) => model.id === optimisticModelId),
+    [optimisticModelId]
+  );
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -39,22 +39,21 @@ export function ModelSelector({
         )}
       >
         <Button variant="outline" className="md:px-2 md:h-[34px]">
-          {/* {selectedModel?.label} */}Claude 3.5 Sonnet
-          <ChevronDown />
+          {selectedModel?.label}
+          <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
-        <DropdownMenuItem>Claude 3.5 Sonnet</DropdownMenuItem>
-        {/* {models.map((model) => (
+        {models.map((model) => (
           <DropdownMenuItem
             key={model.id}
             onSelect={() => {
-            //   setOpen(false);
+              setOpen(false);
 
-            //   startTransition(() => {
-            //     setOptimisticModelId(model.id);
-            //     saveModelId(model.id);
-            //   });
+              startTransition(() => {
+                setOptimisticModelId(model.id);
+                saveModelId(model.id);
+              });
             }}
             className="gap-4 group/item flex flex-row justify-between items-center"
             data-active={model.id === optimisticModelId}
@@ -68,10 +67,10 @@ export function ModelSelector({
               )}
             </div>
             <div className="text-primary dark:text-primary-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-              <CheckCircle/>
+              <CheckCircleIcon />
             </div>
           </DropdownMenuItem>
-        ))} */}
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

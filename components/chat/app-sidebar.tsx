@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useUser } from "@clerk/nextjs";
 import { PlusIcon } from "lucide-react";
+import Logo from "../Logo";
 
 export function AppSidebar() {
   const user = useUser();
@@ -31,12 +32,13 @@ export function AppSidebar() {
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
             <Link
-              href="/"
+              href="chat"
               onClick={() => {
                 setOpenMobile(false);
               }}
               className="flex flex-row gap-3 items-center"
             >
+              <Logo />
               <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
                 EarningsWave AI
               </span>
@@ -49,7 +51,7 @@ export function AppSidebar() {
                   className="p-2 h-fit"
                   onClick={() => {
                     setOpenMobile(false);
-                    router.push("/");
+                    router.push("/chat");
                     router.refresh();
                   }}
                 >

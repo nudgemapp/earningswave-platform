@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWindowSize } from "usehooks-ts";
 import { useUser } from "@clerk/nextjs";
@@ -62,7 +61,7 @@ function PureChatHeader({
                 variant="outline"
                 className="md:px-2 px-2 md:h-fit"
                 onClick={() => {
-                  router.push("/");
+                  router.push("/chat");
                   router.refresh();
                 }}
               >

@@ -4,12 +4,8 @@ import { type CoreUserMessage, generateText } from "ai";
 import { cookies } from "next/headers";
 
 import { customModel } from "@/lib/ai";
-// import {
-//   deleteMessagesByChatIdAfterTimestamp,
-//   getMessageById,
-//   updateChatVisiblityById,
-// } from '@/lib/db/queries';
 import { VisibilityType } from "@/components/chat/visibility-selector";
+import prisma from "@/lib/prismadb";
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
@@ -35,11 +31,15 @@ export async function generateTitleFromUserMessage({
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
+  const [message] = await prisma.message.findMany({ where: { id } });
 
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
+  await prisma.message.deleteMany({
+    where: {
+      chatId: message.chatId,
+      createdAt: {
+        lt: message.createdAt,
+      },
+    },
   });
 }
 
@@ -50,5 +50,8 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  await prisma.chat.update({
+    where: { id: chatId },
+    data: { visibility },
+  });
 }

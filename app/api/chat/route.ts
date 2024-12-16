@@ -6,20 +6,7 @@ import {
   streamText,
 } from "ai";
 import { z } from "zod";
-
-// import { customModel } from "@/lib/ai";
-import { models } from "@/lib/ai/models";
 import { systemPrompt } from "@/lib/ai/promts";
-// import {
-//   deleteChatById,
-//   getChatById,
-//   getDocumentById,
-//   saveChat,
-//   saveDocument,
-//   saveMessages,
-//   saveSuggestions,
-// } from "@/lib/db/queries";
-// import type { Suggestion } from "@/lib/db/schema";
 import {
   generateUUID,
   getMostRecentUserMessage,
@@ -28,6 +15,10 @@ import {
 
 import { generateTitleFromUserMessage } from "@/app/(auth)/(platform)/(ai-chat)/chat/actions";
 import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prismadb";
+import { customModel } from "@/lib/ai";
+import { models } from "@/lib/ai/models";
+import { Suggestion } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 
 export const maxDuration = 60;
 
@@ -43,9 +34,9 @@ const blocksTools: AllowedTools[] = [
   "requestSuggestions",
 ];
 
-const weatherTools: AllowedTools[] = ["getWeather"];
+// const weatherTools: AllowedTools[] = ["getWeather"];
 
-const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
+const allTools: AllowedTools[] = [...blocksTools];
 
 export async function POST(request: Request) {
   const {
@@ -55,41 +46,87 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  const session = await auth();
+  console.log(id);
+  console.log(messages);
+  console.log(modelId);
 
   const { userId } = await auth();
+  console.log(userId);
 
-  if (!session || !userId) {
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   const model = models.find((model) => model.id === modelId);
+
+  console.log(model);
 
   if (!model) {
     return new Response("Model not found", { status: 404 });
   }
 
   const coreMessages = convertToCoreMessages(messages);
+  console.log(coreMessages);
   const userMessage = getMostRecentUserMessage(coreMessages);
+  console.log(userMessage);
 
   if (!userMessage) {
     return new Response("No user message found", { status: 400 });
   }
 
-  const chat = await getChatById({ id });
+  const chat = await prisma.chat.findUnique({
+    where: { id },
+  });
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
+  console.log(chat);
+
+  if (chat === null) {
+    try {
+      let title;
+      try {
+        title = await generateTitleFromUserMessage({
+          message: userMessage,
+        });
+      } catch (error) {
+        // Fallback title generation if API fails
+        title = userMessage.content.slice(0, 80); // Simple truncation
+        if (typeof title === "object") {
+          title = JSON.stringify(title).slice(0, 80);
+        }
+      }
+
+      console.log("Generated title:", title);
+
+      const newChat = await prisma.chat.create({
+        data: {
+          id,
+          userId: userId,
+          title: title || "New Chat", // Provide default title
+          visibility: "private",
+        },
+      });
+
+      console.log("Created new chat:", newChat);
+    } catch (error) {
+      console.error("Error in chat creation:", error);
+      return new Response("Failed to create chat", { status: 500 });
+    }
   }
 
-  const userMessageId = generateUUID();
+  console.log(messages);
 
-  await saveMessages({
-    messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
-    ],
+  const userMessageId = generateUUID();
+  // Save the user's message
+  const newMessage = await prisma.message.create({
+    data: {
+      id: userMessageId,
+      chatId: id,
+      role: "user",
+      content: messages[messages.length - 1].content,
+    },
   });
+
+  console.log(newMessage);
 
   const streamingData = new StreamData();
 
@@ -167,14 +204,14 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: "finish", content: "" });
 
-          if (session.user?.id) {
-            await saveDocument({
+          await prisma.document.create({
+            data: {
               id,
               title,
               content: draftText,
-              userId: session.user.id,
-            });
-          }
+              userId: userId,
+            },
+          });
 
           return {
             id,
@@ -192,7 +229,9 @@ export async function POST(request: Request) {
             .describe("The description of changes that need to be made"),
         }),
         execute: async ({ id, description }) => {
-          const document = await getDocumentById({ id });
+          const document = await prisma.document.findUnique({
+            where: { id },
+          });
 
           if (!document) {
             return {
@@ -245,14 +284,13 @@ export async function POST(request: Request) {
 
           streamingData.append({ type: "finish", content: "" });
 
-          if (session.user?.id) {
-            await saveDocument({
-              id,
+          await prisma.document.update({
+            where: { id },
+            data: {
               title: document.title,
               content: draftText,
-              userId: session.user.id,
-            });
-          }
+            },
+          });
 
           return {
             id,
@@ -269,7 +307,9 @@ export async function POST(request: Request) {
             .describe("The ID of the document to request edits"),
         }),
         execute: async ({ documentId }) => {
-          const document = await getDocumentById({ id: documentId });
+          const document = await prisma.document.findUnique({
+            where: { id: documentId },
+          });
 
           if (!document || !document.content) {
             return {
@@ -311,21 +351,21 @@ export async function POST(request: Request) {
               content: suggestion,
             });
 
-            suggestions.push(suggestion);
+            suggestions.push(suggestion as any);
           }
 
-          if (session.user?.id) {
-            const userId = session.user.id;
+          // if (session.user?.id) {
+          //   const userId = session.user.id;
 
-            await saveSuggestions({
-              suggestions: suggestions.map((suggestion) => ({
-                ...suggestion,
-                userId,
-                createdAt: new Date(),
-                documentCreatedAt: document.createdAt,
-              })),
-            });
-          }
+          //   await saveSuggestions({
+          //     suggestions: suggestions.map((suggestion) => ({
+          //       ...suggestion,
+          //       userId,
+          //       createdAt: new Date(),
+          //       documentCreatedAt: document.createdAt,
+          //     })),
+          //   });
+          // }
 
           return {
             id: documentId,
@@ -336,31 +376,29 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ response }) => {
-      if (session.user?.id) {
+      if (userId) {
         try {
           const responseMessagesWithoutIncompleteToolCalls =
             sanitizeResponseMessages(response.messages);
 
-          await saveMessages({
-            messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => {
-                const messageId = generateUUID();
+          await prisma.message.createMany({
+            data: responseMessagesWithoutIncompleteToolCalls.map((message) => {
+              const messageId = generateUUID();
 
-                if (message.role === "assistant") {
-                  streamingData.appendMessageAnnotation({
-                    messageIdFromServer: messageId,
-                  });
-                }
-
-                return {
-                  id: messageId,
-                  chatId: id,
-                  role: message.role,
-                  content: message.content,
-                  createdAt: new Date(),
-                };
+              if (message.role === "assistant") {
+                streamingData.appendMessageAnnotation({
+                  messageIdFromServer: messageId,
+                });
               }
-            ),
+
+              return {
+                id: messageId,
+                chatId: id,
+                role: message.role,
+                content: JSON.stringify(message.content),
+                createdAt: new Date(),
+              };
+            }),
           });
         } catch (error) {
           console.error("Failed to save chat");
@@ -379,7 +417,6 @@ export async function POST(request: Request) {
     data: streamingData,
   });
 }
-
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
@@ -388,20 +425,24 @@ export async function DELETE(request: Request) {
     return new Response("Not Found", { status: 404 });
   }
 
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (!session || !session.user) {
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   try {
-    const chat = await getChatById({ id });
+    const chat = await prisma.chat.findUnique({
+      where: { id },
+    });
 
-    if (chat.userId !== session.user.id) {
+    if (chat?.userId !== userId) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    await deleteChatById({ id });
+    await prisma.chat.delete({
+      where: { id },
+    });
 
     return new Response("Chat deleted", { status: 200 });
   } catch (error) {

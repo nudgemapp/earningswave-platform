@@ -12,6 +12,7 @@
     "seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.0.8",
     "@anthropic-ai/sdk": "^0.32.1",
     "@clerk/nextjs": "^6.6.0",
     "@clerk/themes": "^2.1.43",
@@ -75,6 +76,7 @@
     "react-fast-marquee": "^1.6.5",
     "react-icons": "^5.3.0",
     "react-intersection-observer": "^9.13.1",
+    "react-markdown": "^9.0.1",
     "react-scroll": "^1.9.0",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "^2.13.0",
