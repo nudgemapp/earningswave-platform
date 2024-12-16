@@ -72,24 +72,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     const currentYear = new Date().getFullYear();
     return Array.from({ length: 3 }, (_, i) => currentYear - 1 + i);
   }, []);
-  const monthParam = searchParams?.get("month");
-  const yearParam = searchParams?.get("year");
-
-  useEffect(() => {
-    const currentDate = new Date();
-    const defaultMonth = currentDate.getMonth() + 1;
-    const defaultYear = currentDate.getFullYear();
-
-    // If month or year is not set in the URL, update the URL with default values
-    if (!monthParam || !yearParam) {
-      const params = searchParams ? new URLSearchParams(searchParams) : new URLSearchParams();
-      if (!monthParam)
-        params.set("month", defaultMonth.toString().padStart(2, "0"));
-      if (!yearParam) params.set("year", defaultYear.toString());
-
-      router.replace(`?${params.toString()}`);
-    }
-  }, [monthParam, yearParam, router, searchParams]);
 
   const handleNavigation = (direction: number) => {
     const newDate = new Date(currentDate);
@@ -103,7 +85,9 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
     updateURL(newDate);
   };
   const updateURL = (date: Date) => {
-    const params = searchParams ? new URLSearchParams(searchParams) : new URLSearchParams();
+    const params = searchParams
+      ? new URLSearchParams(searchParams)
+      : new URLSearchParams();
     params.set("month", (date.getMonth() + 1).toString().padStart(2, "0"));
     params.set("year", date.getFullYear().toString());
     router.push(`?${params.toString()}`);
@@ -117,33 +101,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
 
     useEarningsStore.setState({ showWatchlist: true });
   };
-  // const audioRef = useRef<HTMLAudioElement>(null);
-
-  // useEffect(() => {
-  //   if (!audioRef.current) return;
-
-  //   const audioUrl = "https://media.main.pro2.mas.media-server.com/c9cca3f025114016bae3b0816b901d94/ypvix9r9_en_enc1_audio_part1.m3u8";
-
-  //   if (Hls.isSupported()) {
-  //     const hls = new Hls();
-  //     hls.loadSource(audioUrl);
-  //     hls.attachMedia(audioRef.current);
-  //   } else if (audioRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-  //     audioRef.current.src = audioUrl;
-  //   } else {
-  //     console.error("HLS is not supported in this browser.");
-  //   }
-  // }, []);
-
-  // const handleApiClick = async () => {
-  //   try {
-  //     const response = await fetch("/api/finnhub/transcript-sync");
-  //     const data = await response.json();
-  //     console.log("API Response:", data);
-  //   } catch (error) {
-  //     console.error("Error fetching from API:", error);
-  //   }
-  // };
 
   const [filters, setFilters] = useState<FilterState>({
     sectors: [],
@@ -166,7 +123,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   };
 
   useEffect(() => {
-    // Load filters from localStorage on mount
     const savedFilters = localStorage.getItem("earnings-filters");
     if (savedFilters) {
       setFilters(JSON.parse(savedFilters));
@@ -174,7 +130,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
   }, []);
 
   useEffect(() => {
-    // Save filters to localStorage whenever they change
     localStorage.setItem("earnings-filters", JSON.stringify(filters));
   }, [filters]);
 
@@ -190,7 +145,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </Button>
-          {/* <Button onClick={handleApiClick}>Sync</Button> */}
           <Select
             value={months[currentDate.getMonth()]}
             onValueChange={(month) => {
@@ -244,12 +198,6 @@ const CalendarNavbar: React.FC<CalendarNavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div></div>
-          {/* <div>
-            <audio ref={audioRef} controls className="h-9">
-              Your browser does not support the audio element.
-            </audio>
-          </div> */}
           <div>
             <HoverCard>
               <HoverCardTrigger asChild>

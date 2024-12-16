@@ -1,7 +1,5 @@
 import NavBar from "@/components/NavBar";
 import EarningsClient from "./earnings/components/client";
-// import { auth } from "@clerk/nextjs/server";
-// import prisma from "../../../../lib/prismadb";
 
 interface SearchParams {
   month?: string;
@@ -16,8 +14,6 @@ const EarningsPage = async ({
 }: {
   searchParams: SearchParams;
 }) => {
-  // const { userId } = await auth();
-
   const today = new Date();
   const year = searchParams.year
     ? parseInt(searchParams.year)
@@ -37,45 +33,10 @@ const EarningsPage = async ({
     };
   }
 
-  // const [userInfo] = await Promise.all([
-  //   userId
-  //     ? prisma.user.findUnique({
-  //         where: { id: userId },
-  //         select: {
-  //           id: true,
-  //           firstName: true,
-  //           lastName: true,
-  //           email: true,
-  //           createdAt: true,
-  //           updatedAt: true,
-  //           subscription: true,
-  //         },
-  //       })
-  //     : null,
-  // ]);
-
-  // const mcdEarningsReports = await prisma.earningsReport.findMany({
-  //   where: {
-  //     symbol: "MCD",
-  //   },
-  //   include: {
-  //     company: true
-  //   },
-  //   orderBy: {
-  //     fiscalDateEnding: 'desc'
-  //   }
-  // });
-
-  // console.log(mcdEarningsReports);
-
   return (
     <div className="h-screen flex flex-col">
       <NavBar />
-      <EarningsClient
-      // userInfo={userInfo}
-      // transcripts={processedTranscripts}
-      // reports={processedReports}
-      />
+      <EarningsClient />
     </div>
   );
 };

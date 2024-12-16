@@ -9,7 +9,7 @@ const anthropic = new Anthropic({
 });
 
 // Define type for transcript with company relation
-type TranscriptWithCompany = Transcript & {
+export type TranscriptWithCompany = Transcript & {
   company: Company;
 };
 

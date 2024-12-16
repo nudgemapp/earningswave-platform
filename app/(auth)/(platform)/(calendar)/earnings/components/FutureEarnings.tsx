@@ -28,11 +28,12 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import LiveEarningsCall from "./LiveEarningsCall";
+import { useInView } from "react-intersection-observer";
+import { Separator } from "@/components/ui/separator";
 
 interface FutureEarningsProps {
   SelectedCompany: {
     companyId: string;
-    transcriptId: string;
   };
 }
 
@@ -227,6 +228,19 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
+  const hasValidTranscripts = (
+    company: ExtendedCompany | undefined
+  ): company is ExtendedCompany & { recentTranscripts: Transcript[] } => {
+    return Boolean(
+      company?.recentTranscripts && company.recentTranscripts.length > 0
+    );
+  };
+
+  const { ref: transcriptsRef, inView: isTranscriptsVisible } = useInView({
+    threshold: 0,
+    triggerOnce: true,
+  });
+
   if (isLoadingCompany) {
     return (
       <div className="space-y-6 p-4">
@@ -300,38 +314,38 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               removeFromWatchlist={removeFromWatchlist}
             />
           </div>
+          <Separator />
 
-          <div className="space-y-6 px-2">
-            {/* Stock Chart with Suspense */}
+          <div className="space-y-6 px-5">
             <Suspense fallback={<StockChartSkeleton />}>
-              <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
-                <div className="h-[400px] w-full">
-                  <StockPriceChart
-                    todayData={(data) => {
-                      setTodayPrices((prev) => ({ ...prev, ...data }));
-                    }}
-                    symbol={company.symbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                  />
-                </div>
+              <div className="h-[400px] w-full mb-12">
+                <StockPriceChart
+                  todayData={(data) => {
+                    setTodayPrices((prev) => ({ ...prev, ...data }));
+                  }}
+                  symbol={company.symbol}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
               </div>
+            </Suspense>
+
+            <Suspense fallback={null}>
+              <LiveEarningsCall companyId={company.id} />
             </Suspense>
 
             <LiveEarningsCall companyId={company.id} />
 
-            {/* Recent Transcripts with Suspense */}
-            {company.recentTranscripts &&
-              company.recentTranscripts.length > 0 && (
+            <div ref={transcriptsRef}>
+              {isTranscriptsVisible && hasValidTranscripts(company) && (
                 <Suspense fallback={<TranscriptsSkeleton />}>
-                  <div className="space-y-3">
-                    <CompanyTranscripts
-                      transcripts={company.recentTranscripts}
-                      company={company}
-                    />
-                  </div>
+                  <CompanyTranscripts
+                    transcripts={company.recentTranscripts}
+                    company={company}
+                  />
                 </Suspense>
               )}
+            </div>
           </div>
         </div>
       )}

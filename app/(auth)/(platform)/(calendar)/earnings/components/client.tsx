@@ -8,9 +8,6 @@ import { User, Subscription } from "@prisma/client";
 import { EarningsEntry } from "../types";
 import { CalendarSkeleton } from "./loading-skeleton";
 import { useAuthModal } from "@/store/AuthModalStore";
-// import { Button } from "@/components/ui/button";
-// import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
-// import { useAuthModal } from "@/store/AuthModalStore";
 
 interface FilterState {
   sectors: string[];
@@ -76,19 +73,11 @@ const EarningsClient = () => {
   const handleViewChange = (newView: "week" | "month") => setView(newView);
 
   const handleDateChange = (newDate: Date) => {
-    // if (!userInfo) {
-    //   openAuthModal();
-    // } else {
     setCurrentDate(newDate);
-    // }
   };
 
   const handleNavigateMonth = (direction: "prev" | "next") => {
-    // if (!user) {
-    //   openAuthModal();
-    // } else {
     navigateMonth(direction === "next" ? 1 : -1);
-    // }
   };
 
   const handleCompanyClick = (transcriptInfo: EarningsEntry) => {
@@ -102,13 +91,6 @@ const EarningsClient = () => {
     });
     setSelectedTranscript(null);
   };
-
-  // const fetchEarningsCalendar = async () => {
-  //   console.log("Fetching earnings calendar");
-  //   const response = await fetch("/api/finnhub");
-  //   const data = await response.json();
-  //   console.log(data);
-  // };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative sm:mt-0 mt-12">
@@ -125,7 +107,6 @@ const EarningsClient = () => {
         view={view}
         setView={handleViewChange}
       />
-      {/* <Button onClick={fetchEarningsCalendar}>Fetch Earnings Calendar</Button> */}
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView handleCompanyClick={handleCompanyClick} filters={filters} />

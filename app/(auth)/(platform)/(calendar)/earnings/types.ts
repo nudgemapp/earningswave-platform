@@ -124,6 +124,19 @@ export interface AISummary {
   };
 }
 
+export interface LiveCall {
+  calls: Array<{
+    id: string;
+    eventName: string;
+    scheduledTime: string;
+    quarter: number;
+    year: number;
+    audioUrl: string | null;
+    MarketTime: MarketTime;
+    status: TranscriptStatus;
+  }>;
+}
+
 export interface User {
   id: string;
   firstName?: string | null;

@@ -37,7 +37,7 @@ interface Company {
   exchange: string | null;
 }
 
-interface EarningsEntry {
+export interface EarningsEntry {
   id: string;
   symbol: string;
   quarter: number;
@@ -142,7 +142,7 @@ const DayView: React.FC<DayViewProps> = ({ date, onTranscriptClick }) => {
 
       if (!acc[timing]) acc[timing] = [];
       // Only add if symbol doesn't already exist in this timing group
-      if (!acc[timing].some(e => e.symbol === earning.symbol)) {
+      if (!acc[timing].some((e) => e.symbol === earning.symbol)) {
         acc[timing].push(earning);
       }
       return acc;
