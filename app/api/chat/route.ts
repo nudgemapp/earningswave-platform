@@ -26,7 +26,8 @@ type AllowedTools =
   | "createDocument"
   | "updateDocument"
   | "requestSuggestions"
-  | "getWeather";
+  | "queryEarnings";
+// | "getWeather"
 
 const blocksTools: AllowedTools[] = [
   "createDocument",
@@ -36,7 +37,9 @@ const blocksTools: AllowedTools[] = [
 
 // const weatherTools: AllowedTools[] = ["getWeather"];
 
-const allTools: AllowedTools[] = [...blocksTools];
+const earningsTools: AllowedTools[] = ["queryEarnings"];
+
+const allTools: AllowedTools[] = [...blocksTools, ...earningsTools];
 
 export async function POST(request: Request) {
   const {
@@ -142,21 +145,6 @@ export async function POST(request: Request) {
     maxSteps: 5,
     experimental_activeTools: allTools,
     tools: {
-      getWeather: {
-        description: "Get the current weather at a location",
-        parameters: z.object({
-          latitude: z.number(),
-          longitude: z.number(),
-        }),
-        execute: async ({ latitude, longitude }) => {
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
-          );
-
-          const weatherData = await response.json();
-          return weatherData;
-        },
-      },
       createDocument: {
         description: "Create a document for a writing activity",
         parameters: z.object({
@@ -299,6 +287,21 @@ export async function POST(request: Request) {
           };
         },
       },
+      // getWeather: {
+      //   description: "Get the current weather at a location",
+      //   parameters: z.object({
+      //     latitude: z.number(),
+      //     longitude: z.number(),
+      //   }),
+      //   execute: async ({ latitude, longitude }) => {
+      //     const response = await fetch(
+      //       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`
+      //     );
+
+      //     const weatherData = await response.json();
+      //     return weatherData;
+      //   },
+      // },
       requestSuggestions: {
         description: "Request suggestions for a document",
         parameters: z.object({
@@ -371,6 +374,42 @@ export async function POST(request: Request) {
             id: documentId,
             title: document.title,
             message: "Suggestions have been added to the document",
+          };
+        },
+      },
+      queryEarnings: {
+        description: "Query earnings information for companies",
+        parameters: z.object({
+          symbol: z.string().describe("The company stock symbol"),
+          quarter: z.number().optional().describe("The quarter number (1-4)"),
+          year: z.number().optional().describe("The year"),
+        }),
+        execute: async ({ symbol, quarter, year }) => {
+          // Query the earnings data from your database
+          const earnings = await prisma.earnings.findFirst({
+            where: {
+              symbol: symbol.toUpperCase(),
+              ...(quarter && { quarter }),
+              ...(year && { year }),
+            },
+            orderBy: {
+              earningsDate: "desc",
+            },
+          });
+
+          if (!earnings) {
+            return {
+              message: `No earnings data found for ${symbol}`,
+            };
+          }
+
+          return {
+            symbol: earnings.symbol,
+            date: earnings.earningsDate,
+            time: earnings.earningsTime,
+            quarter: earnings.quarter,
+            year: earnings.year,
+            isConfirmed: earnings.isDateConfirmed,
           };
         },
       },
