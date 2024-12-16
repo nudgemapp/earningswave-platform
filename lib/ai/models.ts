@@ -18,12 +18,12 @@ export const models: Array<Model> = [
     apiIdentifier: "gpt-4o",
     description: "For complex, multi-step tasks",
   },
-  {
-    id: "claude-3-sonnet-20240229",
-    label: "Claude 3.5 Sonnet",
-    apiIdentifier: "claude-3-sonnet-20240229",
-    description: "Most accurate model",
-  },
+  // {
+  //   id: "claude-3-sonnet-20240229",
+  //   label: "Claude 3.5 Sonnet",
+  //   apiIdentifier: "claude-3-sonnet-20240229",
+  //   description: "Most accurate model",
+  // },
 ] as const;
 
 export const DEFAULT_MODEL_NAME: string = "gpt-4o-mini";

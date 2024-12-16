@@ -17,6 +17,7 @@ export async function generateTitleFromUserMessage({
 }: {
   message: CoreUserMessage;
 }) {
+  console.log(message);
   const { text: title } = await generateText({
     model: customModel("gpt-4o-mini"),
     system: `\n
@@ -26,6 +27,8 @@ export async function generateTitleFromUserMessage({
     - do not use quotes or colons`,
     prompt: JSON.stringify(message),
   });
+
+  console.log(title);
 
   return title;
 }

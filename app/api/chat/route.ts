@@ -42,6 +42,7 @@ const earningsTools: AllowedTools[] = ["queryEarnings"];
 const allTools: AllowedTools[] = [...blocksTools, ...earningsTools];
 
 export async function POST(request: Request) {
+  // Log incoming request
   const {
     id,
     messages,
@@ -49,9 +50,10 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  console.log(id);
-  console.log(messages);
-  console.log(modelId);
+  console.log("=== INCOMING REQUEST ===");
+  console.log("Chat ID:", id);
+  console.log("Model ID:", modelId);
+  console.log("Messages:", JSON.stringify(messages, null, 2));
 
   const { userId } = await auth();
   console.log(userId);
@@ -84,36 +86,15 @@ export async function POST(request: Request) {
   console.log(chat);
 
   if (chat === null) {
-    try {
-      let title;
-      try {
-        title = await generateTitleFromUserMessage({
-          message: userMessage,
-        });
-      } catch (error) {
-        // Fallback title generation if API fails
-        title = userMessage.content.slice(0, 80); // Simple truncation
-        if (typeof title === "object") {
-          title = JSON.stringify(title).slice(0, 80);
-        }
-      }
-
-      console.log("Generated title:", title);
-
-      const newChat = await prisma.chat.create({
-        data: {
-          id,
-          userId: userId,
-          title: title || "New Chat", // Provide default title
-          visibility: "private",
-        },
-      });
-
-      console.log("Created new chat:", newChat);
-    } catch (error) {
-      console.error("Error in chat creation:", error);
-      return new Response("Failed to create chat", { status: 500 });
-    }
+    // const title = await generateTitleFromUserMessage({ message: userMessage });
+    await prisma.chat.create({
+      data: {
+        id,
+        userId,
+        title: messages[0].content,
+        visibility: "private",
+      },
+    });
   }
 
   console.log(messages);
@@ -133,10 +114,15 @@ export async function POST(request: Request) {
 
   const streamingData = new StreamData();
 
+  console.log("=== STREAMING DATA ===");
+  console.log(streamingData);
+
   streamingData.append({
     type: "user-message-id",
     content: userMessageId,
   });
+
+  console.log(customModel(model.apiIdentifier));
 
   const result = streamText({
     model: customModel(model.apiIdentifier),
@@ -385,7 +371,11 @@ export async function POST(request: Request) {
           year: z.number().optional().describe("The year"),
         }),
         execute: async ({ symbol, quarter, year }) => {
-          // Query the earnings data from your database
+          console.log("=== QUERYING EARNINGS ===");
+          console.log("Symbol:", symbol);
+          console.log("Quarter:", quarter);
+          console.log("Year:", year);
+
           const earnings = await prisma.earnings.findFirst({
             where: {
               symbol: symbol.toUpperCase(),
@@ -396,6 +386,8 @@ export async function POST(request: Request) {
               earningsDate: "desc",
             },
           });
+
+          console.log("Earnings Result:", earnings);
 
           if (!earnings) {
             return {
@@ -415,6 +407,12 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ response }) => {
+      console.log("=== AI RESPONSE ===");
+      console.log(
+        "Response Messages:",
+        JSON.stringify(response.messages, null, 2)
+      );
+
       if (userId) {
         try {
           const responseMessagesWithoutIncompleteToolCalls =

@@ -3,13 +3,10 @@
 import type { ChatRequestOptions, Message } from "ai";
 import { motion } from "framer-motion";
 import { memo, useState, type Dispatch, type SetStateAction } from "react";
-
 import type { UIBlock } from "./block";
-// import { DocumentToolCall, DocumentToolResult } from "./document";
+import { DocumentToolCall, DocumentToolResult } from "./document";
 import { Markdown } from "./markdown";
-// import { MessageActions } from "./message-actions";
 import { PreviewAttachment } from "./preview-attachment";
-// import { Weather } from './weather';
 import equal from "fast-deep-equal";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,9 +15,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// import { MessageEditor } from "./message-editor";
 import { PencilLine, Sparkles, SparklesIcon } from "lucide-react";
 import { cx } from "class-variance-authority";
+// import { MessageEditor } from "./message-editor";
+// import { MessageActions } from "./message-actions";
+
+// import { Weather } from './weather';
 
 const PurePreviewMessage = ({
   chatId,
@@ -137,9 +137,15 @@ const PurePreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {/* {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
-                      ) : toolName === 'createDocument' ? (
+                      {toolName === "queryEarnings" ? (
+                        // <EarningsResult
+                        //   result={result}
+                        //   block={block}
+                        //   setBlock={setBlock}
+                        //   isReadonly={isReadonly}
+                        // />
+                        <div>Earnings Result</div>
+                      ) : toolName === "createDocument" ? (
                         <DocumentToolResult
                           type="create"
                           result={result}
@@ -147,7 +153,7 @@ const PurePreviewMessage = ({
                           setBlock={setBlock}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'updateDocument' ? (
+                      ) : toolName === "updateDocument" ? (
                         <DocumentToolResult
                           type="update"
                           result={result}
@@ -155,7 +161,7 @@ const PurePreviewMessage = ({
                           setBlock={setBlock}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'requestSuggestions' ? (
+                      ) : toolName === "requestSuggestions" ? (
                         <DocumentToolResult
                           type="request-suggestions"
                           result={result}
@@ -165,7 +171,7 @@ const PurePreviewMessage = ({
                         />
                       ) : (
                         <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )} */}
+                      )}
                     </div>
                   );
                 }
@@ -173,33 +179,33 @@ const PurePreviewMessage = ({
                   <div
                     key={toolCallId}
                     className={cx({
-                      skeleton: ["getWeather"].includes(toolName),
+                      skeleton: ["queryEarnings"].includes(toolName),
                     })}
                   >
-                    {/* {toolName === 'getWeather' ? (
-                      <Weather />
-                    ) : toolName === 'createDocument' ? (
+                    {toolName === "queryEarnings" ? (
+                      <div>Earnings Tool Call</div>
+                    ) : toolName === "createDocument" ? (
                       <DocumentToolCall
                         type="create"
                         args={args}
                         setBlock={setBlock}
                         isReadonly={isReadonly}
                       />
-                    ) : toolName === 'updateDocument' ? (
+                    ) : toolName === "updateDocument" ? (
                       <DocumentToolCall
                         type="update"
                         args={args}
                         setBlock={setBlock}
                         isReadonly={isReadonly}
                       />
-                    ) : toolName === 'requestSuggestions' ? (
+                    ) : toolName === "requestSuggestions" ? (
                       <DocumentToolCall
                         type="request-suggestions"
                         args={args}
                         setBlock={setBlock}
                         isReadonly={isReadonly}
                       />
-                    ) : null} */}
+                    ) : null}
                   </div>
                 );
               })}

@@ -32,7 +32,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <div className="flex flex-row justify-between items-center">
             <Link
-              href="chat"
+              href="/chat"
               onClick={() => {
                 setOpenMobile(false);
               }}

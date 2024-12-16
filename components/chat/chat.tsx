@@ -6,17 +6,12 @@ import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
 import { useWindowSize } from "usehooks-ts";
-
 import { Block, type UIBlock } from "./block";
 import { BlockStreamHandler } from "./block-stream-handler";
 import { MultimodalInput } from "./multimodal-input";
 import { Messages } from "./messages";
 import { VisibilityType } from "./visibility-selector";
 import { ChatHeader } from "./chat-header";
-
-// import { ChatHeader } from '@/components/chat-header';
-// import type { Vote } from '@/lib/db/schema';
-// import { fetcher } from "@/lib/utils";
 
 export function Chat({
   id,
@@ -53,6 +48,7 @@ export function Chat({
     },
   });
 
+  console.log(streamingData);
   console.log(id);
   console.log(messages);
 
