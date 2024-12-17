@@ -320,9 +320,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             <Suspense fallback={<StockChartSkeleton />}>
               <div className="h-[400px] w-full mb-12">
                 <StockPriceChart
-                  todayData={(data) => {
-                    setTodayPrices((prev) => ({ ...prev, ...data }));
-                  }}
                   symbol={company.symbol}
                   timeframe={timeframe}
                   onTimeframeChange={setTimeframe}

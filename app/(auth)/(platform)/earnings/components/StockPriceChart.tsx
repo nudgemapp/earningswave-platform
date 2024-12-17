@@ -11,173 +11,30 @@ import {
   XAxis,
 } from "recharts";
 import { useStockWebSocket } from "@/hooks/use-stock-websocket";
-import { useQuery } from "@tanstack/react-query";
-import { StockQuote } from "@/app/types/StockQuote";
-import { MARKET_HOLIDAYS } from "@/app/constants/holidays";
+import { StockData } from "@/app/types/StockQuote";
+import { useFinnhubTimeseries } from "@/hooks/use-finnhub-timeseries";
 
 interface StockChartProps {
   symbol: string;
   timeframe?: string;
   onTimeframeChange: (tf: string) => void;
-  todayData: (data: {
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }) => void;
-}
-
-interface StockData {
-  date: string;
-  time: string;
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  volume: number;
-  gain: boolean;
-  marketSession: "pre" | "regular" | "post";
-}
-
-interface RealtimeStockData {
-  realtimePrice: number;
-  lastUpdate: string;
-  data: StockData[];
-}
-
-interface FinnhubCandle {
-  c: number[]; // close prices
-  h: number[]; // high prices
-  l: number[]; // low prices
-  o: number[]; // open prices
-  s: string; // status
-  t: number[]; // timestamps
-  v: number[]; // volume
 }
 
 const StockPriceChart: React.FC<StockChartProps> = ({
   symbol,
   timeframe = "1D",
   onTimeframeChange,
-  todayData,
 }) => {
-  const { isConnected, error } = useStockWebSocket(symbol);
+  const { lastPrice, isConnected } = useStockWebSocket(symbol);
+  console.log("lastPrice", lastPrice);
+  console.log("isConnected", isConnected);
 
-  const { data: realtimeData } = useQuery<RealtimeStockData>({
-    queryKey: ["stockPrice", symbol],
-    enabled: !!symbol && isConnected,
-    staleTime: 0, // Always fresh data
-    refetchOnWindowFocus: false, // No need to refetch on focus
-  });
+  const { data: timeseriesData, isLoading } = useFinnhubTimeseries(
+    symbol,
+    timeframe
+  );
 
-  console.log("realtimeData", realtimeData);
-
-  const [filteredData, setFilteredData] = useState<StockData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [todayPrices, setTodayPrices] = useState<{
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }>({
-    prevClose: null,
-    atClose: null,
-    preMarket: null,
-    regular: null,
-    afterHours: null,
-    regularOpen: null,
-    percentChange: null,
-    priceDifference: null,
-    mostRecentDate: null,
-  });
-
-  // Memoize timeframe buttons
-  const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
-
-  const isMarketHoliday = (date: Date): boolean => {
-    const dateString = date.toISOString().split("T")[0];
-    return MARKET_HOLIDAYS.some(
-      (holiday) => holiday.date === dateString && holiday.closed
-    );
-  };
-
-  const adjustToMarketDay = (date: Date): Date => {
-    const adjustedDate = new Date(date);
-    while (
-      adjustedDate.getDay() === 0 ||
-      adjustedDate.getDay() === 6 ||
-      isMarketHoliday(adjustedDate)
-    ) {
-      adjustedDate.setDate(adjustedDate.getDate() - 1);
-    }
-    return adjustedDate;
-  };
-
-  const fetchTodayPrices = async () => {
-    if (!symbol) return;
-
-    try {
-      const data = await fetch(
-        `/api/companies/recentPrice?symbol=${symbol}`
-      ).then((res: Response) => res.json() as Promise<StockQuote>);
-      const todayDate = new Date();
-      const adjustedDate = adjustToMarketDay(todayDate);
-
-      // Convert to string in YYYY-MM-DD format
-      const todayDateString = adjustedDate.toISOString().split("T")[0];
-
-      const preMarketPrice = null;
-      const afterHoursPrice = null;
-
-      // Check if current time is after hours, weekend, or holiday
-      const isAfterMarketHours = new Date().getHours() >= 16;
-      const isWeekend =
-        adjustedDate.getDay() === 0 || adjustedDate.getDay() === 6;
-      const isHoliday = isMarketHoliday(adjustedDate);
-      const isMarketClosed = isAfterMarketHours || isWeekend || isHoliday;
-
-      todayData({
-        preMarket: preMarketPrice,
-        regular: data.c,
-        atClose: isMarketClosed ? data.c : null,
-        afterHours: isMarketClosed ? data.c : null,
-        regularOpen: data.o,
-        percentChange: data.dp,
-        priceDifference: data.d,
-        mostRecentDate: todayDateString,
-        prevClose: data.pc,
-      });
-
-      setTodayPrices({
-        preMarket: preMarketPrice,
-        regular: data.c,
-        atClose: isMarketClosed ? data.c : null,
-        afterHours: isMarketClosed ? data.c : afterHoursPrice,
-        regularOpen: data.o,
-        percentChange: data.dp,
-        priceDifference: data.d,
-        mostRecentDate: todayDateString,
-        prevClose: data.pc,
-      });
-    } catch (error) {
-      console.error("Error fetching today's prices:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTodayPrices();
-  }, [symbol, timeframe]);
-
+  // Define getTimeframeData before using it
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) {
       console.log("No data received in getTimeframeData");
@@ -220,12 +77,43 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           return true;
       }
     });
-    // console.log("filteredData", filteredData);
 
     return filteredData;
   };
 
-  // Update the yDomain calculation in the useMemo hook
+  const filteredData = useMemo(
+    () => (timeseriesData ? getTimeframeData(timeseriesData) : []),
+    [timeseriesData, timeframe]
+  );
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [todayPrices, setTodayPrices] = useState<{
+    prevClose: number | null;
+    preMarket: number | null;
+    regular: number | null;
+    afterHours: number | null;
+    regularOpen: number | null;
+    percentChange: number | null;
+    priceDifference: number | null;
+    mostRecentDate?: string | null;
+    atClose?: number | null;
+  }>({
+    prevClose: null,
+    atClose: null,
+    preMarket: null,
+    regular: null,
+    afterHours: null,
+    regularOpen: null,
+    percentChange: null,
+    priceDifference: null,
+    mostRecentDate: null,
+  });
+
+  const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
+
+  // Use currentTime instead of new Date()
+  const isAfterHours = currentTime.getHours() >= 16;
+
   const yDomain = useMemo(() => {
     if (filteredData.length === 0) return ["auto", "auto"];
 
@@ -240,71 +128,26 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     ];
   }, [filteredData]);
 
-  // Update todayPrices based on realtime data
-  useEffect(() => {
-    if (realtimeData?.realtimePrice && todayPrices.prevClose) {
-      const priceDiff = realtimeData.realtimePrice - todayPrices.prevClose;
-      const percentChange = (priceDiff / todayPrices.prevClose) * 100;
+  // useEffect(() => {
+  //   if (lastPrice && timeseriesData) {
+  //     const newDataPoint: StockData = {
+  //       date: new Date().toISOString(),
+  //       close: lastPrice,
+  //       marketSession: "regular",
+  //       // ... other required properties
+  //     };
 
-      setTodayPrices((prev) => {
-        todayData({
-          ...prev,
-          regular: realtimeData.realtimePrice,
-          priceDifference: priceDiff,
-          percentChange: percentChange,
-        });
-
-        return {
-          ...prev,
-          afterHours: isAfterHours ? realtimeData.realtimePrice : null,
-          regular: realtimeData.realtimePrice,
-          priceDifference: priceDiff,
-          percentChange: percentChange,
-        };
-      });
-    }
-  }, [realtimeData?.realtimePrice, todayPrices.prevClose]);
-
-  // Update the regular market price display
-  useEffect(() => {
-    if (realtimeData?.realtimePrice) {
-      const percentChange = todayPrices.prevClose
-        ? ((realtimeData.realtimePrice - todayPrices.prevClose) /
-            todayPrices.prevClose) *
-          100
-        : null;
-
-      setTodayPrices((prev) => {
-        todayData({
-          ...prev,
-          regular: realtimeData.realtimePrice,
-          percentChange,
-          priceDifference: todayPrices.prevClose
-            ? realtimeData.realtimePrice - todayPrices.prevClose
-            : null,
-        });
-
-        return {
-          ...prev,
-          regular: realtimeData.realtimePrice,
-          percentChange,
-          priceDifference: todayPrices.prevClose
-            ? realtimeData.realtimePrice - todayPrices.prevClose
-            : null,
-        };
-      });
-    }
-  }, [realtimeData?.realtimePrice]);
-
-  // Add state to track current time with more frequent updates
-  const [currentTime, setCurrentTime] = useState(new Date());
+  //     // Update the timeseries data with the new price
+  //     setTimeseriesData((prev) => [...(prev || []), newDataPoint]);
+  //   }
+  // }, [lastPrice]);
 
   // Add useEffect for time updates
   useEffect(() => {
     // Update time every second for more accurate display
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000); // Update every second
+    }, 1000);
 
     // Set initial time
     setCurrentTime(new Date());
@@ -313,198 +156,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Use currentTime instead of new Date()
-  const isAfterHours = currentTime.getHours() >= 16;
-
-  const fetchFinnhubTimeSeriesData = async (
-    symbol: string,
-    timeframe: string = "1D"
-  ): Promise<(StockData & { time: string })[]> => {
-    try {
-      // Get current date in EST
-      const now = new Date();
-      const estNow = new Date(
-        now.toLocaleString("en-US", { timeZone: "America/New_York" })
-      );
-
-      // Calculate start and end dates based on timeframe
-      const startDate = new Date(estNow);
-      let endDate = new Date(estNow);
-      let resolution = "1"; // Default 1 minute resolution for 1D
-
-      switch (timeframe) {
-        case "1D":
-          startDate.setHours(4, 0, 0, 0); // Start at 4 AM EST
-          endDate.setHours(20, 0, 0, 0); // End at 8 PM EST
-          resolution = "1"; // 1 minute resolution
-          break;
-        case "1W":
-          startDate.setDate(startDate.getDate() - 7);
-          resolution = "5"; // 5 minute resolution
-          break;
-        case "1M":
-          startDate.setMonth(startDate.getMonth() - 1);
-          resolution = "15"; // 15 minute resolution
-          break;
-        case "6M":
-          startDate.setMonth(startDate.getMonth() - 6);
-          resolution = "D"; // Daily resolution for 6M
-          break;
-        case "1Y":
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          resolution = "D"; // Daily resolution for 1Y
-          break;
-      }
-
-      // Ensure we're not requesting future data
-      if (endDate > estNow) {
-        endDate = estNow;
-      }
-
-      const startTime = Math.floor(startDate.getTime() / 1000);
-      const endTime = Math.floor(endDate.getTime() / 1000);
-
-      console.log("Fetching data:", {
-        timeframe,
-        startDate: new Date(startTime * 1000).toISOString(),
-        endDate: new Date(endTime * 1000).toISOString(),
-        resolution,
-      });
-
-      const response = await fetch(
-        `/api/timeFrame?symbol=${symbol}&resolution=${resolution}&from=${startTime}&to=${endTime}`
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch Finnhub data");
-
-      const result: FinnhubCandle = await response.json();
-
-      if (result.s !== "ok" || !result.t || result.t.length === 0) {
-        throw new Error("Invalid data received from Finnhub");
-      }
-
-      // Transform the data into StockData format
-      const transformedData = result.t.map((timestamp, index) => {
-        const date = new Date(timestamp * 1000);
-        let timeStr;
-
-        if (timeframe === "1D") {
-          timeStr = date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          });
-        } else {
-          timeStr = date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: timeframe === "1Y" ? "numeric" : undefined,
-          });
-        }
-
-        const marketSession = getMarketSession(date, timeframe);
-
-        return {
-          date: date.toISOString(),
-          time: timeStr,
-          open: result.o[index],
-          close: result.c[index],
-          high: result.h[index],
-          low: result.l[index],
-          volume: result.v[index],
-          gain: result.c[index] > result.o[index],
-          marketSession,
-        };
-      });
-
-      return transformedData.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-    } catch (error) {
-      console.error("Error fetching Finnhub time series:", error);
-      return [];
-    }
-  };
-
-  // Add helper function to determine market session
-  const getMarketSession = (
-    date: Date,
-    timeframe: string
-  ): "pre" | "regular" | "post" => {
-    if (timeframe !== "1D") return "regular";
-
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const timeInMinutes = hours * 60 + minutes;
-
-    if (timeInMinutes >= 4 * 60 && timeInMinutes < 9 * 60 + 30) {
-      return "pre";
-    } else if (timeInMinutes >= 16 * 60 && timeInMinutes <= 20 * 60) {
-      return "post";
-    }
-    return "regular";
-  };
-
-  const getChartData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchFinnhubTimeSeriesData(symbol, timeframe);
-
-      if (!data || data.length === 0) {
-        console.log("No data received from Finnhub");
-        setFilteredData([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const timeframeData = getTimeframeData(data);
-      setFilteredData(timeframeData);
-    } catch (error) {
-      console.error("Error in getChartData:", error);
-      setFilteredData([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update the useEffect for data fetching
-  useEffect(() => {
-    if (error) {
-      console.log("Error ", error);
-    }
-
-    let isMounted = true;
-
-    const fetchData = async () => {
-      await getChartData();
-      if (isMounted) {
-        // Set up interval only for 1D timeframe
-        if (timeframe === "1D") {
-          const interval = setInterval(() => {
-            getChartData();
-          }, 60000); // Call every minute
-          return () => clearInterval(interval);
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [symbol, timeframe]);
-
-  // Add a new function to handle timeframe changes
   const handleTimeframeChange = (tf: string) => {
-    // Only set loading state for the chart section
-    setIsLoading(true);
     onTimeframeChange(tf);
-
-    // Fetch new data without clearing existing data
-    getChartData().then(() => {
-      setIsLoading(false);
-    });
   };
 
   // Cleanup function will be called when component unmounts
@@ -520,58 +173,120 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     };
   }, []);
 
+  // Add a new state for current price data
+  const [currentPriceData, setCurrentPriceData] = useState<StockData | null>(
+    null
+  );
+
+  // Separate useEffect for current price data
+  useEffect(() => {
+    if (!timeseriesData?.length) return;
+
+    // Get the most recent data point
+    const mostRecentData = timeseriesData.reduce((latest, current) => {
+      if (!latest) return current;
+      return new Date(current.date) > new Date(latest.date) ? current : latest;
+    });
+
+    // Get today's data for pre/post market
+    const today = new Date();
+    const todayData = timeseriesData.filter(
+      (d) => new Date(d.date).toDateString() === today.toDateString()
+    );
+
+    const regularMarketData = todayData.filter(
+      (d) => d.marketSession === "regular"
+    );
+    const preMarketData = todayData.filter((d) => d.marketSession === "pre");
+    const afterHoursData = todayData.filter((d) => d.marketSession === "post");
+
+    // Find previous day's close
+    const prevDayClose = timeseriesData.find(
+      (d) =>
+        new Date(d.date).toDateString() ===
+          new Date(today.getTime() - 24 * 60 * 60 * 1000).toDateString() &&
+        d.marketSession === "regular"
+    )?.close;
+
+    setCurrentPriceData(mostRecentData);
+    setTodayPrices({
+      prevClose: prevDayClose || null,
+      preMarket: preMarketData[preMarketData.length - 1]?.close || null,
+      regular: regularMarketData[regularMarketData.length - 1]?.close || null,
+      afterHours: afterHoursData[afterHoursData.length - 1]?.close || null,
+      regularOpen: regularMarketData[0]?.open || null,
+      percentChange: prevDayClose
+        ? ((mostRecentData.close - prevDayClose) / prevDayClose) * 100
+        : null,
+      priceDifference: prevDayClose
+        ? mostRecentData.close - prevDayClose
+        : null,
+      mostRecentDate: mostRecentData.date,
+      atClose: regularMarketData[regularMarketData.length - 1]?.close || null,
+    });
+  }, [timeseriesData]); // Remove timeframe dependency
+
+  const TimeframeButton = React.memo(
+    ({
+      tf,
+      active,
+      onClick,
+    }: {
+      tf: string;
+      active: boolean;
+      onClick: () => void;
+    }) => (
+      <button
+        onClick={onClick}
+        className={`flex-1 text-xs font-medium px-3 py-[5px] rounded-[3px] transition-all duration-200 ${
+          active
+            ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200/50 dark:ring-slate-600/50"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
+        }`}
+      >
+        {tf}
+      </button>
+    )
+  );
+
+  // Update the price display section to use currentPriceData
+  const PriceDisplay = React.memo(() => (
+    <div className="flex items-baseline gap-1">
+      <span
+        className={`font-bold text-2xl ${
+          todayPrices.percentChange && todayPrices.percentChange > 0
+            ? "text-emerald-600 dark:text-emerald-500"
+            : "text-red-600 dark:text-red-500"
+        }`}
+      >
+        ${currentPriceData?.close.toFixed(2)}
+      </span>
+      {todayPrices.percentChange !== null && (
+        <span
+          className={`text-sm font-medium ${
+            todayPrices.percentChange > 0
+              ? "text-emerald-600 dark:text-emerald-500"
+              : "text-red-600 dark:text-red-500"
+          }`}
+        >
+          {todayPrices.percentChange > 0 ? "▲" : "▼"}
+          {todayPrices.priceDifference?.toFixed(2)}(
+          {todayPrices.percentChange.toFixed(2)}%)
+        </span>
+      )}
+    </div>
+  ));
+
   return (
     <div className="h-full w-full flex flex-col">
-      {/* Price and Controls Section - Always Visible */}
       <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-2">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-6">
             <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
-              {/* Price Display - Keep this visible during loading */}
               <div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className={`font-bold text-2xl ${
-                          todayPrices.percentChange &&
-                          todayPrices.percentChange > 0
-                            ? "text-emerald-600 dark:text-emerald-500"
-                            : "text-red-600 dark:text-red-500"
-                        }`}
-                      >
-                        $
-                        {(isAfterHours
-                          ? todayPrices.atClose
-                          : todayPrices.regular) &&
-                        todayPrices.regular &&
-                        todayPrices.regular < 0
-                          ? "-"
-                          : ""}
-                        {Math.abs(
-                          (isAfterHours
-                            ? todayPrices.atClose
-                            : todayPrices.regular) || 0
-                        ).toFixed(2)}
-                      </span>
-                    </div>
-
-                    {todayPrices.percentChange !== null &&
-                      todayPrices.priceDifference !== null &&
-                      realtimeData?.realtimePrice &&
-                      new Date().getHours() < 16 && (
-                        <span
-                          className={`text-sm font-medium ${
-                            todayPrices.percentChange > 0
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}
-                        >
-                          {todayPrices.percentChange > 0 ? "▲" : "▼"} $
-                          {todayPrices.priceDifference.toFixed(2)} (
-                          {todayPrices.percentChange.toFixed(2)}%)
-                        </span>
-                      )}
+                    <PriceDisplay />
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     As of{" "}
@@ -682,23 +397,17 @@ const StockPriceChart: React.FC<StockChartProps> = ({
         <div className="w-full">
           <div className="flex items-center bg-gray-50/80 dark:bg-slate-800/80 rounded-md p-[2px] shadow-sm">
             {timeframeButtons.map((tf) => (
-              <button
+              <TimeframeButton
                 key={tf}
+                tf={tf}
+                active={tf === timeframe}
                 onClick={() => handleTimeframeChange(tf)}
-                className={`flex-1 text-xs font-medium px-3 py-[5px] rounded-[3px] transition-all duration-200 ${
-                  timeframe === tf
-                    ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200/50 dark:ring-slate-600/50"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
-                }`}
-              >
-                {tf}
-              </button>
+              />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Chart Section - Cleaner implementation */}
       <div className="flex-1 min-h-[300px] relative">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -706,13 +415,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            {/* Chart implementation with improved styling */}
             <AreaChart
               data={filteredData}
               margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
             >
-              {/* ... rest of the chart implementation */}
-              {/* Update CartesianGrid for more subtle grid lines */}
               <CartesianGrid
                 strokeDasharray="2 4"
                 vertical={false}
@@ -720,7 +426,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                 className="dark:stroke-gray-700/30"
               />
 
-              {/* More subtle axis styling */}
               <YAxis
                 domain={yDomain}
                 tickLine={false}
@@ -750,7 +455,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                   const hours = date.getHours();
                   const minutes = date.getMinutes();
 
-                  // Format time more professionally
                   if (timeframe === "1D") {
                     // For 1D view, show hours with AM/PM
                     const ampm = hours >= 12 ? "PM" : "AM";
@@ -758,7 +462,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                     const minuteStr = minutes.toString().padStart(2, "0");
                     return `${hour}:${minuteStr} ${ampm}`;
                   } else {
-                    // For other timeframes, show date
                     return date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
