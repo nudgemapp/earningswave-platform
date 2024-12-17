@@ -124,6 +124,13 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
 
   const { data, isLoading, error } = useGetWeekView();
 
+  // console.log(data);
+
+  // console.log(
+  //   "entry:",
+  //   data?.earnings.find((e) => e.symbol === "ISSC")
+  // );
+
   const filterEarnings = (earnings: EarningsEntry[]) => {
     return earnings.filter((entry) => {
       // Market Cap filtering
@@ -491,11 +498,15 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
           // Group transcripts by market timing (only BMO and AMC)
           const preMarket = dayTranscripts.filter((t) => {
             const time = t.earningsTime.split(":")[0];
-            return parseInt(time) < 9; // Before 9am is pre-market
+            const hour = parseInt(time);
+            // Consider anything before 16:00 (4 PM) as pre-market
+            return hour < 16;
           });
           const afterMarket = dayTranscripts.filter((t) => {
             const time = t.earningsTime.split(":")[0];
-            return parseInt(time) >= 16; // 4pm or later is after-market
+            const hour = parseInt(time);
+            // Only 16:00 (4 PM) and later is after-market
+            return hour >= 16;
           });
 
           return (

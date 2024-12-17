@@ -261,6 +261,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
         if (!response.ok) throw new Error("Failed to fetch Finnhub data");
 
         const data = await response.json();
+        console.log("Finnhub data:", data);
         setFinnhubData(data.earningsCalendar || []);
       } catch (error) {
         console.error("Error fetching Finnhub data:", error);

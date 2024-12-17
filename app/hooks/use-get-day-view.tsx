@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { BLACKLISTED_SYMBOLS } from "@/app/constants/blacklist";
+import {
+  EARNINGS_CALENDAR,
+  getSymbolsForDate,
+} from "@/app/constants/earnings-calendar";
 
 interface Company {
   id: string;
@@ -57,13 +61,32 @@ export const useGetDayView = (date: Date) => {
 
       const data = await response.json();
 
-      // Filter out blacklisted symbols
+      // Filter earnings based on both calendar and blacklist
       data.earnings = data.earnings.filter((entry: EarningsEntry) => {
         const symbol = entry.symbol.toUpperCase();
-        return !BLACKLISTED_SYMBOLS.some(
-          (blacklisted) => blacklisted.toUpperCase() === symbol
-        );
+
+        // First, check if symbol is blacklisted
+        if (
+          BLACKLISTED_SYMBOLS.some(
+            (blacklisted) => blacklisted.toUpperCase() === symbol
+          )
+        ) {
+          return false;
+        }
+
+        // Then check calendar filtering
+        const entryDate = entry.earningsDate.split("T")[0];
+        const scheduledSymbols = getSymbolsForDate(entryDate);
+
+        // If we have no scheduled symbols for this date, let all entries through
+        if (scheduledSymbols.length === 0) {
+          return true;
+        }
+
+        // Otherwise, only show scheduled symbols
+        return scheduledSymbols.includes(entry.symbol);
       });
+
       return data;
     },
     enabled: !!date,
