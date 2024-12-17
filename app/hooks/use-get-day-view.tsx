@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { BLACKLISTED_SYMBOLS } from "@/app/constants/blacklist";
-import {
-  EARNINGS_CALENDAR,
-  getSymbolsForDate,
-} from "@/app/constants/earnings-calendar";
+import { getSymbolsForDate } from "@/app/constants/earnings-calendar";
 
 interface Company {
   id: string;
