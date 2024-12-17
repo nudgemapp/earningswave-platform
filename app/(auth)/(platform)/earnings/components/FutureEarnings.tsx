@@ -187,7 +187,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
     // Cleanup interval on unmount
     return () => clearInterval(timer);
   }, []); // Empty dependency array since we want this to run once on mount
-  // const isAfterHours = currentTime.getHours() >= 16;
 
   const [todayPrices, setTodayPrices] = useState<{
     prevClose: number | null;

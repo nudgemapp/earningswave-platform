@@ -3,6 +3,14 @@ import WebSocketManager from "@/services/WebSocketManager";
 
 export const runtime = "edge";
 
+// Add this interface near the top of the file
+interface WebSocketData {
+  data?: Array<{
+    s: string; // symbol
+    [key: string]: any; // other properties
+  }>;
+}
+
 export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get("symbol");
 
@@ -26,7 +34,7 @@ export async function GET(request: NextRequest) {
     await writer.write(new TextEncoder().encode(`data: ${initialMessage}\n\n`));
 
     // Create callback for this specific client
-    const callback = async (data: any) => {
+    const callback = async (data: WebSocketData) => {
       try {
         if (data.data?.[0]?.s === symbol) {
           const message = JSON.stringify(data);

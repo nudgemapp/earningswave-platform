@@ -34,12 +34,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     timeframe
   );
 
+  console.log("timeseriesData", timeseriesData);
+
   // Define getTimeframeData before using it
   const getTimeframeData = (data: StockData[]) => {
-    if (!data || data.length === 0) {
-      console.log("No data received in getTimeframeData");
-      return [];
-    }
+    if (!data || data.length === 0) return [];
 
     const now = new Date();
     const filteredData = data.filter((point: StockData) => {
@@ -47,43 +46,33 @@ const StockPriceChart: React.FC<StockChartProps> = ({
 
       switch (timeframe) {
         case "1D":
-          return (
-            pointDate.getDate() === now.getDate() &&
-            pointDate.getMonth() === now.getMonth() &&
-            pointDate.getFullYear() === now.getFullYear()
-          );
-
+          return pointDate.toDateString() === now.toDateString();
         case "1W":
-          const oneWeekAgo = new Date(now);
-          oneWeekAgo.setDate(now.getDate() - 7);
+          const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
           return pointDate >= oneWeekAgo;
-
         case "1M":
-          const oneMonthAgo = new Date(now);
-          oneMonthAgo.setMonth(now.getMonth() - 1);
+          const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
           return pointDate >= oneMonthAgo;
-
         case "6M":
-          const sixMonthsAgo = new Date(now);
-          sixMonthsAgo.setMonth(now.getMonth() - 6);
+          const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
           return pointDate >= sixMonthsAgo;
-
         case "1Y":
-          const oneYearAgo = new Date(now);
-          oneYearAgo.setFullYear(now.getFullYear() - 1);
+          const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
           return pointDate >= oneYearAgo;
-
         default:
           return true;
       }
     });
 
-    return filteredData;
+    // Sort data by date to ensure proper ordering
+    return filteredData.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
   };
 
   const filteredData = useMemo(
     () => (timeseriesData ? getTimeframeData(timeseriesData) : []),
-    [timeseriesData, timeframe]
+    [timeseriesData, timeframe, getTimeframeData]
   );
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -110,9 +99,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   });
 
   const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
-
-  // Use currentTime instead of new Date()
-  const isAfterHours = currentTime.getHours() >= 16;
 
   const yDomain = useMemo(() => {
     if (filteredData.length === 0) return ["auto", "auto"];
@@ -164,11 +150,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Cleanup function will be called when component unmounts
+    const currentTimeout = reconnectTimeout.current;
     return () => {
-      // Clear any existing intervals or timeouts
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
+      if (currentTimeout) {
+        clearTimeout(currentTimeout);
       }
     };
   }, []);
@@ -178,42 +163,48 @@ const StockPriceChart: React.FC<StockChartProps> = ({
     null
   );
 
-  // Separate useEffect for current price data
+  // Add this state at the top of the component with other states
+  const [storedAfterHoursData, setStoredAfterHoursData] = useState<{
+    price: number | null;
+    atClose: number | null;
+  } | null>(null);
+
+  // Modify the useEffect
   useEffect(() => {
     if (!timeseriesData?.length) return;
 
-    // Get the most recent data point
+    // Get the most recent regular market data
+    const regularMarketData = timeseriesData
+      .filter((d) => d.marketSession === "regular")
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const mostRecentRegularClose = regularMarketData[0];
+    const prevDayClose = regularMarketData[1]?.close;
+
+    // Get after hours from the most recent data point
     const mostRecentData = timeseriesData.reduce((latest, current) => {
       if (!latest) return current;
       return new Date(current.date) > new Date(latest.date) ? current : latest;
     });
 
-    // Get today's data for pre/post market
-    const today = new Date();
-    const todayData = timeseriesData.filter(
-      (d) => new Date(d.date).toDateString() === today.toDateString()
-    );
-
-    const regularMarketData = todayData.filter(
-      (d) => d.marketSession === "regular"
-    );
-    const preMarketData = todayData.filter((d) => d.marketSession === "pre");
-    const afterHoursData = todayData.filter((d) => d.marketSession === "post");
-
-    // Find previous day's close
-    const prevDayClose = timeseriesData.find(
-      (d) =>
-        new Date(d.date).toDateString() ===
-          new Date(today.getTime() - 24 * 60 * 60 * 1000).toDateString() &&
-        d.marketSession === "regular"
-    )?.close;
+    // If this is 1-day view, store the after-hours data
+    if (timeframe === "1D" && mostRecentData.marketSession === "post") {
+      setStoredAfterHoursData({
+        price: mostRecentData.close,
+        atClose: mostRecentRegularClose?.close || null,
+      });
+    }
 
     setCurrentPriceData(mostRecentData);
     setTodayPrices({
       prevClose: prevDayClose || null,
-      preMarket: preMarketData[preMarketData.length - 1]?.close || null,
-      regular: regularMarketData[regularMarketData.length - 1]?.close || null,
-      afterHours: afterHoursData[afterHoursData.length - 1]?.close || null,
+      preMarket:
+        mostRecentData.marketSession === "pre" ? mostRecentData.close : null,
+      regular: mostRecentRegularClose?.close || null,
+      // Use stored after-hours data if available, otherwise try current data
+      afterHours:
+        storedAfterHoursData?.price ||
+        (mostRecentData.marketSession === "post" ? mostRecentData.close : null),
       regularOpen: regularMarketData[0]?.open || null,
       percentChange: prevDayClose
         ? ((mostRecentData.close - prevDayClose) / prevDayClose) * 100
@@ -221,10 +212,11 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       priceDifference: prevDayClose
         ? mostRecentData.close - prevDayClose
         : null,
-      mostRecentDate: mostRecentData.date,
-      atClose: regularMarketData[regularMarketData.length - 1]?.close || null,
+      mostRecentDate: mostRecentRegularClose?.date,
+      atClose:
+        storedAfterHoursData?.atClose || mostRecentRegularClose?.close || null,
     });
-  }, [timeseriesData]); // Remove timeframe dependency
+  }, [timeseriesData, timeframe, storedAfterHoursData]);
 
   const TimeframeButton = React.memo(
     ({
@@ -248,6 +240,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       </button>
     )
   );
+  TimeframeButton.displayName = "TimeframeButton";
 
   // Update the price display section to use currentPriceData
   const PriceDisplay = React.memo(() => (
@@ -276,6 +269,9 @@ const StockPriceChart: React.FC<StockChartProps> = ({
       )}
     </div>
   ));
+  PriceDisplay.displayName = "PriceDisplay";
+
+  console.log("todayPrices", todayPrices);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -340,53 +336,44 @@ const StockPriceChart: React.FC<StockChartProps> = ({
                     </span>
                   )}
 
-                  {todayPrices.afterHours &&
-                    (new Date().getHours() >= 16 ||
-                      new Date().getHours() < 9 ||
-                      (new Date().getHours() === 9 &&
-                        new Date().getMinutes() < 30) ||
-                      true) && (
-                      <div className="flex items-center gap-2">
+                  {todayPrices.afterHours && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        After Hours
+                      </span>
+                      <span
+                        className={`text-sm ${
+                          todayPrices.afterHours > (todayPrices.atClose || 0)
+                            ? "text-emerald-600 dark:text-emerald-500"
+                            : "text-red-600 dark:text-red-500"
+                        }`}
+                      >
+                        ${todayPrices.afterHours.toFixed(2)}
+                      </span>
+                      {todayPrices.regular && (
                         <span
-                          className={` text-sm text-gray-500 dark:text-gray-400`}
-                        >
-                          After Hours
-                        </span>
-                        <span
-                          className={` text-sm ${
+                          className={`text-sm font-medium ${
                             todayPrices.afterHours > (todayPrices.atClose || 0)
                               ? "text-emerald-600 dark:text-emerald-500"
                               : "text-red-600 dark:text-red-500"
                           }`}
                         >
-                          ${todayPrices.afterHours.toFixed(2)}
+                          $
+                          {Math.abs(
+                            todayPrices.afterHours - (todayPrices.atClose || 0)
+                          ).toFixed(2)}{" "}
+                          (
+                          {(
+                            ((todayPrices.afterHours -
+                              (todayPrices.atClose || 0)) /
+                              (todayPrices.atClose || 0)) *
+                            100
+                          ).toFixed(2)}
+                          %)
                         </span>
-                        {todayPrices.regular && (
-                          <span
-                            className={`text-sm font-medium ${
-                              todayPrices.afterHours >
-                              (todayPrices.atClose || 0)
-                                ? "text-emerald-600 dark:text-emerald-500"
-                                : "text-red-600 dark:text-red-500"
-                            }`}
-                          >
-                            $
-                            {Math.abs(
-                              todayPrices.afterHours -
-                                (todayPrices.atClose || 0)
-                            ).toFixed(2)}{" "}
-                            (
-                            {(
-                              ((todayPrices.afterHours -
-                                (todayPrices.atClose || 0)) /
-                                (todayPrices.atClose || 0)) *
-                              100
-                            ).toFixed(2)}
-                            %)
-                          </span>
-                        )}
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

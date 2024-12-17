@@ -1,12 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 import { getFinnhubWS } from "@/services/FinnhubWebSocketService";
 
 // Add these interfaces at the top of the file
 interface Trade {
-  p: number;    // price
-  s: string;    // symbol
-  t: number;    // timestamp
-  v: number;    // volume
+  p: number; // price
+  s: string; // symbol
+  t: number; // timestamp
+  v: number; // volume
 }
 
 interface WebSocketMessage {
@@ -16,10 +16,10 @@ interface WebSocketMessage {
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
-  const symbol = searchParams.get('symbol');
+  const symbol = searchParams.get("symbol");
 
   if (!symbol) {
-    return new Response('Symbol is required', { status: 400 });
+    return new Response("Symbol is required", { status: 400 });
   }
 
   const finnhubWS = getFinnhubWS();
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   let isStreamActive = true;
 
   // Handle client disconnect
-  req.signal.addEventListener('abort', () => {
+  req.signal.addEventListener("abort", () => {
     isStreamActive = false;
     finnhubWS.unsubscribe(symbol);
     writer.close().catch(console.error);
@@ -44,11 +44,14 @@ export async function GET(req: NextRequest) {
     try {
       await writer.write(encoder.encode(`data: ${data}\n\n`));
     } catch (error) {
-      if (error instanceof TypeError && error.message.includes('WritableStream is closed')) {
+      if (
+        error instanceof TypeError &&
+        error.message.includes("WritableStream is closed")
+      ) {
         isStreamActive = false;
         finnhubWS.unsubscribe(symbol);
       } else {
-        console.error('Error writing to stream:', error);
+        console.error("Error writing to stream:", error);
       }
     }
   };
@@ -57,22 +60,24 @@ export async function GET(req: NextRequest) {
     if (tradeBuffer.length === 0 || !isStreamActive) return;
 
     try {
-      await safeWrite(JSON.stringify({
-        type: 'trade',
-        data: [...tradeBuffer]
-      }));
+      await safeWrite(
+        JSON.stringify({
+          type: "trade",
+          data: [...tradeBuffer],
+        })
+      );
       tradeBuffer.length = 0; // Clear buffer
     } catch (error) {
-      console.error('Error flushing buffer:', error);
+      console.error("Error flushing buffer:", error);
     }
   };
 
   const messageHandler = (data: WebSocketMessage) => {
     if (!isStreamActive) return;
 
-    if (data.type === 'trade' && data.data) {
+    if (data.type === "trade" && data.data) {
       tradeBuffer.push(...data.data);
-      
+
       if (tradeBuffer.length >= 100) {
         flushBuffer();
       } else if (!flushTimeout) {
@@ -84,23 +89,23 @@ export async function GET(req: NextRequest) {
     }
   };
 
-  finnhubWS.events.on('message', messageHandler);
+  finnhubWS.events.on("message", messageHandler);
   await finnhubWS.subscribe(symbol);
 
   const cleanup = () => {
     isStreamActive = false;
     if (flushTimeout) clearTimeout(flushTimeout);
-    finnhubWS.events.removeListener('message', messageHandler);
+    finnhubWS.events.removeListener("message", messageHandler);
     finnhubWS.unsubscribe(symbol);
   };
 
-  req.signal.addEventListener('abort', cleanup);
+  req.signal.addEventListener("abort", cleanup);
 
   return new Response(stream.readable, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     },
   });
-} 
+}
