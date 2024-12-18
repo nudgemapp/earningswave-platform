@@ -25,8 +25,8 @@ interface EarningsQueryResult {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  let startDate = new Date(searchParams.get("startDate") || "");
-  let endDate = new Date(searchParams.get("endDate") || "");
+  const startDate = new Date(searchParams.get("startDate") || "");
+  const endDate = new Date(searchParams.get("endDate") || "");
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return new Response("Invalid date parameters", { status: 400 });

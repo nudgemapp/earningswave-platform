@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Company, Transcript } from "@prisma/client";
 
 type ExtendedCompany = Company & {
@@ -27,7 +27,10 @@ export const useGetCompany = (companyId: string | undefined) => {
   });
 };
 
-export const prefetchCompany = async (companyId: string, queryClient: any) => {
+export const prefetchCompany = async (
+  companyId: string,
+  queryClient: QueryClient
+) => {
   return queryClient.prefetchQuery({
     queryKey: ["company", companyId],
     queryFn: async () => {

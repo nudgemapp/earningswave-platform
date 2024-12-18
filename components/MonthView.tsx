@@ -318,7 +318,6 @@ const MonthView: React.FC<MonthViewProps> = ({
   );
 
   const MarketTimingGroup = ({
-    date,
     title,
     icon: Icon,
     transcripts,
@@ -328,7 +327,6 @@ const MonthView: React.FC<MonthViewProps> = ({
     icon: LucideIcon;
     transcripts: EarningsEntry[];
     bgColor: string;
-    date: Date;
   }) => {
     const queryClient = useQueryClient();
 
@@ -459,7 +457,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                   ) : (
                     <div className="flex flex-col h-full">
                       <MarketTimingGroup
-                        date={date}
                         title="Pre-Market"
                         icon={Sun}
                         transcripts={dayContent
@@ -474,7 +471,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                         bgColor="bg-blue-200/40"
                       />
                       <MarketTimingGroup
-                        date={date}
                         title="After Hours"
                         icon={Moon}
                         transcripts={dayContent
