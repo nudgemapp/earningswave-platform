@@ -32,7 +32,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
 
   // console.log("timeseriesData", timeseriesData);
 
-  // Define getTimeframeData before using it
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) return [];
 
@@ -68,7 +67,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
 
   const filteredData = useMemo(
     () => (timeseriesData ? getTimeframeData(timeseriesData) : []),
-    [timeseriesData, timeframe, getTimeframeData]
+    [timeseriesData, timeframe]
   );
 
   const [currentTime, setCurrentTime] = useState(new Date());
