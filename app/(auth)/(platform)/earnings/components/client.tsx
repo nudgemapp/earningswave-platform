@@ -94,19 +94,21 @@ const EarningsClient = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative sm:mt-0 mt-12">
-      <CalendarNavbar
-        onFilter={(filters) => {
-          console.log(filters);
-          setFilters(filters);
-        }}
-        currentDate={currentDate}
-        setCurrentDate={handleDateChange}
-        navigateMonth={(direction: number) =>
-          handleNavigateMonth(direction > 0 ? "next" : "prev")
-        }
-        view={view}
-        setView={handleViewChange}
-      />
+      <div className="hidden sm:block">
+        <CalendarNavbar
+          onFilter={(filters) => {
+            console.log(filters);
+            setFilters(filters);
+          }}
+          currentDate={currentDate}
+          setCurrentDate={handleDateChange}
+          navigateMonth={(direction: number) =>
+            handleNavigateMonth(direction > 0 ? "next" : "prev")
+          }
+          view={view}
+          setView={handleViewChange}
+        />
+      </div>
       <div className="flex-1 overflow-y-auto relative">
         {view === "week" ? (
           <WeekView handleCompanyClick={handleCompanyClick} filters={filters} />
