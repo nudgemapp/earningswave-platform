@@ -364,34 +364,108 @@ export async function POST(request: Request) {
         },
       },
       queryEarnings: {
-        description: "Query earnings information for companies",
+        description: "Query earnings information and transcripts for companies",
         parameters: z.object({
           symbol: z.string().describe("The company stock symbol"),
           quarter: z.number().optional().describe("The quarter number (1-4)"),
           year: z.number().optional().describe("The year"),
         }),
         execute: async ({ symbol, quarter, year }) => {
-          console.log("=== QUERYING EARNINGS ===");
-          console.log("Symbol:", symbol);
-          console.log("Quarter:", quarter);
-          console.log("Year:", year);
+          // Find company first to get the ID
+          const company = await prisma.company.findFirst({
+            where: {
+              symbol: symbol.toUpperCase(),
+              mic: { in: ["XNAS", "XNYS"] }, // Optimize by limiting to main exchanges
+            },
+            select: {
+              // Only select needed fields
+              id: true,
+              marketCapitalization: true,
+              symbol: true,
+            },
+          });
 
+          if (!company) {
+            return { message: `Company not found: ${symbol}` };
+          }
+
+          // Get most recent earnings if quarter/year not specified
           const earnings = await prisma.earnings.findFirst({
             where: {
               symbol: symbol.toUpperCase(),
               ...(quarter && { quarter }),
               ...(year && { year }),
             },
-            orderBy: {
-              earningsDate: "desc",
+            orderBy: { earningsDate: "desc" },
+            select: {
+              // Only select needed fields
+              symbol: true,
+              earningsDate: true,
+              earningsTime: true,
+              quarter: true,
+              year: true,
+              isDateConfirmed: true,
             },
           });
 
-          console.log("Earnings Result:", earnings);
-
           if (!earnings) {
-            return {
-              message: `No earnings data found for ${symbol}`,
+            return { message: `No earnings data found for ${symbol}` };
+          }
+
+          // Get most recent transcript
+          const transcript = await prisma.transcript.findFirst({
+            where: {
+              companyId: company.id,
+              quarter: earnings.quarter,
+              year: earnings.year,
+              status: "COMPLETED", // Only get completed transcripts
+            },
+            select: {
+              aiSummary: true,
+              fullText: true,
+              status: true,
+              epsActual: true,
+              epsEstimate: true,
+              revenueActual: true,
+              revenueEstimate: true,
+            },
+          });
+
+          // If we have earnings and company, check for transcript
+          let transcriptData = null;
+          if (earnings && company && transcript) {
+            // Generate summary if fullText exists but no aiSummary
+            let summary = transcript.aiSummary;
+            if (transcript.fullText && !transcript.aiSummary) {
+              const { fullStream } = streamText({
+                model: customModel(model.apiIdentifier),
+                system:
+                  "You are a financial analyst. Provide a concise, professional summary of this earnings call transcript. Focus on key financial metrics, strategic initiatives, and important announcements.",
+                prompt: transcript.fullText,
+              });
+
+              let generatedSummary = "";
+              for await (const delta of fullStream) {
+                if (delta.type === "text-delta") {
+                  generatedSummary += delta.textDelta;
+                }
+              }
+              summary = generatedSummary;
+            }
+
+            transcriptData = {
+              summary,
+              status: transcript.status,
+              financials: {
+                eps: {
+                  actual: transcript.epsActual,
+                  estimate: transcript.epsEstimate,
+                },
+                revenue: {
+                  actual: transcript.revenueActual,
+                  estimate: transcript.revenueEstimate,
+                },
+              },
             };
           }
 
@@ -402,6 +476,7 @@ export async function POST(request: Request) {
             quarter: earnings.quarter,
             year: earnings.year,
             isConfirmed: earnings.isDateConfirmed,
+            transcript: transcriptData,
           };
         },
       },

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PencilLine, Sparkles, SparklesIcon } from "lucide-react";
 import { cx } from "class-variance-authority";
+import { EarningsResult } from "./earnings-result";
 // import { MessageEditor } from "./message-editor";
 // import { MessageActions } from "./message-actions";
 
@@ -58,7 +59,8 @@ const PurePreviewMessage = ({
     >
       <div
         className={cn(
-          "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
+          "flex gap-4 w-full",
+          "group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
           {
             "w-full": mode === "edit",
             "group-data-[role=user]/message:w-fit": mode !== "edit",
@@ -66,8 +68,8 @@ const PurePreviewMessage = ({
         )}
       >
         {message.role === "assistant" && (
-          <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-            <Sparkles size={14} />
+          <div className="size-8 flex items-center rounded-full justify-center shrink-0 bg-purple-50 border border-purple-100">
+            <Sparkles size={14} className="text-purple-600" />
           </div>
         )}
 
@@ -103,9 +105,10 @@ const PurePreviewMessage = ({
               )}
 
               <div
-                className={cn("flex flex-col gap-4", {
-                  "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                    message.role === "user",
+                className={cn("flex flex-col gap-4 py-2 px-3 rounded-2xl", {
+                  "bg-primary text-primary-foreground": message.role === "user",
+                  "bg-purple-50/50 text-purple-900":
+                    message.role === "assistant",
                 })}
               >
                 <Markdown>{message.content as string}</Markdown>
@@ -135,16 +138,19 @@ const PurePreviewMessage = ({
                 if (state === "result") {
                   const { result } = toolInvocation;
 
+                  console.log(result);
+                  console.log(toolName);
+                  console.log(block);
+
                   return (
                     <div key={toolCallId}>
                       {toolName === "queryEarnings" ? (
-                        // <EarningsResult
-                        //   result={result}
-                        //   block={block}
-                        //   setBlock={setBlock}
-                        //   isReadonly={isReadonly}
-                        // />
-                        <div>Earnings Result</div>
+                        <EarningsResult
+                          result={result}
+                          block={block}
+                          setBlock={setBlock}
+                          isReadonly={isReadonly}
+                        />
                       ) : toolName === "createDocument" ? (
                         <DocumentToolResult
                           type="create"
@@ -183,7 +189,7 @@ const PurePreviewMessage = ({
                     })}
                   >
                     {toolName === "queryEarnings" ? (
-                      <div>Earnings Tool Call</div>
+                      <div>...</div>
                     ) : toolName === "createDocument" ? (
                       <DocumentToolCall
                         type="create"
@@ -255,20 +261,13 @@ export const ThinkingMessage = () => {
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
     >
-      <div
-        className={cx(
-          "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
-          {
-            "group-data-[role=user]/message:bg-muted": true,
-          }
-        )}
-      >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-          <SparklesIcon size={14} />
+      <div className="flex gap-4">
+        <div className="size-8 flex items-center rounded-full justify-center shrink-0 bg-purple-50 border border-purple-100">
+          <SparklesIcon size={14} className="text-purple-600 animate-pulse" />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
+          <div className="flex flex-col gap-4 text-purple-600/75">
             Thinking...
           </div>
         </div>
