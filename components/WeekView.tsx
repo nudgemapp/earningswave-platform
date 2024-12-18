@@ -16,6 +16,7 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useAuth } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Company {
   id: string;
@@ -293,45 +294,67 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
     symbol,
     name,
     logo,
+    companyId,
     onClick,
   }: {
     symbol: string;
     name: string;
     logo: string | null;
+    companyId: string;
     onClick: () => void;
-  }) => (
-    <div
-      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      title={`${name} (${symbol})`}
-    >
-      <div className="aspect-square relative">
-        {logo ? (
-          <Image
-            src={logo}
-            alt={`${name} logo`}
-            layout="fill"
-            objectFit="cover"
-            className="w-full h-full"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
-            <span className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
-              {symbol}
-            </span>
-          </div>
-        )}
+  }) => {
+    const queryClient = useQueryClient();
+
+    return (
+      <div
+        className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onMouseEnter={() => {
+          // Prefetch the company data when hovering
+          queryClient.prefetchQuery({
+            queryKey: ["company", companyId],
+            queryFn: async () => {
+              const response = await fetch(`/api/companies/${companyId}`, {
+                headers: {
+                  "Cache-Control": "public, max-age=300",
+                },
+              });
+              if (!response.ok) throw new Error("Failed to fetch company data");
+              return response.json();
+            },
+            staleTime: 1000 * 60 * 5, // 5 minutes
+          });
+        }}
+        title={`${name} (${symbol})`}
+      >
+        <div className="aspect-square relative">
+          {logo ? (
+            <Image
+              src={logo}
+              alt={`${name} logo`}
+              layout="fill"
+              objectFit="cover"
+              className="w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+              <span className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
+                {symbol}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="w-full bg-gray-50 dark:bg-slate-800 py-1 px-1.5 border-t border-gray-200 dark:border-slate-700">
+          <span className="text-[10px] md:text-xs font-medium text-gray-800 dark:text-gray-200 block text-center truncate">
+            {symbol}
+          </span>
+        </div>
       </div>
-      <div className="w-full bg-gray-50 dark:bg-slate-800 py-1 px-1.5 border-t border-gray-200 dark:border-slate-700">
-        <span className="text-[10px] md:text-xs font-medium text-gray-800 dark:text-gray-200 block text-center truncate">
-          {symbol}
-        </span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const MarketTimingGroup = ({
     // date,
@@ -376,6 +399,7 @@ const WeekView: React.FC<WeekViewProps> = ({ filters, handleCompanyClick }) => {
               symbol={transcript.company?.symbol || ""}
               name={transcript.company?.name || ""}
               logo={transcript.company?.logo || null}
+              companyId={transcript.company.id}
               onClick={() => handleCompanyClick(transcript)}
             />
           ))}
