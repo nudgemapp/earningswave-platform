@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { Company, Transcript } from "@prisma/client";
 
 type ExtendedCompany = Company & {
@@ -23,5 +23,25 @@ export const useGetCompany = (companyId: string | undefined) => {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+export const prefetchCompany = async (
+  companyId: string,
+  queryClient: QueryClient
+) => {
+  return queryClient.prefetchQuery({
+    queryKey: ["company", companyId],
+    queryFn: async () => {
+      const response = await fetch(`/api/companies/${companyId}`, {
+        headers: {
+          "Cache-Control": "public, max-age=300",
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch company data");
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 5,
   });
 };

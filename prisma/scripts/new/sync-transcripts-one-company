@@ -21,45 +21,69 @@ async function fetchAndMapEarningsData() {
   const errors: string[] = [];
   let totalUpdates = 0;
 
-  const symbol = "ORCL";
+  const symbol = "ZJK";
 
   try {
-    //     const profileResponse = await fetch(
-    //       `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
-    //     );
+    const profileResponse = await fetch(
+      `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
+    );
 
-    //     const profileData = await profileResponse.json();
+    const profileData = await profileResponse.json();
 
-    //     console.log(profileData);
+    console.log(profileData);
 
-    //     const newCompany = await prisma.company.create({
-    //       data: {
-    //         symbol: profileData.ticker,
-    //         currency: profileData.currency,
-    //         description: profileData.name,
-    //         displaySymbol: profileData.ticker,
-    //         mic: determineMIC(profileData.exchange),
-    //         type: "Common Stock",
-    //         country: profileData.country,
-    //         exchange: profileData.exchange,
-    //         ipo: new Date(profileData.ipo),
-    //         marketCapitalization: profileData.marketCapitalization,
-    //         name: profileData.name,
-    //         phone: profileData.phone,
-    //         sharesOutstanding: profileData.shareOutstanding,
-    //         weburl: profileData.weburl,
-    //         logo: profileData.logo,
-    //         finnhubIndustry: profileData.finnhubIndustry,
-    //       },
-    //     });
+    const mic = determineMIC(profileData.exchange);
 
-    //     console.log(newCompany);
+    const newCompany = await prisma.company.upsert({
+      where: {
+        symbol_mic: {
+          symbol: profileData.ticker,
+          mic: mic,
+        },
+      },
+      create: {
+        symbol: profileData.ticker,
+        currency: profileData.currency,
+        description: profileData.name,
+        displaySymbol: profileData.ticker,
+        mic: mic,
+        type: "Common Stock",
+        country: profileData.country,
+        exchange: profileData.exchange,
+        ipo: new Date(profileData.ipo),
+        marketCapitalization: profileData.marketCapitalization,
+        name: profileData.name,
+        phone: profileData.phone,
+        sharesOutstanding: profileData.shareOutstanding,
+        weburl: profileData.weburl,
+        logo: profileData.logo,
+        finnhubIndustry: profileData.finnhubIndustry,
+      },
+      update: {
+        currency: profileData.currency,
+        description: profileData.name,
+        country: profileData.country,
+        exchange: profileData.exchange,
+        ipo: new Date(profileData.ipo),
+        marketCapitalization: profileData.marketCapitalization,
+        name: profileData.name,
+        phone: profileData.phone,
+        sharesOutstanding: profileData.shareOutstanding,
+        weburl: profileData.weburl,
+        logo: profileData.logo,
+        finnhubIndustry: profileData.finnhubIndustry,
+      },
+    });
+
+    console.log(newCompany);
 
     // Fetch transcript list
     const transcriptListResponse = await fetch(
       `https://finnhub.io/api/v1/stock/transcripts/list?symbol=${symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
     );
     const transcriptListData = await transcriptListResponse.json();
+
+    console.log(transcriptListData);
 
     // Filter only earnings call transcripts (those with quarter assigned)
     const earningsTranscripts = transcriptListData.transcripts.filter(

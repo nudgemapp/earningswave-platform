@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import WebSocketManager from "@/services/WebSocketManager";
+import { FinnhubTrade } from "@/app/(auth)/(platform)/earnings/types";
 
 export const runtime = "edge";
+
+interface WebSocketData {
+  data?: FinnhubTrade[];
+}
 
 export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get("symbol");
@@ -12,41 +17,39 @@ export async function GET(request: NextRequest) {
 
   try {
     const wsManager = WebSocketManager.getInstance();
-    console.log("WebSocket manager instance obtained");
-
-    // Await the subscription
-    await wsManager.subscribe(symbol);
-    console.log(`Successfully subscribed to ${symbol}`);
+    console.log("[WebSocket Route] Manager instance obtained");
 
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
 
-    // Send initial connection success message
-    await writer.write(
-      new TextEncoder().encode(
-        `data: {"type":"connection","status":"connected","symbol":"${symbol}"}\n\n`
-      )
-    );
+    // Send initial connection message
+    const initialMessage = JSON.stringify({
+      type: "connection",
+      status: "connected",
+      symbol: symbol,
+    });
+    await writer.write(new TextEncoder().encode(`data: ${initialMessage}\n\n`));
 
-    const cleanup = wsManager.onTrade(async (data) => {
+    // Create callback for this specific client
+    const callback = async (data: WebSocketData) => {
       try {
         if (data.data?.[0]?.s === symbol) {
-          await writer.write(
-            new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`)
-          );
+          const message = JSON.stringify(data);
+          await writer.write(new TextEncoder().encode(`data: ${message}\n\n`));
         }
       } catch (error) {
-        console.error("Error writing to stream:", error);
-        cleanup();
-        wsManager.unsubscribe(symbol);
-        writer.close();
+        console.error("[WebSocket Route] Error writing to stream:", error);
       }
-    });
+    };
 
+    // Subscribe to symbol
+    await wsManager.subscribe(symbol, callback);
+    console.log(`[WebSocket Route] Subscribed to ${symbol}`);
+
+    // Cleanup on disconnect
     request.signal.addEventListener("abort", () => {
-      console.log(`Cleaning up subscription for ${symbol}`);
-      cleanup();
-      wsManager.unsubscribe(symbol);
+      console.log(`[WebSocket Route] Cleaning up subscription for ${symbol}`);
+      wsManager.unsubscribe(symbol, callback);
       writer.close();
     });
 
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("WebSocket connection error:", error);
+    console.error("[WebSocket Route] Connection error:", error);
     return new Response(
       JSON.stringify({ error: "Failed to establish connection" }),
       { status: 500 }

@@ -137,6 +137,8 @@ model Company {
   @@index([symbol, name]) // Add this index if you search by these fields
   @@index([symbol])
   @@index([exchange])
+  @@index([symbol, exchange])
+  @@index([symbol, marketCapitalization])
 }
 
 enum MIC {
@@ -244,6 +246,7 @@ model Earnings {
 
   @@unique([symbol, year, quarter]) // One earnings entry per company per quarter/year
   @@index([symbol])
+  @@index([earningsDate, symbol])
   @@index([earningsDate])
   @@index([symbol, earningsDate])
 }

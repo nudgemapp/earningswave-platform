@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -177,40 +177,6 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // 60000ms = 1 minute
-
-    // Cleanup interval on unmount
-    return () => clearInterval(timer);
-  }, []); // Empty dependency array since we want this to run once on mount
-  // const isAfterHours = currentTime.getHours() >= 16;
-
-  const [todayPrices, setTodayPrices] = useState<{
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }>({
-    prevClose: null,
-    atClose: null,
-    preMarket: null,
-    regular: null,
-    afterHours: null,
-    regularOpen: null,
-    percentChange: null,
-    priceDifference: null,
-    mostRecentDate: null,
-  });
-
-  const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
   const { userId } = useAuth();
@@ -222,8 +188,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: company, isLoading: isLoadingCompany } = useGetCompany(
     SelectedCompany?.companyId
   );
-
-  console.log(company);
 
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
@@ -319,14 +283,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           <div className="space-y-6 px-5">
             <Suspense fallback={<StockChartSkeleton />}>
               <div className="h-[400px] w-full mb-12">
-                <StockPriceChart
-                  todayData={(data) => {
-                    setTodayPrices((prev) => ({ ...prev, ...data }));
-                  }}
-                  symbol={company.symbol}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                />
+                <StockPriceChart symbol={company.symbol} />
               </div>
             </Suspense>
 

@@ -2,12 +2,15 @@
 
 import React from "react";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 
 import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
 import { FilterState } from "@/app/(auth)/(platform)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEarningsStore } from "@/store/EarningsStore";
+import { prefetchCompany } from "@/app/hooks/use-get-company";
 
 interface Company {
   id: string;
@@ -188,45 +191,59 @@ const MonthView: React.FC<MonthViewProps> = ({
     symbol,
     name,
     logo,
+    companyId,
     onClick,
   }: {
     symbol: string;
     name: string;
     logo: string | null;
+    companyId: string;
     onClick: () => void;
-  }) => (
-    <div
-      className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      title={`${name} (${symbol})`}
-    >
-      <div className="aspect-square relative">
-        {logo ? (
-          <Image
-            src={logo}
-            alt={`${name} logo`}
-            layout="fill"
-            objectFit="cover"
-            className="p-0"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
-            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-              {symbol}
-            </span>
-          </div>
-        )}
+  }) => {
+    const queryClient = useQueryClient();
+
+    return (
+      <div
+        className="flex flex-col bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-sm dark:hover:shadow-slate-800/50 hover:border-gray-800 dark:hover:border-slate-600 cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        onMouseEnter={() => {
+          // Prefetch on hover
+          prefetchCompany(companyId, queryClient);
+        }}
+        onTouchStart={() => {
+          // Prefetch on touch for mobile devices
+          prefetchCompany(companyId, queryClient);
+        }}
+        title={`${name} (${symbol})`}
+      >
+        <div className="aspect-square relative">
+          {logo ? (
+            <Image
+              src={logo}
+              alt={`${name} logo`}
+              layout="fill"
+              objectFit="cover"
+              className="p-0"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-800">
+              <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                {symbol}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
+          <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
+            {symbol}
+          </span>
+        </div>
       </div>
-      <div className="w-full bg-gray-50 dark:bg-slate-800 py-0.5 border-t border-gray-200 dark:border-slate-700">
-        <span className="text-[8px] font-medium text-gray-800 dark:text-gray-200 block text-center truncate px-0.5">
-          {symbol}
-        </span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const getDaysInMonth = (date: Date): Date[] => {
     const year = date.getFullYear();
@@ -301,7 +318,6 @@ const MonthView: React.FC<MonthViewProps> = ({
   );
 
   const MarketTimingGroup = ({
-    // date,
     title,
     icon: Icon,
     transcripts,
@@ -311,16 +327,29 @@ const MonthView: React.FC<MonthViewProps> = ({
     icon: LucideIcon;
     transcripts: EarningsEntry[];
     bgColor: string;
-    date: Date;
   }) => {
+    const queryClient = useQueryClient();
+
+    // Prefetch all companies in the group when it becomes visible
+    const { ref } = useInView({
+      threshold: 0,
+      onChange: (inView) => {
+        if (inView) {
+          // Prefetch data for all companies in the group
+          transcripts.forEach((transcript) => {
+            prefetchCompany(transcript.company.id, queryClient);
+          });
+        }
+      },
+    });
+
     if (transcripts.length === 0) return null;
 
-    // const displayTranscripts = transcripts.slice(0, 7);
     const displayTranscripts = transcripts;
-    // const remainingCount = transcripts.length - 7;
 
     return (
       <div
+        ref={ref}
         className={`rounded-md overflow-hidden ${bgColor} dark:bg-opacity-20`}
       >
         <div className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-1.5 py-0.5 shadow-sm">
@@ -349,6 +378,7 @@ const MonthView: React.FC<MonthViewProps> = ({
                 symbol={transcript.company?.symbol || ""}
                 name={transcript.company?.name || ""}
                 logo={transcript.company?.logo || null}
+                companyId={transcript.company.id}
                 onClick={() => handleCompanyClick(transcript)}
               />
             ))}
@@ -427,7 +457,6 @@ const MonthView: React.FC<MonthViewProps> = ({
                   ) : (
                     <div className="flex flex-col h-full">
                       <MarketTimingGroup
-                        date={date}
                         title="Pre-Market"
                         icon={Sun}
                         transcripts={dayContent
@@ -435,11 +464,13 @@ const MonthView: React.FC<MonthViewProps> = ({
                             const time = t.earningsTime.split(":")[0];
                             return parseInt(time) < 9; // Before 9am is pre-market
                           })
-                          .filter((t, i, arr) => arr.findIndex(x => x.symbol === t.symbol) === i)}
+                          .filter(
+                            (t, i, arr) =>
+                              arr.findIndex((x) => x.symbol === t.symbol) === i
+                          )}
                         bgColor="bg-blue-200/40"
                       />
                       <MarketTimingGroup
-                        date={date}
                         title="After Hours"
                         icon={Moon}
                         transcripts={dayContent
@@ -447,7 +478,10 @@ const MonthView: React.FC<MonthViewProps> = ({
                             const time = t.earningsTime.split(":")[0];
                             return parseInt(time) >= 16; // After 4pm is after-market
                           })
-                          .filter((t, i, arr) => arr.findIndex(x => x.symbol === t.symbol) === i)}
+                          .filter(
+                            (t, i, arr) =>
+                              arr.findIndex((x) => x.symbol === t.symbol) === i
+                          )}
                         bgColor="bg-orange-50"
                       />
                     </div>

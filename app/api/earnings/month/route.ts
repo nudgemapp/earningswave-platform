@@ -37,11 +37,6 @@ export async function GET(request: Request) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Date Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
     const result = await prisma.$queryRaw<EarningsQueryResult[]>`
       WITH DailyEarnings AS (
@@ -65,16 +60,21 @@ export async function GET(request: Request) {
           c.exchange,
           COUNT(*) OVER (PARTITION BY DATE(e."earningsDate")) as total_for_day
         FROM "Earnings" e
-        LEFT JOIN "Company" c ON e.symbol = c.symbol
+        LEFT JOIN LATERAL (
+          SELECT *
+          FROM "Company" c
+          WHERE c.symbol = e.symbol
+          LIMIT 1
+        ) c ON true
         WHERE 
           e."earningsDate" >= ${startDate}
           AND e."earningsDate" <= ${endDate}
+        ORDER BY e."earningsDate" ASC
       )
       SELECT 
         *,
         (total_for_day - 1) as remaining_count
-      FROM DailyEarnings
-      ORDER BY "earningsDate" ASC;
+      FROM DailyEarnings;
     `;
 
     const transformedEarnings = result.map((row) => ({
@@ -89,20 +89,18 @@ export async function GET(request: Request) {
       totalForDay: Number(row.total_for_day),
       remainingCount: Math.max(0, Number(row.remaining_count)),
       company: {
-        id: row.companyId,
+        id: row.companyId || null,
         symbol: row.symbol,
-        name: row.companyName,
-        logo: row.logo,
-        description: row.description,
-        currency: row.currency,
-        marketCapitalization: row.marketCapitalization,
-        weburl: row.weburl,
-        finnhubIndustry: row.finnhubIndustry,
-        exchange: row.exchange,
+        name: row.companyName || null,
+        logo: row.logo || null,
+        description: row.description || null,
+        currency: row.currency || null,
+        marketCapitalization: row.marketCapitalization || null,
+        weburl: row.weburl || null,
+        finnhubIndustry: row.finnhubIndustry || null,
+        exchange: row.exchange || null,
       },
     }));
-
-    console.log("Total earnings count:", transformedEarnings.length);
 
     return NextResponse.json({
       earnings: transformedEarnings,

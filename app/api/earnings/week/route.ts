@@ -25,32 +25,16 @@ interface EarningsQueryResult {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  let startDate = new Date(searchParams.get("startDate") || "");
-
-  // Adjust to Monday of the current week
-  const day = startDate.getUTCDay();
-  const diff = startDate.getUTCDate() - day + (day === 0 ? -6 : 1);
-  startDate = new Date(startDate);
-  startDate.setUTCDate(diff);
-  startDate.setUTCHours(0, 0, 0, 0);
-
-  // Set end date to Friday of the same week
-  const endDate = new Date(startDate);
-  endDate.setUTCDate(startDate.getUTCDate() + 4);
-  endDate.setUTCHours(23, 59, 59, 999);
+  const startDate = new Date(searchParams.get("startDate") || "");
+  const endDate = new Date(searchParams.get("endDate") || "");
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return new Response("Invalid date parameters", { status: 400 });
   }
 
-  console.log("API Date Range:", {
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-  });
-
   try {
     const result = await prisma.$queryRaw<EarningsQueryResult[]>`
-      WITH DailyEarnings AS (
+      WITH RECURSIVE DailyEarnings AS (
         SELECT 
           e.id,
           e.symbol,
@@ -71,16 +55,21 @@ export async function GET(request: Request) {
           c.exchange,
           COUNT(*) OVER (PARTITION BY DATE(e."earningsDate")) as total_for_day
         FROM "Earnings" e
-        LEFT JOIN "Company" c ON e.symbol = c.symbol
+        LEFT JOIN LATERAL (
+          SELECT *
+          FROM "Company" c
+          WHERE c.symbol = e.symbol
+          LIMIT 1
+        ) c ON true
         WHERE 
           e."earningsDate" >= ${startDate}
           AND e."earningsDate" <= ${endDate}
+        ORDER BY e."earningsDate" ASC
       )
       SELECT 
         *,
         (total_for_day - 1) as remaining_count
-      FROM DailyEarnings
-      ORDER BY "earningsDate" ASC;
+      FROM DailyEarnings;
     `;
 
     const transformedEarnings = result.map((row) => ({
