@@ -1,14 +1,11 @@
 import { NextRequest } from "next/server";
 import WebSocketManager from "@/services/WebSocketManager";
+import { FinnhubTrade } from "@/app/(auth)/(platform)/earnings/types";
 
 export const runtime = "edge";
 
-// Add this interface near the top of the file
 interface WebSocketData {
-  data?: Array<{
-    s: string; // symbol
-    [key: string]: any; // other properties
-  }>;
+  data?: FinnhubTrade[];
 }
 
 export async function GET(request: NextRequest) {

@@ -177,41 +177,6 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
 );
 
 const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  console.log(currentTime);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // 60000ms = 1 minute
-
-    // Cleanup interval on unmount
-    return () => clearInterval(timer);
-  }, []); // Empty dependency array since we want this to run once on mount
-
-  const [todayPrices, setTodayPrices] = useState<{
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }>({
-    prevClose: null,
-    atClose: null,
-    preMarket: null,
-    regular: null,
-    afterHours: null,
-    regularOpen: null,
-    percentChange: null,
-    priceDifference: null,
-    mostRecentDate: null,
-  });
-  console.log(todayPrices);
-
-  const [timeframe, setTimeframe] = useState("1D");
   const [showSummary, setShowSummary] = useState(false);
   const { addToWatchlist, removeFromWatchlist } = useWatchlistMutations();
   const { userId } = useAuth();
@@ -318,11 +283,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           <div className="space-y-6 px-5">
             <Suspense fallback={<StockChartSkeleton />}>
               <div className="h-[400px] w-full mb-12">
-                <StockPriceChart
-                  symbol={company.symbol}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                />
+                <StockPriceChart symbol={company.symbol} />
               </div>
             </Suspense>
 

@@ -16,25 +16,21 @@ import { useFinnhubTimeseries } from "@/hooks/use-finnhub-timeseries";
 
 interface StockChartProps {
   symbol: string;
-  timeframe?: string;
-  onTimeframeChange: (tf: string) => void;
 }
 
-const StockPriceChart: React.FC<StockChartProps> = ({
-  symbol,
-  timeframe = "1D",
-  onTimeframeChange,
-}) => {
+const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
+  const [timeframe, setTimeframe] = useState("1D");
+
   const { lastPrice, isConnected } = useStockWebSocket(symbol);
-  console.log("lastPrice", lastPrice);
-  console.log("isConnected", isConnected);
+  // console.log("lastPrice", lastPrice);
+  // console.log("isConnected", isConnected);
 
   const { data: timeseriesData, isLoading } = useFinnhubTimeseries(
     symbol,
     timeframe
   );
 
-  console.log("timeseriesData", timeseriesData);
+  // console.log("timeseriesData", timeseriesData);
 
   // Define getTimeframeData before using it
   const getTimeframeData = (data: StockData[]) => {
@@ -143,7 +139,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({
   }, []);
 
   const handleTimeframeChange = (tf: string) => {
-    onTimeframeChange(tf);
+    setTimeframe(tf);
   };
 
   // Cleanup function will be called when component unmounts
