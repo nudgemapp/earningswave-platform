@@ -10,9 +10,9 @@ import {
   CartesianGrid,
   XAxis,
 } from "recharts";
-import { useStockWebSocket } from "@/hooks/use-stock-websocket";
 import { StockData } from "@/app/types/StockQuote";
 import { useFinnhubTimeseries } from "@/hooks/use-finnhub-timeseries";
+// import { useStockWebSocket } from "@/hooks/use-stock-websocket";
 
 interface StockChartProps {
   symbol: string;
@@ -21,7 +21,7 @@ interface StockChartProps {
 const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
   const [timeframe, setTimeframe] = useState("1D");
 
-  const { lastPrice, isConnected } = useStockWebSocket(symbol);
+  // const { lastPrice, isConnected } = useStockWebSocket(symbol);
   // console.log("lastPrice", lastPrice);
   // console.log("isConnected", isConnected);
 
