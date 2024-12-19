@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useCalendarStore } from "@/store/CalendarStore";
-import { FilterState } from "@/app/(auth)/(platform)/earnings/types";
+import { FilterState } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 import { useGetWeekView } from "@/app/hooks/use-get-week-view";
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useAuthModal } from "@/store/AuthModalStore";

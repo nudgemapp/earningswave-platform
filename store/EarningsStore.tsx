@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { WatchlistEntry } from "@prisma/client";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 
 interface SelectedCompany {
   companyId: string;
