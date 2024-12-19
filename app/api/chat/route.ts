@@ -510,7 +510,7 @@ export async function POST(request: Request) {
             }),
           });
         } catch (error) {
-          console.error("Failed to save chat");
+          console.error("Failed to save chat", error);
         }
       }
 
@@ -556,8 +556,12 @@ export async function DELETE(request: Request) {
     return new Response("Chat deleted", { status: 200 });
   } catch (error) {
     console.error("Error deleting chat:", error);
-    return new Response("An error occurred while processing your request", {
-      status: 500,
-    });
+    return new Response(
+      "An error occurred while processing your request",
+
+      {
+        status: 500,
+      }
+    );
   }
 }
