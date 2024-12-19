@@ -29,7 +29,7 @@ export const useEarningsStore = create<EarningsState>((set) => ({
     set({
       selectedCompany: company,
       selectedFutureEarnings: null, // Clear future earnings
-      showWatchlist: false, // Close watchlist
+      showWatchlist: false, // Close watch
     }),
   selectedFutureEarnings: null,
   setSelectedFutureEarnings: (report) =>
