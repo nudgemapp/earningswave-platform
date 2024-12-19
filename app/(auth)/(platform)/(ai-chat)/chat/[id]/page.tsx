@@ -7,6 +7,7 @@ import { models } from "@/lib/ai/models";
 import { auth } from "@clerk/nextjs/server";
 import { VisibilityType } from "@/components/chat/visibility-selector";
 import prisma from "@/lib/prismadb";
+import { CoreMessage } from "ai";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -38,14 +39,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       createdAt: true,
       updatedAt: true,
     },
-  })) as Array<{
-    id: string;
-    role: "user" | "assistant" | "system";
-    content: any;
-    chatId: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }>;
+  })) as unknown as CoreMessage[];
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("model-id")?.value;
