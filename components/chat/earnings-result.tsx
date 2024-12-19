@@ -22,10 +22,10 @@ interface EarningsResultProps {
 
 export function EarningsResult({
   result,
-  block,
-  setBlock,
-  isReadonly,
-}: EarningsResultProps) {
+}: // block,
+// setBlock,
+// isReadonly,
+EarningsResultProps) {
   const formattedDate = new Date(result.date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

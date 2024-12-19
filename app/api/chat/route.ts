@@ -2,7 +2,6 @@ import {
   type Message,
   StreamData,
   convertToCoreMessages,
-  streamObject,
   streamText,
 } from "ai";
 import { z } from "zod";
@@ -16,7 +15,7 @@ import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prismadb";
 import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
-import { Suggestion } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
+// import { Suggestion } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 // import { generateTitleFromUserMessage } from "@/app/(auth)/(platform)/(ai-chat)/chat/actions";
 
 export const maxDuration = 60;
@@ -555,8 +554,8 @@ export async function DELETE(request: Request) {
     });
 
     return new Response("Chat deleted", { status: 200 });
-  } catch (err) {
-    console.error("Error deleting chat:", err);
+  } catch (error) {
+    console.error("Error deleting chat:", error);
     return new Response("An error occurred while processing your request", {
       status: 500,
     });

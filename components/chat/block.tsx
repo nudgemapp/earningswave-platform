@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { useDebounceCallback, useWindowSize } from "usehooks-ts";
+import { useWindowSize } from "usehooks-ts";
 import { fetcher } from "@/lib/utils";
 import { DiffView } from "./diffview";
 import {
@@ -180,10 +180,10 @@ function PureBlock({
     [block, mutate]
   );
 
-  const debouncedHandleContentChange = useDebounceCallback(
-    handleContentChange,
-    2000
-  );
+  // const debouncedHandleContentChange = useDebounceCallback(
+  //   handleContentChange,
+  //   2000
+  // );
 
   // const saveContent = useCallback(
   //   (updatedContent: string, debounce: boolean) => {
