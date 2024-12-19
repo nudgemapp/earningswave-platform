@@ -214,7 +214,6 @@ export const BLACKLISTED_SYMBOLS: string[] = [
   "AMAM",
   "NUVO",
   "PSIG",
-  "PCYG",
   "BETS",
   "SIRE",
   "RADI",
