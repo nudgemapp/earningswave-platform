@@ -12,13 +12,12 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from "@/lib/utils";
-
-import { generateTitleFromUserMessage } from "@/app/(auth)/(platform)/(ai-chat)/chat/actions";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prismadb";
 import { customModel } from "@/lib/ai";
 import { models } from "@/lib/ai/models";
 import { Suggestion } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
+// import { generateTitleFromUserMessage } from "@/app/(auth)/(platform)/(ai-chat)/chat/actions";
 
 export const maxDuration = 60;
 
@@ -56,7 +55,6 @@ export async function POST(request: Request) {
   console.log("Messages:", JSON.stringify(messages, null, 2));
 
   const { userId } = await auth();
-  console.log(userId);
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
