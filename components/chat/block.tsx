@@ -10,11 +10,10 @@ import {
   type Dispatch,
   memo,
   type SetStateAction,
-  useCallback,
   useEffect,
   useState,
 } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 import { useWindowSize } from "usehooks-ts";
 import { fetcher } from "@/lib/utils";
 import { DiffView } from "./diffview";
@@ -134,51 +133,51 @@ function PureBlock({
     mutateDocuments();
   }, [block.status, mutateDocuments]);
 
-  const { mutate } = useSWRConfig();
+  // const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
 
-  const handleContentChange = useCallback(
-    (updatedContent: string) => {
-      if (!block) return;
+  // const handleContentChange = useCallback(
+  //   (updatedContent: string) => {
+  //     if (!block) return;
 
-      mutate<Array<Document>>(
-        `/api/document?id=${block.documentId}`,
-        async (currentDocuments) => {
-          if (!currentDocuments) return undefined;
+  //     mutate<Array<Document>>(
+  //       `/api/document?id=${block.documentId}`,
+  //       async (currentDocuments) => {
+  //         if (!currentDocuments) return undefined;
 
-          const currentDocument = currentDocuments.at(-1);
+  //         const currentDocument = currentDocuments.at(-1);
 
-          if (!currentDocument || !currentDocument.content) {
-            setIsContentDirty(false);
-            return currentDocuments;
-          }
+  //         if (!currentDocument || !currentDocument.content) {
+  //           setIsContentDirty(false);
+  //           return currentDocuments;
+  //         }
 
-          if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${block.documentId}`, {
-              method: "POST",
-              body: JSON.stringify({
-                title: block.title,
-                content: updatedContent,
-              }),
-            });
+  //         if (currentDocument.content !== updatedContent) {
+  //           await fetch(`/api/document?id=${block.documentId}`, {
+  //             method: "POST",
+  //             body: JSON.stringify({
+  //               title: block.title,
+  //               content: updatedContent,
+  //             }),
+  //           });
 
-            setIsContentDirty(false);
+  //           setIsContentDirty(false);
 
-            const newDocument = {
-              ...currentDocument,
-              content: updatedContent,
-              createdAt: new Date(),
-            };
+  //           const newDocument = {
+  //             ...currentDocument,
+  //             content: updatedContent,
+  //             createdAt: new Date(),
+  //           };
 
-            return [...currentDocuments, newDocument];
-          }
-          return currentDocuments;
-        },
-        { revalidate: false }
-      );
-    },
-    [block, mutate]
-  );
+  //           return [...currentDocuments, newDocument];
+  //         }
+  //         return currentDocuments;
+  //       },
+  //       { revalidate: false }
+  //     );
+  //   },
+  //   [block, mutate]
+  // );
 
   // const debouncedHandleContentChange = useDebounceCallback(
   //   handleContentChange,
