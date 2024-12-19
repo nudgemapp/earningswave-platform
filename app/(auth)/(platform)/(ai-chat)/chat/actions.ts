@@ -53,8 +53,25 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await prisma.chat.update({
-    where: { id: chatId },
-    data: { visibility },
-  });
+  try {
+    // First check if the chat exists
+    const chat = await prisma.chat.findUnique({
+      where: { id: chatId },
+    });
+
+    if (!chat) {
+      return;
+    }
+
+    console.log(chat);
+
+    // If chat exists, proceed with update
+    await prisma.chat.update({
+      where: { id: chatId },
+      data: { visibility },
+    });
+  } catch (error) {
+    console.error("Error updating chat visibility:", error);
+    throw error; // Re-throw the error to handle it in the UI layer
+  }
 }

@@ -21,8 +21,6 @@ import { EarningsResult } from "./earnings-result";
 // import { MessageEditor } from "./message-editor";
 // import { MessageActions } from "./message-actions";
 
-// import { Weather } from './weather';
-
 const PurePreviewMessage = ({
   // chatId,
   message,
@@ -49,6 +47,41 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
+
+  console.log(message);
+
+  // Safely parse the message content if it's a JSON string
+  const parsedContent =
+    typeof message.content === "string"
+      ? (() => {
+          try {
+            return JSON.parse(message.content);
+          } catch (e) {
+            return message.content;
+          }
+        })()
+      : message.content;
+
+  // Parse tool invocations if they exist
+  const parsedToolInvocations = message.toolInvocations?.map((invocation) => {
+    if (typeof invocation === "string") {
+      try {
+        return JSON.parse(invocation);
+      } catch (e) {
+        return invocation;
+      }
+    }
+    return invocation;
+  });
+
+  console.log(parsedToolInvocations);
+
+  // Update the message with parsed content and tool invocations
+  const processedMessage = {
+    ...message,
+    content: parsedContent,
+    toolInvocations: parsedToolInvocations,
+  };
 
   return (
     <motion.div
@@ -85,22 +118,24 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.content && mode === "view" && (
+          {processedMessage.content && mode === "view" && (
             <div className="flex flex-row gap-2 items-start">
               {message.role === "user" && !isReadonly && (
-                <Tooltip>
+                <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                      className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100 hover:bg-transparent"
                       onClick={() => {
                         setMode("edit");
                       }}
                     >
-                      <PencilLine />
+                      <PencilLine size={16} />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Edit message</TooltipContent>
+                  <TooltipContent side="left" sideOffset={5}>
+                    Edit message
+                  </TooltipContent>
                 </Tooltip>
               )}
 
@@ -111,7 +146,17 @@ const PurePreviewMessage = ({
                     message.role === "assistant",
                 })}
               >
-                <Markdown>{message.content as string}</Markdown>
+                {Array.isArray(processedMessage.content) ? (
+                  processedMessage.content.map((content, index) => {
+                    if (content.type === "text") {
+                      return <Markdown key={index}>{content.text}</Markdown>;
+                    }
+                    // Handle other content types as needed
+                    return null;
+                  })
+                ) : (
+                  <Markdown>{processedMessage.content as string}</Markdown>
+                )}
               </div>
             </div>
           )}
@@ -130,93 +175,74 @@ const PurePreviewMessage = ({
             </div>
           )}
 
-          {message.toolInvocations && message.toolInvocations.length > 0 && (
-            <div className="flex flex-col gap-4">
-              {message.toolInvocations.map((toolInvocation) => {
-                const { toolName, toolCallId, state, args } = toolInvocation;
+          {processedMessage.toolInvocations &&
+            processedMessage.toolInvocations.length > 0 && (
+              <div className="flex flex-col gap-4">
+                {processedMessage.toolInvocations.map((toolInvocation) => {
+                  const { toolName, toolCallId, state, args } = toolInvocation;
 
-                if (state === "result") {
-                  const { result } = toolInvocation;
+                  if (state === "result") {
+                    const { result } = toolInvocation;
 
-                  // console.log(result);
-                  // console.log(toolName);
-                  // console.log(block);
-
+                    return (
+                      <div key={toolCallId}>
+                        {toolName === "queryEarnings" ? (
+                          <EarningsResult
+                            result={result}
+                            block={block}
+                            setBlock={setBlock}
+                            isReadonly={isReadonly}
+                          />
+                        ) : toolName === "createDocument" ? (
+                          <DocumentToolResult
+                            type="create"
+                            result={result}
+                            block={block}
+                            setBlock={setBlock}
+                            isReadonly={isReadonly}
+                          />
+                        ) : (
+                          <pre>{JSON.stringify(result, null, 2)}</pre>
+                        )}
+                      </div>
+                    );
+                  }
                   return (
-                    <div key={toolCallId}>
+                    <div
+                      key={toolCallId}
+                      className={cx({
+                        skeleton: ["queryEarnings"].includes(toolName),
+                      })}
+                    >
                       {toolName === "queryEarnings" ? (
-                        <EarningsResult
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                          isReadonly={isReadonly}
-                        />
+                        <div>...</div>
                       ) : toolName === "createDocument" ? (
-                        <DocumentToolResult
+                        <DocumentToolCall
                           type="create"
-                          result={result}
-                          block={block}
+                          args={args}
                           setBlock={setBlock}
                           isReadonly={isReadonly}
                         />
                       ) : toolName === "updateDocument" ? (
-                        <DocumentToolResult
+                        <DocumentToolCall
                           type="update"
-                          result={result}
-                          block={block}
+                          args={args}
                           setBlock={setBlock}
                           isReadonly={isReadonly}
                         />
                       ) : toolName === "requestSuggestions" ? (
-                        <DocumentToolResult
+                        <DocumentToolCall
                           type="request-suggestions"
-                          result={result}
-                          block={block}
+                          args={args}
                           setBlock={setBlock}
                           isReadonly={isReadonly}
                         />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )}
+                      ) : null}
                     </div>
                   );
-                }
-                return (
-                  <div
-                    key={toolCallId}
-                    className={cx({
-                      skeleton: ["queryEarnings"].includes(toolName),
-                    })}
-                  >
-                    {toolName === "queryEarnings" ? (
-                      <div>...</div>
-                    ) : toolName === "createDocument" ? (
-                      <DocumentToolCall
-                        type="create"
-                        args={args}
-                        setBlock={setBlock}
-                        isReadonly={isReadonly}
-                      />
-                    ) : toolName === "updateDocument" ? (
-                      <DocumentToolCall
-                        type="update"
-                        args={args}
-                        setBlock={setBlock}
-                        isReadonly={isReadonly}
-                      />
-                    ) : toolName === "requestSuggestions" ? (
-                      <DocumentToolCall
-                        type="request-suggestions"
-                        args={args}
-                        setBlock={setBlock}
-                        isReadonly={isReadonly}
-                      />
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                })}
+              </div>
+            )}
 
           {/* {!isReadonly && (
             <MessageActions

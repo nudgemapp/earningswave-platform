@@ -20,7 +20,7 @@ import { PlusIcon } from "lucide-react";
 import Logo from "../Logo";
 
 export function AppSidebar() {
-  const user = useUser();
+  const { user } = useUser();
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
@@ -41,7 +41,7 @@ export function AppSidebar() {
                 EarningsWave AI
               </span>
             </Link>
-            <Tooltip>
+            <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
@@ -56,7 +56,7 @@ export function AppSidebar() {
                   <PlusIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
+              <TooltipContent side="bottom">New Chat</TooltipContent>
             </Tooltip>
           </div>
         </SidebarMenu>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Attachment, Message } from "ai";
+import type { Attachment, ChatRequestOptions, Message } from "ai";
 import { useChat } from "ai/react";
 import { AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -12,6 +12,8 @@ import { MultimodalInput } from "./multimodal-input";
 import { Messages } from "./messages";
 import { VisibilityType } from "./visibility-selector";
 import { ChatHeader } from "./chat-header";
+import { useUser } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 export function Chat({
   id,
@@ -26,6 +28,8 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
+  const { user } = useUser();
+  const authModal = useAuthModal();
   const { mutate } = useSWRConfig();
 
   const {
@@ -48,9 +52,13 @@ export function Chat({
     },
   });
 
-  console.log(streamingData);
-  console.log(id);
   console.log(messages);
+
+  console.log(initialMessages);
+
+  // console.log(streamingData);
+  // console.log(id);
+  // console.log(messages);
 
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();
@@ -75,6 +83,23 @@ export function Chat({
   // );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+
+  // Modified to match the expected type signature
+  const handleAuthenticatedSubmit = (
+    event?: { preventDefault?: () => void },
+    chatRequestOptions?: ChatRequestOptions
+  ) => {
+    if (event?.preventDefault) {
+      event.preventDefault();
+    }
+
+    if (!user) {
+      authModal.onOpen();
+      return;
+    }
+
+    handleSubmit(event, chatRequestOptions);
+  };
 
   return (
     <>
@@ -104,7 +129,7 @@ export function Chat({
               chatId={id}
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleAuthenticatedSubmit}
               isLoading={isLoading}
               stop={stop}
               attachments={attachments}
