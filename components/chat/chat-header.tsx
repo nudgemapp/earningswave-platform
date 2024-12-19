@@ -6,7 +6,6 @@ import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
-
 import { ModelSelector } from "./model-selector";
 import { SidebarToggle } from "./sidebar-toggle";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PlusIcon } from "lucide-react";
-import { VisibilitySelector } from "./visibility-selector";
-// import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { VisibilitySelector, VisibilityType } from "./visibility-selector";
 
 function PureChatHeader({
   chatId,
@@ -29,7 +27,7 @@ function PureChatHeader({
 }: {
   chatId: string;
   selectedModelId: string;
-  selectedVisibilityType: any;
+  selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
   const router = useRouter();

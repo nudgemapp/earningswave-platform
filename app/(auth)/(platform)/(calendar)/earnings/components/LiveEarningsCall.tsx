@@ -2,28 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Clock,
-  CalendarIcon,
-} from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, CalendarIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetLiveCall } from "@/app/hooks/use-get-live-call";
 import { motion } from "framer-motion";
-
-// interface LiveCall {
-//   symbol: string;
-//   scheduledTime: string;
-//   quarter: number;
-//   year: number;
-//   eventName: string;
-//   audioUrl: string;
-//   recording: string;
-//   isLive: boolean;
-// }
+import { LiveCall } from "../types";
 
 interface LiveEarningsCallProps {
   companyId: string;
@@ -70,14 +53,13 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [currentCall, setCurrentCall] = useState<any>(null);
-  const [timeUntilCall, setTimeUntilCall] = useState<string>("");
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentCall, setCurrentCall] = useState<LiveCall["calls"][0] | null>(
+    null
+  );
+  // const [duration, setDuration] = useState(0);
+  // const [currentTime, setCurrentTime] = useState(0);
 
   const { data: liveCallData, isLoading } = useGetLiveCall(companyId);
-
-  console.log(liveCallData);
 
   useEffect(() => {
     if (liveCallData?.calls?.[0]) {
@@ -95,50 +77,41 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     }
   }, [currentCall?.audioUrl]);
 
-  useEffect(() => {
-    const updateTimeUntilCall = () => {
-      if (!currentCall?.scheduledTime) return;
+  // useEffect(() => {
+  //   if (!audioRef.current) return;
 
-      const now = new Date();
-      const callTime = new Date(currentCall.scheduledTime);
-      const diff = callTime.getTime() - now.getTime();
+  //   const audio = audioRef.current;
 
-      if (diff <= 0) {
-        setTimeUntilCall("Live Now");
-        return;
-      }
+  //   const handleTimeUpdate = () => {
+  //     setCurrentTime(audio.currentTime);
+  //   };
 
-      const minutes = Math.floor(diff / 1000 / 60);
-      const hours = Math.floor(minutes / 60);
-      setTimeUntilCall(`Starts in ${hours}h ${minutes % 60}m`);
-    };
+  //   const handleDurationChange = () => {
+  //     setDuration(audio.duration);
+  //   };
 
-    updateTimeUntilCall();
-    const interval = setInterval(updateTimeUntilCall, 60000);
-    return () => clearInterval(interval);
-  }, [currentCall?.scheduledTime]);
+  //   audio.addEventListener("timeupdate", handleTimeUpdate);
+  //   audio.addEventListener("durationchange", handleDurationChange);
 
-  useEffect(() => {
-    if (!audioRef.current) return;
+  //   return () => {
+  //     audio.removeEventListener("timeupdate", handleTimeUpdate);
+  //     audio.removeEventListener("durationchange", handleDurationChange);
+  //   };
+  // }, []);
 
-    const audio = audioRef.current;
+  // const formatTime = (time: number) => {
+  //   const minutes = Math.floor(time / 60);
+  //   const seconds = Math.floor(time % 60);
+  //   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  // };
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-    };
-
-    const handleDurationChange = () => {
-      setDuration(audio.duration);
-    };
-
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("durationchange", handleDurationChange);
-
-    return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("durationchange", handleDurationChange);
-    };
-  }, []);
+  // const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (audioRef.current) {
+  //     const time = Number(e.target.value);
+  //     audioRef.current.currentTime = time;
+  //     setCurrentTime(time);
+  //   }
+  // };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -155,14 +128,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
     if (audioRef.current) {
       audioRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
-    }
-  };
-
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (audioRef.current) {
-      const time = Number(e.target.value);
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
     }
   };
 
@@ -183,12 +148,6 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       <span className="text-xs font-medium text-red-500">LIVE</span>
     </div>
   );
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   if (isLoading) {
     return <LiveEarningsCallSkeleton />;
@@ -235,7 +194,7 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
       <div className="border-t border-gray-100 dark:border-slate-800 p-4">
         <div className="space-y-4">
           {/* Progress Bar */}
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500 dark:text-gray-400 min-w-[40px]">
               {formatTime(currentTime)}
             </span>
@@ -252,7 +211,7 @@ const LiveEarningsCall: React.FC<LiveEarningsCallProps> = ({ companyId }) => {
             <span className="text-sm font-medium text-red-500 dark:text-red-400 min-w-[40px]">
               LIVE
             </span>
-          </div>
+          </div> */}
 
           {/* Controls */}
           <div className="flex items-center justify-between">

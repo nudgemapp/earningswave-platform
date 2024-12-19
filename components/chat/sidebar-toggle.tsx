@@ -10,9 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { IconLayoutSidebarLeftCollapse } from "@tabler/icons-react";
 
-export function SidebarToggle({
-  className,
-}: ComponentProps<typeof SidebarTrigger>) {
+export function SidebarToggle({}: ComponentProps<typeof SidebarTrigger>) {
   const { toggleSidebar } = useSidebar();
 
   return (

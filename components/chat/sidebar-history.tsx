@@ -21,7 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuPortal,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -49,6 +48,8 @@ import { fetcher } from "@/lib/utils";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import { Chat } from "@prisma/client";
 
+type VisibilityType = "private" | "public";
+
 // type GroupedChats = {
 //   today: Chat[];
 //   yesterday: Chat[];
@@ -57,17 +58,21 @@ import { Chat } from "@prisma/client";
 //   older: Chat[];
 // };
 
+interface ChatItemProps {
+  chat: Chat & {
+    visibility: VisibilityType;
+  };
+  isActive: boolean;
+  onDelete: (chatId: string) => void;
+  setOpenMobile: (open: boolean) => void;
+}
+
 const PureChatItem = ({
   chat,
   isActive,
   onDelete,
   setOpenMobile,
-}: {
-  chat: any;
-  isActive: boolean;
-  onDelete: (chatId: string) => void;
-  setOpenMobile: (open: boolean) => void;
-}) => {
+}: ChatItemProps) => {
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibility: chat.visibility,
@@ -150,6 +155,11 @@ export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   return true;
 });
 
+// Update the type definition for the API response
+type ChatWithVisibility = Omit<Chat, "visibility"> & {
+  visibility: VisibilityType;
+};
+
 export function SidebarHistory() {
   const user = useUser();
   const { setOpenMobile } = useSidebar();
@@ -159,7 +169,7 @@ export function SidebarHistory() {
     data: history,
     isLoading,
     mutate,
-  } = useSWR<Array<any>>(user ? "/api/chat/history" : null, fetcher, {
+  } = useSWR<ChatWithVisibility[]>(user ? "/api/chat/history" : null, fetcher, {
     fallbackData: [],
   });
 
@@ -252,7 +262,7 @@ export function SidebarHistory() {
     );
   }
 
-  const groupChatsByDate = (chats: any[]): any => {
+  const groupChatsByDate = (chats: Chat[]): Record<string, Chat[]> => {
     const now = new Date();
     const oneWeekAgo = subWeeks(now, 1);
     const oneMonthAgo = subMonths(now, 1);
@@ -281,7 +291,7 @@ export function SidebarHistory() {
         lastWeek: [],
         lastMonth: [],
         older: [],
-      } as any
+      } as Record<string, Chat[]>
     );
   };
 
@@ -301,10 +311,10 @@ export function SidebarHistory() {
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Today
                         </div>
-                        {groupedChats.today.map((chat: Chat) => (
+                        {groupedChats.today.map((chat) => (
                           <ChatItem
                             key={chat.id}
-                            chat={chat}
+                            chat={chat as ChatWithVisibility}
                             isActive={chat.id === id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
@@ -321,10 +331,10 @@ export function SidebarHistory() {
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
                           Yesterday
                         </div>
-                        {groupedChats.yesterday.map((chat: Chat) => (
+                        {groupedChats.yesterday.map((chat) => (
                           <ChatItem
                             key={chat.id}
-                            chat={chat}
+                            chat={chat as ChatWithVisibility}
                             isActive={chat.id === id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
@@ -341,10 +351,10 @@ export function SidebarHistory() {
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
                           Last 7 days
                         </div>
-                        {groupedChats.lastWeek.map((chat: Chat) => (
+                        {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
                             key={chat.id}
-                            chat={chat}
+                            chat={chat as ChatWithVisibility}
                             isActive={chat.id === id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
@@ -361,10 +371,10 @@ export function SidebarHistory() {
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
                           Last 30 days
                         </div>
-                        {groupedChats.lastMonth.map((chat: Chat) => (
+                        {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
                             key={chat.id}
-                            chat={chat}
+                            chat={chat as ChatWithVisibility}
                             isActive={chat.id === id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
@@ -381,10 +391,10 @@ export function SidebarHistory() {
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
                           Older
                         </div>
-                        {groupedChats.older.map((chat: Chat) => (
+                        {groupedChats.older.map((chat) => (
                           <ChatItem
                             key={chat.id}
-                            chat={chat}
+                            chat={chat as ChatWithVisibility}
                             isActive={chat.id === id}
                             onDelete={(chatId) => {
                               setDeleteId(chatId);

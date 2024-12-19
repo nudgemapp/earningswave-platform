@@ -24,14 +24,14 @@ import { EarningsResult } from "./earnings-result";
 // import { Weather } from './weather';
 
 const PurePreviewMessage = ({
-  chatId,
+  // chatId,
   message,
   block,
   setBlock,
   //   vote,
-  isLoading,
-  setMessages,
-  reload,
+  // isLoading,
+  // setMessages,
+  // reload,
   isReadonly,
 }: {
   chatId: string;
@@ -138,9 +138,9 @@ const PurePreviewMessage = ({
                 if (state === "result") {
                   const { result } = toolInvocation;
 
-                  console.log(result);
-                  console.log(toolName);
-                  console.log(block);
+                  // console.log(result);
+                  // console.log(toolName);
+                  // console.log(block);
 
                   return (
                     <div key={toolCallId}>

@@ -103,7 +103,9 @@ function addToolMessageToChat({
   });
 }
 
-export function convertToUIMessages(messages: Array<any>): Array<Message> {
+export function convertToUIMessages(
+  messages: Array<CoreMessage>
+): Array<Message> {
   return messages.reduce((chatMessages: Array<Message>, message) => {
     if (message.role === "tool") {
       return addToolMessageToChat({
@@ -133,7 +135,7 @@ export function convertToUIMessages(messages: Array<any>): Array<Message> {
     }
 
     chatMessages.push({
-      id: message.id,
+      id: generateUUID(),
       role: message.role as Message["role"],
       content: textContent,
       toolInvocations,
@@ -221,7 +223,7 @@ export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
 }
 
 export function getDocumentTimestampByIndex(
-  documents: Array<any>,
+  documents: Array<{ createdAt: Date }>,
   index: number
 ) {
   if (!documents) return new Date();

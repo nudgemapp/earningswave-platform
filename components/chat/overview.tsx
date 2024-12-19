@@ -1,6 +1,4 @@
 import { motion } from "framer-motion";
-import { MessageCircleIcon } from "lucide-react";
-import Link from "next/link";
 import Logo from "../Logo";
 
 export const Overview = () => {

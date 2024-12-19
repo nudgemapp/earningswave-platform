@@ -24,14 +24,14 @@ export const maxDuration = 60;
 type AllowedTools =
   | "createDocument"
   | "updateDocument"
-  | "requestSuggestions"
+  // | "requestSuggestions"
   | "queryEarnings";
 // | "getWeather"
 
 const blocksTools: AllowedTools[] = [
   "createDocument",
   "updateDocument",
-  "requestSuggestions",
+  // "requestSuggestions",
 ];
 
 // const weatherTools: AllowedTools[] = ["getWeather"];
@@ -286,81 +286,81 @@ export async function POST(request: Request) {
       //     return weatherData;
       //   },
       // },
-      requestSuggestions: {
-        description: "Request suggestions for a document",
-        parameters: z.object({
-          documentId: z
-            .string()
-            .describe("The ID of the document to request edits"),
-        }),
-        execute: async ({ documentId }) => {
-          const document = await prisma.document.findUnique({
-            where: { id: documentId },
-          });
+      // requestSuggestions: {
+      //   description: "Request suggestions for a document",
+      //   parameters: z.object({
+      //     documentId: z
+      //       .string()
+      //       .describe("The ID of the document to request edits"),
+      //   }),
+      //   execute: async ({ documentId }) => {
+      //     const document = await prisma.document.findUnique({
+      //       where: { id: documentId },
+      //     });
 
-          if (!document || !document.content) {
-            return {
-              error: "Document not found",
-            };
-          }
+      //     if (!document || !document.content) {
+      //       return {
+      //         error: "Document not found",
+      //       };
+      //     }
 
-          const suggestions: Array<
-            Omit<Suggestion, "userId" | "createdAt" | "documentCreatedAt">
-          > = [];
+      //     const suggestions: Array<
+      //       Omit<Suggestion, "userId" | "createdAt" | "documentCreatedAt">
+      //     > = [];
 
-          const { elementStream } = streamObject({
-            model: customModel(model.apiIdentifier),
-            system:
-              "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
-            prompt: document.content,
-            output: "array",
-            schema: z.object({
-              originalSentence: z.string().describe("The original sentence"),
-              suggestedSentence: z.string().describe("The suggested sentence"),
-              description: z
-                .string()
-                .describe("The description of the suggestion"),
-            }),
-          });
+      //     const { elementStream } = streamObject({
+      //       model: customModel(model.apiIdentifier),
+      //       system:
+      //         "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
+      //       prompt: document.content,
+      //       output: "array",
+      //       schema: z.object({
+      //         originalSentence: z.string().describe("The original sentence"),
+      //         suggestedSentence: z.string().describe("The suggested sentence"),
+      //         description: z
+      //           .string()
+      //           .describe("The description of the suggestion"),
+      //       }),
+      //     });
 
-          for await (const element of elementStream) {
-            const suggestion = {
-              originalText: element.originalSentence,
-              suggestedText: element.suggestedSentence,
-              description: element.description,
-              id: generateUUID(),
-              documentId: documentId,
-              isResolved: false,
-            };
+      //     for await (const element of elementStream) {
+      //       const suggestion = {
+      //         originalText: element.originalSentence,
+      //         suggestedText: element.suggestedSentence,
+      //         description: element.description,
+      //         id: generateUUID(),
+      //         documentId: documentId,
+      //         isResolved: false,
+      //       };
 
-            streamingData.append({
-              type: "suggestion",
-              content: suggestion,
-            });
+      //       streamingData.append({
+      //         type: "suggestion",
+      //         content: suggestion,
+      //       });
 
-            suggestions.push(suggestion as any);
-          }
+      //       suggestions.push(suggestion);
+      //     }
 
-          // if (session.user?.id) {
-          //   const userId = session.user.id;
+      //     // if (session.user?.id) {
+      //     //   const userId = session.user.id;
 
-          //   await saveSuggestions({
-          //     suggestions: suggestions.map((suggestion) => ({
-          //       ...suggestion,
-          //       userId,
-          //       createdAt: new Date(),
-          //       documentCreatedAt: document.createdAt,
-          //     })),
-          //   });
-          // }
+      //     //   await saveSuggestions({
+      //     //     suggestions: suggestions.map((suggestion) => ({
+      //     //       ...suggestion,
+      //     //       userId,
+      //     //       createdAt: new Date(),
+      //     //       documentCreatedAt: document.createdAt,
+      //     //     })),
+      //     //   });
+      //     // }
 
-          return {
-            id: documentId,
-            title: document.title,
-            message: "Suggestions have been added to the document",
-          };
-        },
-      },
+      //     return {
+      //       id: documentId,
+      //       title: document.title,
+      //       message: "Suggestions have been added to the document",
+      //     };
+      //   },
+      // },
       queryEarnings: {
         description: "Query earnings information and transcripts for companies",
         parameters: z.object({
@@ -555,7 +555,8 @@ export async function DELETE(request: Request) {
     });
 
     return new Response("Chat deleted", { status: 200 });
-  } catch (error) {
+  } catch (err) {
+    console.error("Error deleting chat:", err);
     return new Response("An error occurred while processing your request", {
       status: 500,
     });

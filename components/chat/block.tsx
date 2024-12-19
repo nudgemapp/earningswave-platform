@@ -16,9 +16,7 @@ import {
 } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useDebounceCallback, useWindowSize } from "usehooks-ts";
-
 import { fetcher } from "@/lib/utils";
-
 import { DiffView } from "./diffview";
 import {
   Suggestion,
@@ -187,20 +185,20 @@ function PureBlock({
     2000
   );
 
-  const saveContent = useCallback(
-    (updatedContent: string, debounce: boolean) => {
-      if (document && updatedContent !== document.content) {
-        setIsContentDirty(true);
+  // const saveContent = useCallback(
+  //   (updatedContent: string, debounce: boolean) => {
+  //     if (document && updatedContent !== document.content) {
+  //       setIsContentDirty(true);
 
-        if (debounce) {
-          debouncedHandleContentChange(updatedContent);
-        } else {
-          handleContentChange(updatedContent);
-        }
-      }
-    },
-    [document, debouncedHandleContentChange, handleContentChange]
-  );
+  //       if (debounce) {
+  //         debouncedHandleContentChange(updatedContent);
+  //       } else {
+  //         handleContentChange(updatedContent);
+  //       }
+  //     }
+  //   },
+  //   [document, debouncedHandleContentChange, handleContentChange]
+  // );
 
   function getDocumentContentById(index: number) {
     if (!documents) return "";
@@ -480,6 +478,6 @@ function PureBlock({
   );
 }
 
-export const Block = memo(PureBlock, (prevProps, nextProps) => {
+export const Block = memo(PureBlock, () => {
   return false;
 });

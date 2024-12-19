@@ -24,7 +24,11 @@ const getActionText = (
 
 interface DocumentToolResultProps {
   type: "create" | "update" | "request-suggestions";
-  result: { id: string; title: string; kind: any };
+  result: {
+    id: string;
+    title: string;
+    kind: "document" | "spreadsheet" | "presentation";
+  };
   block: UIBlock;
   setBlock: (value: SetStateAction<UIBlock>) => void;
   isReadonly: boolean;

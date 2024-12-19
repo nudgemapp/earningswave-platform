@@ -1,7 +1,6 @@
 import { memo, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { UIBlock } from "./block";
-import equal from "fast-deep-equal";
 import { CrossIcon } from "lucide-react";
 
 interface BlockCloseButtonProps {
