@@ -554,8 +554,8 @@ export async function DELETE(request: Request) {
     });
 
     return new Response("Chat deleted", { status: 200 });
-  } catch (err) {
-    console.error("Error deleting chat:", err);
+  } catch (_err) {
+    console.error("Error deleting chat:", _err);
     return new Response("An error occurred while processing your request", {
       status: 500,
     });

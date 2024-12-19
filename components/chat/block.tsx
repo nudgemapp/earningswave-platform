@@ -134,7 +134,10 @@ function PureBlock({
   }, [block.status, mutateDocuments]);
 
   // const { mutate } = useSWRConfig();
-  const [isContentDirty, setIsContentDirty] = useState(false);
+  const [
+    isContentDirty,
+    // setIsContentDirty
+  ] = useState(false);
 
   // const handleContentChange = useCallback(
   //   (updatedContent: string) => {
