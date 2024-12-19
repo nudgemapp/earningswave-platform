@@ -117,8 +117,8 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "NONE", time: "BMO" },
   ],
   "2024-12-27": [
-    // Before Market Open (BMO)
     { symbol: "AMTM", time: "BMO" },
+    { symbol: "PCYG", time: "AMC" },
   ],
   "2024-12-30": [
     // Before Market Open (BMO)
