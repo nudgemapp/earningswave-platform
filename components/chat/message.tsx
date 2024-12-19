@@ -57,6 +57,7 @@ const PurePreviewMessage = ({
           try {
             return JSON.parse(message.content);
           } catch (e) {
+            console.log(e);
             return message.content;
           }
         })()
@@ -68,13 +69,12 @@ const PurePreviewMessage = ({
       try {
         return JSON.parse(invocation);
       } catch (e) {
+        console.log(e);
         return invocation;
       }
     }
     return invocation;
   });
-
-  console.log(parsedToolInvocations);
 
   // Update the message with parsed content and tool invocations
   const processedMessage = {
