@@ -28,9 +28,24 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }
   }
 
-  const messagesFromDb = await prisma.message.findMany({
+  const messagesFromDb = (await prisma.message.findMany({
     where: { chatId: id },
-  });
+    select: {
+      id: true,
+      role: true,
+      content: true,
+      chatId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })) as Array<{
+    id: string;
+    role: "user" | "assistant" | "system";
+    content: any;
+    chatId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get("model-id")?.value;
