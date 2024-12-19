@@ -39,59 +39,68 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "ZJK", time: "BMO" },
     { symbol: "REE", time: "BMO" },
     { symbol: "CMCM", time: "BMO" },
+    { symbol: "PFX", time: "BMO" },
+    { symbol: "EPIX", time: "BMO" },
     { symbol: "NMTC", time: "BMO" },
     { symbol: "PETZ", time: "BMO" },
     { symbol: "SONN", time: "BMO" },
     // After Market Close (AMC)
+    { symbol: "HEI", time: "AMC" },
+    { symbol: "HEI.A", time: "AMC" },
     { symbol: "WOR", time: "AMC" },
     { symbol: "ELP", time: "AMC" },
     { symbol: "APDN", time: "AMC" },
-    { symbol: "YCBD", time: "AMC" },
   ],
   "2024-12-18": [
     // Before Market Open (BMO)
-    { symbol: "GIS", time: "BMO" },
-    { symbol: "JBL", time: "BMO" },
-    { symbol: "BIRK", time: "BMO" },
-    { symbol: "TTC", time: "BMO" },
-    { symbol: "ABM", time: "BMO" },
-    { symbol: "TKLF", time: "BMO" },
-    { symbol: "OGI", time: "BMO" },
+    { symbol: "GIS", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
+    { symbol: "JBL", time: "BMO", confirmed: true }, // Confirmed 7:45 AM ET
+    { symbol: "BIRK", time: "BMO", confirmed: true }, // Confirmed 5:20 AM ET
+    { symbol: "TTC", time: "BMO", confirmed: true }, // Confirmed 8:30 AM ET
+    { symbol: "ABM", time: "BMO", confirmed: true }, // Confirmed 6:58 AM ET
+    { symbol: "LDTC", time: "BMO", confirmed: true }, // Confirmed 7:30 AM ET
+    { symbol: "TKLF", time: "BMO", confirmed: true }, // Confirmed 6:00 AM ET
+    { symbol: "OGI", time: "BMO", confirmed: true }, // Confirmed 6:00 AM ET
     // After Market Close (AMC)
-    { symbol: "MU", time: "AMC" },
-    { symbol: "LEN", time: "AMC" },
-    { symbol: "LEN.B", time: "AMC" },
-    { symbol: "SCS", time: "AMC" },
-    { symbol: "WS", time: "AMC" },
-    { symbol: "EPAC", time: "AMC" },
-    { symbol: "MLKN", time: "AMC" },
+    { symbol: "MU", time: "AMC", confirmed: true }, // Confirmed 4:02 PM ET
+    { symbol: "LEN", time: "AMC", confirmed: true }, // Confirmed 4:30 PM ET
+    { symbol: "LEN.B", time: "AMC", confirmed: true }, // Confirmed 4:30 PM ET
+    { symbol: "SCS", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
+    { symbol: "WS", time: "AMC", confirmed: true }, // Confirmed 4:10 PM ET
+    { symbol: "EPAC", time: "AMC", confirmed: true }, // Confirmed 4:30 PM ET
+    { symbol: "MLKN", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
+    { symbol: "NRSN", time: "AMC", confirmed: true }, // Added
+    { symbol: "YCBD", time: "AMC", confirmed: true }, // Added
+    { symbol: "BACK", time: "AMC", confirmed: true }, // Added
   ],
   "2024-12-19": [
     // Before Market Open (BMO)
-    { symbol: "ACN", time: "BMO" },
-    { symbol: "CTAS", time: "BMO" },
-    { symbol: "PAYX", time: "BMO" },
-    { symbol: "DRI", time: "BMO" },
-    { symbol: "FDS", time: "BMO" },
-    { symbol: "FCEL", time: "BMO" },
-    { symbol: "KMX", time: "BMO" },
-    { symbol: "CAG", time: "BMO" },
-    { symbol: "LW", time: "BMO" },
+    { symbol: "ACN", time: "BMO", confirmed: true }, // Confirmed 6:39 AM ET
+    { symbol: "CTAS", time: "BMO", confirmed: true }, // Confirmed 8:30 AM ET
+    { symbol: "PAYX", time: "BMO", confirmed: true }, // Confirmed 8:30 AM ET
+    { symbol: "DRI", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
+    { symbol: "FDS", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
+    { symbol: "FCEL", time: "BMO", confirmed: true }, // Confirmed 7:30 AM ET
+    { symbol: "KMX", time: "BMO", confirmed: true }, // Confirmed 6:50 AM ET
+    { symbol: "CAG", time: "BMO", confirmed: true }, // Confirmed 7:30 AM ET
+    { symbol: "LW", time: "BMO", confirmed: true }, // Confirmed 6:00 AM ET
+    { symbol: "SHCO", time: "BMO", confirmed: true }, // Added - Confirmed 8:01 AM ET
     // After Market Close (AMC)
-    { symbol: "NKE", time: "AMC" },
-    { symbol: "FDX", time: "AMC" },
-    { symbol: "BB", time: "AMC" },
-    { symbol: "AVO", time: "AMC" },
-    { symbol: "SCHL", time: "AMC" },
-    { symbol: "ISSC", time: "AMC" },
-    { symbol: "MOBX", time: "AMC" },
+    { symbol: "NKE", time: "AMC", confirmed: true }, // Confirmed 4:15 PM ET
+    { symbol: "FDX", time: "AMC", confirmed: true }, // Confirmed 4:04 PM ET
+    { symbol: "BB", time: "AMC", confirmed: true }, // Confirmed 5:05 PM ET
+    { symbol: "AVO", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
+    { symbol: "SCHL", time: "AMC", confirmed: true }, // Confirmed 4:01 PM ET
+    { symbol: "ISSC", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
+    { symbol: "MOBX", time: "AMC", confirmed: true }, // Confirmed 4:00 PM ET
   ],
   "2024-12-20": [
     // Before Market Open (BMO)
-    { symbol: "CCL", time: "BMO" },
-    { symbol: "WGO", time: "BMO" },
-    { symbol: "CUK", time: "BMO" },
-    { symbol: "SATX", time: "BMO" },
+    { symbol: "CCL", time: "BMO", confirmed: true }, // Confirmed 9:15 AM ET
+    { symbol: "WGO", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
+    { symbol: "CUK", time: "BMO", confirmed: true }, // Confirmed 9:15 AM ET
+    { symbol: "SATX", time: "BMO", confirmed: true }, // Confirmed 8:00 AM ET
+    { symbol: "CSPI", time: "BMO", confirmed: true }, // Added - Confirmed 8:30 AM ET
   ],
   "2024-12-23": [
     // Before Market Open (BMO)
