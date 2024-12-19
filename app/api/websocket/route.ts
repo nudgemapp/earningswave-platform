@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import WebSocketManager from "@/services/WebSocketManager";
-import { FinnhubTrade } from "@/app/(auth)/(platform)/earnings/types";
+import { FinnhubTrade } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 
 export const runtime = "edge";
 
