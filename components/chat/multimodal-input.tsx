@@ -113,7 +113,10 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, "", `/chat/${chatId}`);
+    // Only update URL if we're already in the chat route
+    if (window.location.pathname.startsWith("/chat")) {
+      window.history.replaceState({}, "", `/chat/${chatId}`);
+    }
 
     handleSubmit(undefined, {
       experimental_attachments: attachments,

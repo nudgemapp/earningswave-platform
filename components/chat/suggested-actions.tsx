@@ -30,7 +30,10 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
       return;
     }
 
-    window.history.replaceState({}, "", `/chat/${chatId}`);
+    if (window.location.pathname.startsWith("/chat")) {
+      window.history.replaceState({}, "", `/chat/${chatId}`);
+    }
+
     await append({
       role: "user",
       content: action,
