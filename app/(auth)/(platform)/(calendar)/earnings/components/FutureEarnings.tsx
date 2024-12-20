@@ -325,7 +325,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               </CustomTabsContent>
 
               <CustomTabsContent value="transcripts" className="px-5">
-                <div className="py-4">
+                <div>
                   {isTranscriptsVisible && hasValidTranscripts(company) && (
                     <Suspense fallback={<TranscriptsSkeleton />}>
                       <CompanyTranscripts

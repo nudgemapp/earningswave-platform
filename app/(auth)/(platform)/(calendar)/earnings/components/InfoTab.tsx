@@ -7,7 +7,6 @@ import {
   DollarSign,
   Users,
   Building,
-  Briefcase,
 } from "lucide-react";
 
 interface InfoTabProps {
