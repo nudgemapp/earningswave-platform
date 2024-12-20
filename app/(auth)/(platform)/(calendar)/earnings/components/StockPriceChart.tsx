@@ -182,8 +182,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleTimeframeChange = (tf: string) => {
-    setTimeframe(tf);
+  const handleTimeframeChange = (newTimeframe: string) => {
+    setTimeframe(newTimeframe);
   };
 
   // Cleanup function will be called when component unmounts
@@ -236,12 +236,12 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     }
 
     setCurrentPriceData(mostRecentData);
-    setTodayPrices({
+    setTodayPrices((prev) => ({
+      ...prev,
       prevClose: prevDayClose || null,
       preMarket:
         mostRecentData.marketSession === "pre" ? mostRecentData.close : null,
       regular: mostRecentRegularClose?.close || null,
-      // Use stored after-hours data if available, otherwise try current data
       afterHours:
         storedAfterHoursData?.price ||
         (mostRecentData.marketSession === "post" ? mostRecentData.close : null),
@@ -255,26 +255,22 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
       mostRecentDate: mostRecentRegularClose?.date,
       atClose:
         storedAfterHoursData?.atClose || mostRecentRegularClose?.close || null,
-    });
-  }, [timeseriesData, timeframe, storedAfterHoursData]);
+    }));
+  }, [timeseriesData, timeframe]);
 
   const TimeframeButton = React.memo(
     ({
       tf,
       active,
-      onClick,
+      onTimeframeChange,
     }: {
       tf: string;
       active: boolean;
-      onClick: () => void;
+      onTimeframeChange: (timeframe: string) => void;
     }) => (
       <button
         type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClick();
-        }}
+        onClick={() => onTimeframeChange(tf)}
         className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
           active
             ? "bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-500"
@@ -572,10 +568,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
               key={tf}
               tf={tf}
               active={tf === timeframe}
-              onClick={() => {
-                setTimeframe(tf);
-                handleTimeframeChange(tf);
-              }}
+              onTimeframeChange={handleTimeframeChange}
             />
           ))}
         </div>
