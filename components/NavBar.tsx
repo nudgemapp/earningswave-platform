@@ -121,6 +121,8 @@ function NavBar() {
     }
   };
 
+  const showNotifications = process.env.NODE_ENV !== "production";
+
   return (
     <AnimatePresence>
       {mounted && (
@@ -138,13 +140,13 @@ function NavBar() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="flex-shrink-0 w-1/4"
+                className="flex-shrink-0 w-[200px]"
               >
                 <Logo />
               </motion.div>
 
               {/* Links - Center */}
-              <div className="flex-grow flex justify-center gap-[20px] xl:gap-[50px] text-[16px] items-center select-none">
+              <div className="flex-1 flex justify-center gap-[20px] xl:gap-[50px] text-[16px] items-center select-none">
                 {links.map((item, index) => (
                   <motion.div
                     key={index}
@@ -211,12 +213,9 @@ function NavBar() {
               </div>
 
               {/* Button - Right */}
-              <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-[20px] select-none">
+              <div className="flex-shrink-0 w-[200px] flex justify-end items-center gap-[20px] select-none">
                 <ModeToggle />
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <motion.div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -224,12 +223,11 @@ function NavBar() {
                     className="relative"
                   >
                     <Search className="h-5 w-5" />
-                    {/* <kbd className="pointer-events-none absolute top-5 right-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                      <span className="text-xs">⌘</span>K
-                    </kbd> */}
                   </Button>
                 </motion.div>
-                {user && <NotificationButton handleApiClick={handleApiClick} />}
+                {user && showNotifications && (
+                  <NotificationButton handleApiClick={handleApiClick} />
+                )}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

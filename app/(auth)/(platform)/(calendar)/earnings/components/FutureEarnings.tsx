@@ -30,6 +30,13 @@ import {
 import LiveEarningsCall from "./LiveEarningsCall";
 import { useInView } from "react-intersection-observer";
 import { Separator } from "@/components/ui/separator";
+import {
+  CustomTabs,
+  CustomTabsList,
+  CustomTabsTrigger,
+  CustomTabsContent,
+} from "./CustomTabs";
+import InfoTab from "./InfoTab";
 
 interface FutureEarningsProps {
   SelectedCompany: {
@@ -278,31 +285,58 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               removeFromWatchlist={removeFromWatchlist}
             />
           </div>
-          <Separator />
+          <Separator className="mb-0" />
+          <div className="px-0 pt-0">
+            <CustomTabs defaultValue="general" className="w-full -mt-3">
+              <CustomTabsList className="mt-0">
+                <CustomTabsTrigger value="general">General</CustomTabsTrigger>
+                <CustomTabsTrigger value="info">Info</CustomTabsTrigger>
+                <CustomTabsTrigger value="transcripts">
+                  Transcripts
+                </CustomTabsTrigger>
+              </CustomTabsList>
 
-          <div className="space-y-6 px-5">
-            <Suspense fallback={<StockChartSkeleton />}>
-              <div className="h-[400px] w-full mb-12">
-                <StockPriceChart symbol={company.symbol} />
-              </div>
-            </Suspense>
-
-            <Suspense fallback={null}>
-              <LiveEarningsCall companyId={company.id} />
-            </Suspense>
-
-            <LiveEarningsCall companyId={company.id} />
-
-            <div ref={transcriptsRef}>
-              {isTranscriptsVisible && hasValidTranscripts(company) && (
-                <Suspense fallback={<TranscriptsSkeleton />}>
-                  <CompanyTranscripts
-                    transcripts={company.recentTranscripts}
-                    company={company}
-                  />
+              <CustomTabsContent value="general" className="space-y-2 px-5">
+                <Suspense fallback={<StockChartSkeleton />}>
+                  <div className="h-[400px] w-full">
+                    <StockPriceChart symbol={company.symbol} />
+                  </div>
                 </Suspense>
-              )}
-            </div>
+                <Suspense fallback={null}>
+                  <LiveEarningsCall companyId={company.id} />
+                </Suspense>
+                <div ref={transcriptsRef}>
+                  {isTranscriptsVisible && hasValidTranscripts(company) && (
+                    <Suspense fallback={<TranscriptsSkeleton />}>
+                      <CompanyTranscripts
+                        transcripts={company.recentTranscripts}
+                        company={company}
+                      />
+                    </Suspense>
+                  )}
+                </div>
+              </CustomTabsContent>
+
+              <CustomTabsContent value="info" className="px-5">
+                <div className="py-4">
+                  <h3 className="text-lg font-semibold">Company Information</h3>
+                  <InfoTab company={company} />
+                </div>
+              </CustomTabsContent>
+
+              <CustomTabsContent value="transcripts" className="px-5">
+                <div className="py-4">
+                  {isTranscriptsVisible && hasValidTranscripts(company) && (
+                    <Suspense fallback={<TranscriptsSkeleton />}>
+                      <CompanyTranscripts
+                        transcripts={company.recentTranscripts}
+                        company={company}
+                      />
+                    </Suspense>
+                  )}
+                </div>
+              </CustomTabsContent>
+            </CustomTabs>
           </div>
         </div>
       )}

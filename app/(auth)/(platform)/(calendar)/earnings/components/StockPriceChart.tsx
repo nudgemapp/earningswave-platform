@@ -270,7 +270,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 xs:gap-0 mb-2">
+      <div className="mb-2">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-6">
             <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
@@ -374,20 +374,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
             </div>
           </div>
         </div>
-
-        {/* Timeframe Controls - Always Visible */}
-        <div className="w-full">
-          <div className="flex items-center bg-gray-50/80 dark:bg-slate-800/80 rounded-md p-[2px] shadow-sm">
-            {timeframeButtons.map((tf) => (
-              <TimeframeButton
-                key={tf}
-                tf={tf}
-                active={tf === timeframe}
-                onClick={() => handleTimeframeChange(tf)}
-              />
-            ))}
-          </div>
-        </div>
       </div>
 
       <div className="flex-1 min-h-[300px] relative">
@@ -399,7 +385,7 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={filteredData}
-              margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+              margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
             >
               <CartesianGrid
                 strokeDasharray="2 4"
@@ -508,6 +494,20 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
             </AreaChart>
           </ResponsiveContainer>
         )}
+      </div>
+
+      {/* Timeframe Controls - Moved below chart */}
+      <div className="mt-4 px-2">
+        <div className="flex items-center bg-gray-50/80 dark:bg-slate-800/80 rounded-md p-[2px] shadow-sm">
+          {timeframeButtons.map((tf) => (
+            <TimeframeButton
+              key={tf}
+              tf={tf}
+              active={tf === timeframe}
+              onClick={() => handleTimeframeChange(tf)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
