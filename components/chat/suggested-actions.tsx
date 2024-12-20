@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChatRequestOptions, CreateMessage, Message } from "ai";
 import { memo } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useAuthModal } from "@/store/AuthModalStore";
 
 interface SuggestedActionsProps {
   chatId: string;
@@ -14,6 +16,27 @@ interface SuggestedActionsProps {
 }
 
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
+  const { isSignedIn } = useUser();
+  const authModal = useAuthModal();
+
+  const handleSuggestedAction = async (
+    event: React.MouseEvent,
+    action: string
+  ) => {
+    event.preventDefault();
+
+    if (!isSignedIn) {
+      authModal.onOpen();
+      return;
+    }
+
+    window.history.replaceState({}, "", `/chat/${chatId}`);
+    await append({
+      role: "user",
+      content: action,
+    });
+  };
+
   const suggestedActions = [
     {
       title: "When does Netflix report earnings?",
@@ -40,14 +63,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
         >
           <Button
             variant="ghost"
-            onClick={async () => {
-              window.history.replaceState({}, "", `/chat/${chatId}`);
-
-              append({
-                role: "user",
-                content: suggestedAction.action,
-              });
-            }}
+            onClick={(e) => handleSuggestedAction(e, suggestedAction.action)}
             className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
           >
             <span className="font-medium">{suggestedAction.title}</span>
