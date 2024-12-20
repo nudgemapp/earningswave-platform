@@ -30,13 +30,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     timeframe
   );
 
-  console.log("timeseriesData", timeseriesData);
+  // console.log("timeseriesData", timeseriesData);
 
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) return [];
 
     const now = new Date();
-    let filteredData = data.filter((point: StockData) => {
+    const filteredData = data.filter((point: StockData) => {
       const pointDate = new Date(point.date);
 
       switch (timeframe) {
