@@ -298,7 +298,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
 
               <CustomTabsContent value="general" className="space-y-8 px-5">
                 <Suspense fallback={<StockChartSkeleton />}>
-                  <div className="h-[400px] w-full">
+                  <div className="h-[400px] w-full mb-12">
                     <StockPriceChart symbol={company.symbol} />
                   </div>
                 </Suspense>

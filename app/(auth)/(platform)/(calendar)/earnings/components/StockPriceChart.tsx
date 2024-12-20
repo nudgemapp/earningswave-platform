@@ -483,16 +483,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
                 ticks={
                   timeframe === "1D" && filteredData.length > 0
                     ? (() => {
-                        // Get the date from the first data point
                         const baseDate = new Date(filteredData[0].date);
-                        // Create a new date object at midnight
                         const date = new Date(
                           baseDate.getFullYear(),
                           baseDate.getMonth(),
                           baseDate.getDate()
                         );
 
-                        // Create array of tick times
                         return [
                           new Date(date.setHours(4, 0, 0, 0)), // 4:00 AM
                           new Date(date.setHours(9, 30, 0, 0)), // 9:30 AM
@@ -509,8 +506,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
                   className: "dark:stroke-gray-600",
                 }}
                 tickLine={false}
-                interval={0} // Force show all ticks
-                minTickGap={30}
+                interval={timeframe === "1D" ? 0 : "preserveStartEnd"}
+                minTickGap={timeframe === "1D" ? 30 : 50}
                 tick={{
                   fontSize: 11,
                   fill: "#64748b",
