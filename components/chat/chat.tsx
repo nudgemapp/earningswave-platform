@@ -28,7 +28,7 @@ export function Chat({
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { user, isSignedIn } = useUser();
+  const { user } = useUser();
   const authModal = useAuthModal();
   const { mutate } = useSWRConfig();
 
