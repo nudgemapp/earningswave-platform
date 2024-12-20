@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 import { Calendar, Sun, Moon, LucideIcon } from "lucide-react";
-import { FilterState } from "@/app/(auth)/(platform)/earnings/types";
+import { FilterState } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 import { useGetMonthView } from "@/app/hooks/use-get-month-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEarningsStore } from "@/store/EarningsStore";

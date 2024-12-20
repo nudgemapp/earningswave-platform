@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { WatchlistEntry } from "@prisma/client";
-import { ProcessedTranscript } from "@/app/(auth)/(platform)/earnings/types";
+import { ProcessedTranscript } from "@/app/(auth)/(platform)/(calendar)/earnings/types";
 
 interface SelectedCompany {
   companyId: string;
@@ -29,7 +29,7 @@ export const useEarningsStore = create<EarningsState>((set) => ({
     set({
       selectedCompany: company,
       selectedFutureEarnings: null, // Clear future earnings
-      showWatchlist: false, // Close watchlist
+      showWatchlist: false, // Close watch
     }),
   selectedFutureEarnings: null,
   setSelectedFutureEarnings: (report) =>

@@ -291,6 +291,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               <LiveEarningsCall companyId={company.id} />
             </Suspense>
 
+            <LiveEarningsCall companyId={company.id} />
+
             <div ref={transcriptsRef}>
               {isTranscriptsVisible && hasValidTranscripts(company) && (
                 <Suspense fallback={<TranscriptsSkeleton />}>

@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { IconUser } from "@tabler/icons-react";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { dark } from "@clerk/themes";
-// import NotificationButton from "./NotificationButton";
+import NotificationButton from "./NotificationButton";
 
 // import TickerSearch from "./tickerSearch";
 
@@ -69,6 +69,11 @@ function NavBar() {
       name: "Pricing",
       badgeCount: 0,
     },
+    {
+      route: "/chat",
+      name: "Chat",
+      badgeCount: 0,
+    },
   ];
 
   const toggleMenu = () => {
@@ -106,15 +111,15 @@ function NavBar() {
     return () => document.removeEventListener("keydown", down);
   }, [toggle]);
 
-  // const handleApiClick = async () => {
-  //   try {
-  //     const response = await fetch("/api/finnhub/test-script");
-  //     const data = await response.json();
-  //     console.log("API Response:", data);
-  //   } catch (error) {
-  //     console.error("Error fetching from API:", error);
-  //   }
-  // };
+  const handleApiClick = async () => {
+    try {
+      const response = await fetch("/api/finnhub/transcript-sync");
+      const data = await response.json();
+      console.log("API Response:", data);
+    } catch (error) {
+      console.error("Error fetching from API:", error);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -224,7 +229,7 @@ function NavBar() {
                     </kbd> */}
                   </Button>
                 </motion.div>
-                {/* {user && <NotificationButton handleApiClick={handleApiClick} />} */}
+                {user && <NotificationButton handleApiClick={handleApiClick} />}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
