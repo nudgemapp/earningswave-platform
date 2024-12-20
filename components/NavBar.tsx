@@ -259,7 +259,7 @@ function NavBar() {
           </div>
 
           {/* MOBILE */}
-          <div className="block lg:hidden fixed inset-0 z-[999] bg-white dark:bg-slate-900">
+          <div className="block lg:hidden fixed top-0 left-0 right-0 z-[999] bg-white dark:bg-slate-900">
             <div className="flex justify-between items-center px-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <button onClick={toggleMenu} className="p-2 z-10">

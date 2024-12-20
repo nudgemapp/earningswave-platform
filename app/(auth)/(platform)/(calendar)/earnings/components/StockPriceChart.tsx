@@ -41,7 +41,12 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
 
       switch (timeframe) {
         case "1D":
-          return pointDate.toDateString() === now.toDateString();
+          const today4AM = new Date(now);
+          today4AM.setHours(4, 0, 0, 0);
+          const today8PM = new Date(now);
+          today8PM.setHours(20, 0, 0, 0);
+
+          return pointDate >= today4AM && pointDate <= today8PM;
         case "1W":
           const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
           return pointDate >= oneWeekAgo;
@@ -108,20 +113,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
       Math.ceil((max + padding) * 100) / 100, // Round up to 2 decimal places
     ];
   }, [filteredData]);
-
-  // useEffect(() => {
-  //   if (lastPrice && timeseriesData) {
-  //     const newDataPoint: StockData = {
-  //       date: new Date().toISOString(),
-  //       close: lastPrice,
-  //       marketSession: "regular",
-  //       // ... other required properties
-  //     };
-
-  //     // Update the timeseries data with the new price
-  //     setTimeseriesData((prev) => [...(prev || []), newDataPoint]);
-  //   }
-  // }, [lastPrice]);
 
   // Add useEffect for time updates
   useEffect(() => {
@@ -424,10 +415,15 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
                   const minutes = date.getMinutes();
 
                   if (timeframe === "1D") {
-                    // For 1D view, show hours with AM/PM
                     const ampm = hours >= 12 ? "PM" : "AM";
                     const hour = hours % 12 || 12;
                     const minuteStr = minutes.toString().padStart(2, "0");
+
+                    if (hours === 4 && minutes === 0) return "4:00 AM";
+                    if (hours === 9 && minutes === 30) return "9:30 AM";
+                    if (hours === 16 && minutes === 0) return "4:00 PM";
+                    if (hours === 20 && minutes === 0) return "8:00 PM";
+
                     return `${hour}:${minuteStr} ${ampm}`;
                   } else {
                     return date.toLocaleDateString("en-US", {
