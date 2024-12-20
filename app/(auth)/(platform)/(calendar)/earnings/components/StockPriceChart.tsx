@@ -225,10 +225,10 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     }) => (
       <button
         onClick={onClick}
-        className={`flex-1 text-xs font-medium px-3 py-[5px] rounded-[3px] transition-all duration-200 ${
+        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
           active
-            ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200/50 dark:ring-slate-600/50"
-            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
+            ? "bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-500"
+            : "text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-500"
         }`}
       >
         {tf}
@@ -496,9 +496,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
         )}
       </div>
 
-      {/* Timeframe Controls - Moved below chart */}
-      <div className="mt-4 px-2">
-        <div className="flex items-center bg-gray-50/80 dark:bg-slate-800/80 rounded-md p-[2px] shadow-sm">
+      <div className="w-full">
+        <div className="flex items-center justify-between w-full">
           {timeframeButtons.map((tf) => (
             <TimeframeButton
               key={tf}
