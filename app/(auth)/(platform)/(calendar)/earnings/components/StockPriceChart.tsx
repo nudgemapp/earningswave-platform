@@ -30,21 +30,31 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     timeframe
   );
 
-  // console.log("timeseriesData", timeseriesData);
+  console.log("timeseriesData", timeseriesData);
 
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) return [];
 
     const now = new Date();
-    const filteredData = data.filter((point: StockData) => {
+    let filteredData = data.filter((point: StockData) => {
       const pointDate = new Date(point.date);
 
       switch (timeframe) {
         case "1D":
-          const today4AM = new Date(now);
+          const today = new Date(now);
+          today.setHours(0, 0, 0, 0);
+
+          const today4AM = new Date(today);
           today4AM.setHours(4, 0, 0, 0);
-          const today8PM = new Date(now);
+
+          const today8PM = new Date(today);
           today8PM.setHours(20, 0, 0, 0);
+
+          // If current time is before 4AM, show previous day's data
+          if (now.getHours() < 4) {
+            today4AM.setDate(today4AM.getDate() - 1);
+            today8PM.setDate(today8PM.getDate() - 1);
+          }
 
           return pointDate >= today4AM && pointDate <= today8PM;
         case "1W":
@@ -64,7 +74,51 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
       }
     });
 
-    // Sort data by date to ensure proper ordering
+    // For 1D view, ensure we have boundary points at 4AM and 8PM
+    if (timeframe === "1D") {
+      const today = new Date(now);
+      if (now.getHours() < 4) {
+        today.setDate(today.getDate() - 1);
+      }
+
+      const start4AM = new Date(today);
+      start4AM.setHours(4, 0, 0, 0);
+
+      const end8PM = new Date(today);
+      end8PM.setHours(20, 0, 0, 0);
+
+      // Add boundary points if they don't exist
+      if (
+        !filteredData.find(
+          (d) => new Date(d.date).getTime() === start4AM.getTime()
+        )
+      ) {
+        const firstPoint = filteredData[0];
+        if (firstPoint) {
+          filteredData.unshift({
+            ...firstPoint,
+            date: start4AM.toISOString(),
+            close: firstPoint.close,
+          });
+        }
+      }
+
+      if (
+        !filteredData.find(
+          (d) => new Date(d.date).getTime() === end8PM.getTime()
+        )
+      ) {
+        const lastPoint = filteredData[filteredData.length - 1];
+        if (lastPoint) {
+          filteredData.push({
+            ...lastPoint,
+            date: end8PM.toISOString(),
+            close: lastPoint.close,
+          });
+        }
+      }
+    }
+
     return filteredData.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
@@ -411,19 +465,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
                 height={40}
                 tickFormatter={(value) => {
                   const date = new Date(value);
-                  const hours = date.getHours();
-                  const minutes = date.getMinutes();
 
                   if (timeframe === "1D") {
+                    const hours = date.getHours();
+                    const minutes = date.getMinutes();
                     const ampm = hours >= 12 ? "PM" : "AM";
                     const hour = hours % 12 || 12;
                     const minuteStr = minutes.toString().padStart(2, "0");
-
-                    if (hours === 4 && minutes === 0) return "4:00 AM";
-                    if (hours === 9 && minutes === 30) return "9:30 AM";
-                    if (hours === 16 && minutes === 0) return "4:00 PM";
-                    if (hours === 20 && minutes === 0) return "8:00 PM";
-
                     return `${hour}:${minuteStr} ${ampm}`;
                   } else {
                     return date.toLocaleDateString("en-US", {
@@ -432,14 +480,37 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
                     });
                   }
                 }}
+                ticks={
+                  timeframe === "1D" && filteredData.length > 0
+                    ? (() => {
+                        // Get the date from the first data point
+                        const baseDate = new Date(filteredData[0].date);
+                        // Create a new date object at midnight
+                        const date = new Date(
+                          baseDate.getFullYear(),
+                          baseDate.getMonth(),
+                          baseDate.getDate()
+                        );
+
+                        // Create array of tick times
+                        return [
+                          new Date(date.setHours(4, 0, 0, 0)), // 4:00 AM
+                          new Date(date.setHours(9, 30, 0, 0)), // 9:30 AM
+                          new Date(date.setHours(12, 0, 0, 0)), // 12:00 PM
+                          new Date(date.setHours(16, 0, 0, 0)), // 4:00 PM
+                          new Date(date.setHours(20, 0, 0, 0)), // 8:00 PM
+                        ].map((d) => d.toISOString());
+                      })()
+                    : undefined
+                }
                 axisLine={{
                   stroke: "#94a3b8",
                   strokeWidth: 1.5,
                   className: "dark:stroke-gray-600",
                 }}
                 tickLine={false}
-                interval="preserveStart"
-                minTickGap={50}
+                interval={0} // Force show all ticks
+                minTickGap={30}
                 tick={{
                   fontSize: 11,
                   fill: "#64748b",
