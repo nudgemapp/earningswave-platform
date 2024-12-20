@@ -269,8 +269,13 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
       onClick: () => void;
     }) => (
       <button
-        onClick={onClick}
-        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
           active
             ? "bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-500"
             : "text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-500"
@@ -561,13 +566,16 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
       </div>
 
       <div className="w-full">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full gap-2">
           {timeframeButtons.map((tf) => (
             <TimeframeButton
               key={tf}
               tf={tf}
               active={tf === timeframe}
-              onClick={() => handleTimeframeChange(tf)}
+              onClick={() => {
+                setTimeframe(tf);
+                handleTimeframeChange(tf);
+              }}
             />
           ))}
         </div>
