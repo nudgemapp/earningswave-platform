@@ -296,7 +296,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                 </CustomTabsTrigger>
               </CustomTabsList>
 
-              <CustomTabsContent value="general" className="space-y-2 px-5">
+              <CustomTabsContent value="general" className="space-y-8 px-5">
                 <Suspense fallback={<StockChartSkeleton />}>
                   <div className="h-[400px] w-full">
                     <StockPriceChart symbol={company.symbol} />
