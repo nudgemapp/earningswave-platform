@@ -104,9 +104,12 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
   ],
   "2024-12-23": [
     // Before Market Open (BMO)
-    { symbol: "AVXL", time: "BMO" },
+    { symbol: "AVXL", time: "BMO", confirmed: true }, // Confirmed 7:30 AM ET
+    { symbol: "EBF", time: "BMO", confirmed: true }, // Confirmed 6:00 AM ET
+    { symbol: "OCC", time: "BMO", confirmed: true }, // Confirmed 8:15 AM ET
     // After Market Close (AMC)
-    { symbol: "LMNR", time: "AMC" },
+    { symbol: "LMNR", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
+    { symbol: "BLIN", time: "AMC", confirmed: true }, // Confirmed 4:07 PM ET
   ],
   "2024-12-24": [
     // Before Market Open (BMO)
@@ -118,7 +121,7 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
   ],
   "2024-12-27": [
     { symbol: "AMTM", time: "BMO" },
-    { symbol: "PCYG", time: "AMC" },
+    // { symbol: "PCYG", time: "AMC" },
   ],
   "2024-12-30": [
     // Before Market Open (BMO)
