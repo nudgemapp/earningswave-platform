@@ -162,11 +162,11 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "NTRP", time: "AMC", confirmed: true }, // Confirmed 4:00 PM ET
     { symbol: "SMX", time: "AMC", confirmed: true }, // Confirmed 5:09 PM ET
   ],
-  "2024-01-02": [
+  "2025-01-02": [
     { symbol: "RGP", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
     { symbol: "LFCR", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
   ],
-  "2024-01-03": [
+  "2025-01-03": [
     // Before Market Open (BMO)
     { symbol: "WRD", time: "BMO", confirmed: true }, // Confirmed 3:30 AM ET
     { symbol: "HTCO", time: "BMO", confirmed: true }, // Confirmed 4:52 AM ET
@@ -191,11 +191,11 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "EJH", time: "AMC", confirmed: true }, // Confirmed 4:00 PM ET
     { symbol: "GRAF.U", time: "AMC", confirmed: true }, // Confirmed 10:24 PM ET
   ],
-  "2024-01-06": [
+  "2025-01-06": [
     // Before Market Open (BMO)
     { symbol: "CMC", time: "BMO", confirmed: true }, // Confirmed 6:30 AM ET
   ],
-  "2024-01-07": [
+  "2025-01-07": [
     // Before Market Open (BMO)
     { symbol: "RPM", time: "BMO", confirmed: true }, // Confirmed 6:45 AM ET
     { symbol: "APOG", time: "BMO", confirmed: true }, // Confirmed 6:15 AM ET
@@ -210,7 +210,7 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "SOGP", time: "AMC", confirmed: true }, // Confirmed 4:00 PM ET
     { symbol: "JXJT", time: "AMC", confirmed: true }, // Confirmed 1:00 PM ET
   ],
-  "2024-01-08": [
+  "2025-01-08": [
     // Before Market Open (BMO)
     { symbol: "MSM", time: "BMO", confirmed: true }, // Confirmed 6:30 AM ET
     { symbol: "UNF", time: "BMO", confirmed: true }, // Confirmed 8:00 AM ET
@@ -227,7 +227,7 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "FC", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
     { symbol: "PCYO", time: "AMC", confirmed: true }, // Confirmed 4:00 PM ET
   ],
-  "2024-01-09": [
+  "2025-01-09": [
     // Before Market Open (BMO)
     { symbol: "WBA", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
     { symbol: "TLRY", time: "BMO", confirmed: true }, // Confirmed 7:00 AM ET
@@ -244,7 +244,7 @@ export const EARNINGS_CALENDAR: EarningsCalendar = {
     { symbol: "ETWO", time: "AMC", confirmed: true }, // Confirmed 4:15 PM ET
     { symbol: "BBCP", time: "AMC", confirmed: true }, // Confirmed 4:05 PM ET
   ],
-  "2024-01-10": [
+  "2025-01-10": [
     // Before Market Open (BMO)
     { symbol: "DAL", time: "BMO", confirmed: true }, // Confirmed 6:30 AM ET
     { symbol: "SNX", time: "BMO", confirmed: true }, // Confirmed 8:05 AM ET
