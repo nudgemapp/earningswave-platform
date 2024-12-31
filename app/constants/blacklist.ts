@@ -126,7 +126,6 @@ export const BLACKLISTED_SYMBOLS: string[] = [
   "GELS",
   "HTLM",
   "GLXG",
-  "ICON",
   "WCT",
   "DEVS",
   "JBDI",
