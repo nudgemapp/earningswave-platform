@@ -30,13 +30,13 @@ import {
 import LiveEarningsCall from "./LiveEarningsCall";
 import { useInView } from "react-intersection-observer";
 import { Separator } from "@/components/ui/separator";
-import {
-  CustomTabs,
-  CustomTabsList,
-  CustomTabsTrigger,
-  CustomTabsContent,
-} from "./CustomTabs";
-import InfoTab from "./InfoTab";
+// import {
+//   CustomTabs,
+//   CustomTabsList,
+//   CustomTabsTrigger,
+//   CustomTabsContent,
+// } from "./CustomTabs";
+// import InfoTab from "./InfoTab";
 
 interface FutureEarningsProps {
   SelectedCompany: {
