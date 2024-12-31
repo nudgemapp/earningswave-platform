@@ -287,37 +287,39 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
           </div>
           <Separator className="mb-0" />
           <div className="px-0 pt-0">
-            <CustomTabs defaultValue="general" className="w-full -mt-3">
+            {/* <CustomTabs defaultValue="general" className="w-full -mt-3">
               <CustomTabsList className="mt-0">
                 <CustomTabsTrigger value="general">General</CustomTabsTrigger>
                 <CustomTabsTrigger value="info">Info</CustomTabsTrigger>
                 <CustomTabsTrigger value="transcripts">
                   Transcripts
                 </CustomTabsTrigger>
-              </CustomTabsList>
+              </CustomTabsList> */}
 
-              <CustomTabsContent value="general" className="space-y-8 px-5">
-                <Suspense fallback={<StockChartSkeleton />}>
-                  <div className="h-[400px] w-full mb-12">
-                    <StockPriceChart symbol={company.symbol} />
-                  </div>
-                </Suspense>
-                <Suspense fallback={null}>
-                  <LiveEarningsCall companyId={company.id} />
-                </Suspense>
-                <div ref={transcriptsRef}>
-                  {isTranscriptsVisible && hasValidTranscripts(company) && (
-                    <Suspense fallback={<TranscriptsSkeleton />}>
-                      <CompanyTranscripts
-                        transcripts={company.recentTranscripts}
-                        company={company}
-                      />
-                    </Suspense>
-                  )}
+            {/* <CustomTabsContent value="general" className="space-y-8 px-5"> */}
+            <div className="space-y-8 px-5">
+              <Suspense fallback={<StockChartSkeleton />}>
+                <div className="h-[400px] w-full mb-12">
+                  <StockPriceChart symbol={company.symbol} />
                 </div>
-              </CustomTabsContent>
+              </Suspense>
+              <Suspense fallback={null}>
+                <LiveEarningsCall companyId={company.id} />
+              </Suspense>
+              <div ref={transcriptsRef}>
+                {isTranscriptsVisible && hasValidTranscripts(company) && (
+                  <Suspense fallback={<TranscriptsSkeleton />}>
+                    <CompanyTranscripts
+                      transcripts={company.recentTranscripts}
+                      company={company}
+                    />
+                  </Suspense>
+                )}
+              </div>
+            </div>
+            {/* </CustomTabsContent> */}
 
-              <CustomTabsContent value="info" className="px-5">
+            {/* <CustomTabsContent value="info" className="px-5">
                 <div className="py-4">
                   <h3 className="text-lg font-semibold">Company Information</h3>
                   <InfoTab company={company} />
@@ -335,8 +337,8 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
                     </Suspense>
                   )}
                 </div>
-              </CustomTabsContent>
-            </CustomTabs>
+              </CustomTabsContent> */}
+            {/* </CustomTabs> */}
           </div>
         </div>
       )}

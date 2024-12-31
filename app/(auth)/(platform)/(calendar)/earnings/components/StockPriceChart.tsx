@@ -30,33 +30,48 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     timeframe
   );
 
-  // console.log("timeseriesData", timeseriesData);
+  console.log("timeseriesData", timeseriesData);
 
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) return [];
+
+    // Only modify 1D timeframe logic
+    if (timeframe === "1D") {
+      const now = new Date();
+      const today = new Date(now);
+
+      // Set up the 4 AM to 8 PM window
+      const start4AM = new Date(today);
+      start4AM.setHours(4, 0, 0, 0);
+
+      const end8PM = new Date(today);
+      end8PM.setHours(20, 0, 0, 0);
+
+      // Get the latest data point's time
+      const latestDataPoint = data.reduce((latest, current) => {
+        const currentDate = new Date(current.date);
+        const latestDate = new Date(latest.date);
+        return currentDate > latestDate ? current : latest;
+      }, data[0]);
+
+      // Filter data points between 4 AM and the latest available data point
+      return data
+        .filter((point: StockData) => {
+          const pointDate = new Date(point.date);
+          return (
+            pointDate >= start4AM && pointDate <= new Date(latestDataPoint.date)
+          );
+        })
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+    }
 
     const now = new Date();
     const filteredData = data.filter((point: StockData) => {
       const pointDate = new Date(point.date);
 
       switch (timeframe) {
-        case "1D":
-          const today = new Date(now);
-          today.setHours(0, 0, 0, 0);
-
-          const today4AM = new Date(today);
-          today4AM.setHours(4, 0, 0, 0);
-
-          const today8PM = new Date(today);
-          today8PM.setHours(20, 0, 0, 0);
-
-          // If current time is before 4AM, show previous day's data
-          if (now.getHours() < 4) {
-            today4AM.setDate(today4AM.getDate() - 1);
-            today8PM.setDate(today8PM.getDate() - 1);
-          }
-
-          return pointDate >= today4AM && pointDate <= today8PM;
         case "1W":
           const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
           return pointDate >= oneWeekAgo;
@@ -273,8 +288,8 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
         onClick={() => onTimeframeChange(tf)}
         className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
           active
-            ? "bg-emerald-600/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-500"
-            : "text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-500"
+            ? "bg-gray-600/10 text-gray-600 dark:bg-gray-400/10 dark:text-gray-400"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
         }`}
       >
         {tf}
@@ -311,8 +326,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     </div>
   ));
   PriceDisplay.displayName = "PriceDisplay";
-
-  console.log("todayPrices", todayPrices);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -464,51 +477,43 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
               <XAxis
                 dataKey="date"
                 height={40}
+                domain={["dataMin", "dataMax"]}
                 tickFormatter={(value) => {
                   const date = new Date(value);
-
                   if (timeframe === "1D") {
-                    const hours = date.getHours();
-                    const minutes = date.getMinutes();
-                    const ampm = hours >= 12 ? "PM" : "AM";
-                    const hour = hours % 12 || 12;
-                    const minuteStr = minutes.toString().padStart(2, "0");
-                    return `${hour}:${minuteStr} ${ampm}`;
-                  } else {
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
+                    return date.toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
                     });
                   }
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  });
                 }}
                 ticks={
-                  timeframe === "1D" && filteredData.length > 0
-                    ? (() => {
-                        const baseDate = new Date(filteredData[0].date);
-                        const date = new Date(
-                          baseDate.getFullYear(),
-                          baseDate.getMonth(),
-                          baseDate.getDate()
-                        );
-
-                        return [
-                          new Date(date.setHours(4, 0, 0, 0)), // 4:00 AM
-                          new Date(date.setHours(9, 30, 0, 0)), // 9:30 AM
-                          new Date(date.setHours(12, 0, 0, 0)), // 12:00 PM
-                          new Date(date.setHours(16, 0, 0, 0)), // 4:00 PM
-                          new Date(date.setHours(20, 0, 0, 0)), // 8:00 PM
-                        ].map((d) => d.toISOString());
-                      })()
+                  timeframe === "1D"
+                    ? [
+                        "04:00",
+                        "06:00",
+                        "08:00",
+                        "10:00",
+                        "12:00",
+                        "14:00",
+                        "16:00",
+                        "18:00",
+                        "20:00",
+                      ].map((time) => {
+                        const [hours, minutes] = time.split(":").map(Number);
+                        const date = new Date();
+                        date.setHours(hours, minutes, 0, 0);
+                        return date.toISOString();
+                      })
                     : undefined
                 }
-                axisLine={{
-                  stroke: "#94a3b8",
-                  strokeWidth: 1.5,
-                  className: "dark:stroke-gray-600",
-                }}
-                tickLine={false}
                 interval={timeframe === "1D" ? 0 : "preserveStartEnd"}
-                minTickGap={timeframe === "1D" ? 30 : 50}
+                minTickGap={timeframe === "1D" ? 0 : 50}
                 tick={{
                   fontSize: 11,
                   fill: "#64748b",
