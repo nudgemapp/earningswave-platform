@@ -258,7 +258,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
-  const { ref: transcriptsRef, inView: isTranscriptsVisible } = useInView({
+  const { ref: transcriptsRef } = useInView({
     threshold: 0,
     triggerOnce: true,
   });

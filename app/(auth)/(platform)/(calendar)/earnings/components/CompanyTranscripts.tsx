@@ -24,7 +24,6 @@ import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import AIEarningsAnalysis from "./AIEarnings";
 import { useUpcomingEarnings } from "@/app/hooks/use-upcoming-earnings";
-import { useCalendarStore } from "@/store/CalendarStore";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -242,7 +241,6 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
 
   const [finnhubData, setFinnhubData] = useState<FinnhubEarnings[]>([]);
   const [isFinnhubLoading, setIsFinnhubLoading] = useState(true);
-  const { currentDate, view } = useCalendarStore();
 
   // Fetch Finnhub data
   useEffect(() => {
