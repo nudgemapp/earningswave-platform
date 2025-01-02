@@ -52,9 +52,9 @@ export function Chat({
     },
   });
 
-  console.log(messages);
+  // console.log(messages);
 
-  console.log(initialMessages);
+  // console.log(initialMessages);
 
   // console.log(streamingData);
   // console.log(id);

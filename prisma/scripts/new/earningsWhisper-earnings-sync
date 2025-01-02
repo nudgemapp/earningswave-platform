@@ -1,0 +1,122 @@
+// import { PrismaClient, MarketTime } from "@prisma/client";
+// import { EARNINGS_CALENDAR } from "@/app/constants/earnings-calendar";
+
+// async function fetchAndMapEarningsData() {
+//   const prisma = new PrismaClient();
+
+//   try {
+//     console.log("Fetching and mapping earnings data");
+
+//     // // First delete the records and return the count
+//     // const deleteResult = await prisma.earnings.deleteMany({
+//     //   where: {
+//     //     earningsDate: {
+//     //       gte: new Date("2025-01-02"),
+//     //       lte: new Date("2025-01-31"),
+//     //     },
+//     //   },
+//     // });
+
+//     // console.log(`Successfully deleted ${deleteResult.count} earnings records`);
+
+//     // Process each date in the calendar
+//     for (const [date, entries] of Object.entries(EARNINGS_CALENDAR)) {
+//       // Only process dates within our target range
+//       const currentDate = new Date(date);
+//       if (
+//         currentDate < new Date("2025-01-02") ||
+//         currentDate > new Date("2025-01-31")
+//       ) {
+//         continue;
+//       }
+
+//       // Process each entry for the date
+//       for (const entry of entries) {
+//         if (entry.symbol === "NONE") continue; // Skip placeholder entries
+
+//         const year = new Date(date).getFullYear();
+//         const quarter = getQuarter(new Date(date));
+
+//         // Convert string estimates to numbers, handling any special cases
+//         const earningsEstimate = entry.earningsEstimate
+//           ? parseFloat(entry.earningsEstimate.replace("$", ""))
+//           : null;
+
+//         // Create or update the earnings record
+//         await prisma.earnings.upsert({
+//           where: {
+//             symbol_year_quarter: {
+//               symbol: entry.symbol,
+//               year: year,
+//               quarter: quarter,
+//             },
+//           },
+//           update: {
+//             earningsDate: new Date(date),
+//             earningsTime: entry.earningsTime || "00:00:00",
+//             marketTime: convertMarketTime(entry.marketTime),
+//             isDateConfirmed: entry.confirmed ?? true,
+//             earningsEstimate,
+//             revenueEstimate: entry.revenueEstimate || null,
+//             revenueGrowth: entry.revenueGrowth
+//               ? parseFloat(entry.revenueGrowth.replace("%", ""))
+//               : null,
+//             sentiment: entry.sentiment || null,
+//             score: entry.score || null,
+//             averageMove: entry.averageMove || null,
+//             impliedMove: entry.impliedMove || null,
+//           },
+//           create: {
+//             symbol: entry.symbol,
+//             year: year,
+//             quarter: quarter,
+//             earningsDate: new Date(date),
+//             earningsTime: entry.earningsTime || "00:00:00",
+//             marketTime: convertMarketTime(entry.marketTime),
+//             isDateConfirmed: entry.confirmed ?? true,
+//             earningsEstimate,
+//             revenueEstimate: entry.revenueEstimate || null,
+//             revenueGrowth: entry.revenueGrowth
+//               ? parseFloat(entry.revenueGrowth.replace("%", ""))
+//               : null,
+//             sentiment: entry.sentiment || null,
+//             score: entry.score || null,
+//             averageMove: entry.averageMove || null,
+//             impliedMove: entry.impliedMove || null,
+//           },
+//         });
+//       }
+//     }
+
+//     console.log("Successfully synced earnings calendar data");
+//   } catch (error) {
+//     console.error(
+//       "Error processing data:",
+//       error instanceof Error ? error.message : "Unknown error"
+//     );
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// }
+
+// // Helper function to convert market time string to enum
+// function convertMarketTime(marketTime?: string): MarketTime {
+//   if (!marketTime) return "UNKNOWN";
+
+//   switch (marketTime.toUpperCase()) {
+//     case "BMO":
+//       return "BMO";
+//     case "AMC":
+//       return "AMC";
+//     default:
+//       return "UNKNOWN";
+//   }
+// }
+
+// // Helper function to get quarter from date
+// function getQuarter(date: Date): number {
+//   const month = date.getMonth();
+//   return Math.floor(month / 3) + 1;
+// }
+
+// fetchAndMapEarningsData();
