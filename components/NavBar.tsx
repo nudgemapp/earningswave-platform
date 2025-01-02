@@ -113,7 +113,7 @@ function NavBar() {
 
   const handleApiClick = async () => {
     try {
-      const response = await fetch("/api/finnhub/transcript-sync");
+      const response = await fetch("/api/finnhub/sync-earnings");
       const data = await response.json();
       console.log("API Response:", data);
     } catch (error) {

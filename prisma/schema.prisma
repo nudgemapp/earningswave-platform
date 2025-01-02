@@ -234,11 +234,24 @@ model Earnings {
   id             String   @id @default(cuid())
   symbol         String
   quarter        Int      // For q3 etc
-  sk             String?       // Added this field, optional since some entries might not have it
   year           Int      // For 2024 etc
+  sk             String?   
   earningsDate   DateTime @db.Date
   earningsTime   String   // Store as HH:mm:ss format
-  isDateConfirmed Boolean  // Whether the earnings date is confirmed
+  isDateConfirmed Boolean  @default(true)// Whether the earnings date is confirmed
+  marketTime     MarketTime?  @default(BMO)// Using the existing MarketTime enum (BMO/AMC)
+
+
+  // Financial Estimates
+  earningsEstimate Float?  // Store as string to handle "-" cases
+  revenueEstimate  String?  // Store as string to handle currency formatting
+  revenueGrowth    Float?  // Store as string to include % symbol
+  earningsWhisper  String?  // Added from your data
+  sentiment        String?  // Added from your data
+  score            String?  // Added from your data
+  averageMove      String?  // Added from your data
+  impliedMove      String?  // Added from your data
+
   marketCap      Float?   // Market cap in millions, nullable
 
   createdAt      DateTime @default(now())
