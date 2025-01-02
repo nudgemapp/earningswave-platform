@@ -13,13 +13,15 @@ import {
 import { StockData } from "@/app/types/StockQuote";
 import { useFinnhubTimeseries } from "@/hooks/use-finnhub-timeseries";
 // import { useStockWebSocket } from "@/hooks/use-stock-websocket";
+import { useTimeframeStore } from "@/store/TimeframeStore";
 
 interface StockChartProps {
   symbol: string;
 }
 
 const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
-  const [timeframe, setTimeframe] = useState("1D");
+  const timeframe = useTimeframeStore((state) => state.timeframe);
+  const setTimeframe = useTimeframeStore((state) => state.setTimeframe);
 
   // const { lastPrice, isConnected } = useStockWebSocket(symbol);
   // console.log("lastPrice", lastPrice);
@@ -167,8 +169,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     mostRecentDate: null,
   });
 
-  const timeframeButtons = useMemo(() => ["1D", "1W", "1M", "6M", "1Y"], []);
-
   const yDomain = useMemo(() => {
     if (filteredData.length === 0) return ["auto", "auto"];
 
@@ -196,10 +196,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     // Cleanup interval on component unmount
     return () => clearInterval(timer);
   }, []);
-
-  const handleTimeframeChange = (newTimeframe: string) => {
-    setTimeframe(newTimeframe);
-  };
 
   // Cleanup function will be called when component unmounts
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -564,19 +560,6 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
             </AreaChart>
           </ResponsiveContainer>
         )}
-      </div>
-
-      <div className="w-full">
-        <div className="flex items-center justify-between w-full gap-2">
-          {timeframeButtons.map((tf) => (
-            <TimeframeButton
-              key={tf}
-              tf={tf}
-              active={tf === timeframe}
-              onTimeframeChange={handleTimeframeChange}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

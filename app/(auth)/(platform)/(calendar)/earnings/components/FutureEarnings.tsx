@@ -31,6 +31,7 @@ import LiveEarningsCall from "./LiveEarningsCall";
 import { useInView } from "react-intersection-observer";
 import { Separator } from "@/components/ui/separator";
 import DailyStockChart from "@/components/DailyStockChart";
+import { useTimeframeStore } from "@/store/TimeframeStore";
 // import {
 //   CustomTabs,
 //   CustomTabsList,
@@ -85,6 +86,43 @@ const TranscriptsSkeleton = () => (
     </div>
   </div>
 );
+
+const StockChartContainer: React.FC<{ symbol: string }> = ({ symbol }) => {
+  const timeframe = useTimeframeStore((state) => state.timeframe);
+  const setTimeframe = useTimeframeStore((state) => state.setTimeframe);
+
+  const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
+
+  return (
+    <div className="space-y-2">
+      <div className="h-[400px]">
+        {timeframe === "1D" ? (
+          <DailyStockChart symbol={symbol} />
+        ) : (
+          <StockPriceChart symbol={symbol} />
+        )}
+      </div>
+
+      <div className="w-full mb-8">
+        <div className="flex items-center justify-between w-full gap-2">
+          {timeframeButtons.map((tf) => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
+                timeframe === tf
+                  ? "bg-gray-600/10 text-gray-600 dark:bg-gray-400/10 dark:text-gray-400"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              }`}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CompanyHeader: React.FC<CompanyHeaderProps> = ({
   company,
@@ -293,7 +331,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             <div className="space-y-8 px-5">
               <Suspense fallback={<StockChartSkeleton />}>
                 <div className="h-[400px] w-full mb-12">
-                  <DailyStockChart symbol={company.symbol} />
+                  <StockChartContainer symbol={company.symbol} />
                 </div>
               </Suspense>
               {/* <Suspense fallback={<StockChartSkeleton />}>
@@ -307,7 +345,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
               <div ref={transcriptsRef}>
                 <Suspense fallback={<TranscriptsSkeleton />}>
                   <CompanyTranscripts
-                    transcripts={company.recentTranscripts}
+                    transcripts={company.recentTranscripts || []}
                     company={company}
                   />
                 </Suspense>

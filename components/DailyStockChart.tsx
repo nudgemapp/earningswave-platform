@@ -30,7 +30,9 @@ const DailyStockChart: React.FC<DailyStockChartProps> = ({ symbol }) => {
     const start = new Date(today);
     start.setHours(4, 0, 0, 0);
 
-    for (let hour = 4; hour <= 20; hour += 2) {
+    // For mobile, show fewer labels (every 4 hours instead of 2)
+    const increment = window.innerWidth < 768 ? 4 : 2;
+    for (let hour = 4; hour <= 20; hour += increment) {
       const time = new Date(today);
       time.setHours(hour, 0, 0, 0);
       labels.push(time.toISOString());
@@ -259,11 +261,17 @@ const DailyStockChart: React.FC<DailyStockChartProps> = ({ symbol }) => {
                 ticks={fixedTimeLabels}
                 tickFormatter={(value) => {
                   const date = new Date(value);
-                  return date.toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  });
+                  // Simplified format for mobile
+                  return window.innerWidth < 768
+                    ? date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        hour12: true,
+                      })
+                    : date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      });
                 }}
                 type="category"
                 tick={{ fontSize: 11, fill: "#64748b" }}
@@ -271,8 +279,8 @@ const DailyStockChart: React.FC<DailyStockChartProps> = ({ symbol }) => {
                 dy={10}
                 scale="band"
                 padding={{ left: 0, right: 0 }}
-                interval={0}
-                minTickGap={0}
+                interval="preserveEnd"
+                minTickGap={30}
                 axisLine={{ stroke: "#94a3b8", strokeWidth: 1.5 }}
               />
               <YAxis
