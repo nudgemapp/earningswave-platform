@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -12,7 +12,6 @@ import {
 } from "recharts";
 import { StockData } from "@/app/types/StockQuote";
 import { useFinnhubTimeseries } from "@/hooks/use-finnhub-timeseries";
-// import { useStockWebSocket } from "@/hooks/use-stock-websocket";
 import { useTimeframeStore } from "@/store/TimeframeStore";
 
 interface StockChartProps {
@@ -21,124 +20,37 @@ interface StockChartProps {
 
 const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
   const timeframe = useTimeframeStore((state) => state.timeframe);
-  const setTimeframe = useTimeframeStore((state) => state.setTimeframe);
-
-  // const { lastPrice, isConnected } = useStockWebSocket(symbol);
-  // console.log("lastPrice", lastPrice);
-  // console.log("isConnected", isConnected);
-
   const { data: timeseriesData, isLoading } = useFinnhubTimeseries(
     symbol,
     timeframe
   );
 
-  console.log("timeseriesData", timeseriesData);
-
   const getTimeframeData = (data: StockData[]) => {
     if (!data || data.length === 0) return [];
 
-    // Only modify 1D timeframe logic
-    if (timeframe === "1D") {
-      const now = new Date();
-      const today = new Date(now);
-
-      // Set up the 4 AM to 8 PM window
-      const start4AM = new Date(today);
-      start4AM.setHours(4, 0, 0, 0);
-
-      const end8PM = new Date(today);
-      end8PM.setHours(20, 0, 0, 0);
-
-      // Get the latest data point's time
-      const latestDataPoint = data.reduce((latest, current) => {
-        const currentDate = new Date(current.date);
-        const latestDate = new Date(latest.date);
-        return currentDate > latestDate ? current : latest;
-      }, data[0]);
-
-      // Filter data points between 4 AM and the latest available data point
-      return data
-        .filter((point: StockData) => {
-          const pointDate = new Date(point.date);
-          return (
-            pointDate >= start4AM && pointDate <= new Date(latestDataPoint.date)
-          );
-        })
-        .sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-    }
-
     const now = new Date();
-    const filteredData = data.filter((point: StockData) => {
-      const pointDate = new Date(point.date);
+    return data
+      .filter((point: StockData) => {
+        const pointDate = new Date(point.date);
 
-      switch (timeframe) {
-        case "1W":
-          const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
-          return pointDate >= oneWeekAgo;
-        case "1M":
-          const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
-          return pointDate >= oneMonthAgo;
-        case "6M":
-          const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
-          return pointDate >= sixMonthsAgo;
-        case "1Y":
-          const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
-          return pointDate >= oneYearAgo;
-        default:
-          return true;
-      }
-    });
-
-    // For 1D view, ensure we have boundary points at 4AM and 8PM
-    if (timeframe === "1D") {
-      const today = new Date(now);
-      if (now.getHours() < 4) {
-        today.setDate(today.getDate() - 1);
-      }
-
-      const start4AM = new Date(today);
-      start4AM.setHours(4, 0, 0, 0);
-
-      const end8PM = new Date(today);
-      end8PM.setHours(20, 0, 0, 0);
-
-      // Add boundary points if they don't exist
-      if (
-        !filteredData.find(
-          (d) => new Date(d.date).getTime() === start4AM.getTime()
-        )
-      ) {
-        const firstPoint = filteredData[0];
-        if (firstPoint) {
-          filteredData.unshift({
-            ...firstPoint,
-            date: start4AM.toISOString(),
-            close: firstPoint.close,
-          });
+        switch (timeframe) {
+          case "1W":
+            const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
+            return pointDate >= oneWeekAgo;
+          case "1M":
+            const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
+            return pointDate >= oneMonthAgo;
+          case "6M":
+            const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
+            return pointDate >= sixMonthsAgo;
+          case "1Y":
+            const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
+            return pointDate >= oneYearAgo;
+          default:
+            return true;
         }
-      }
-
-      if (
-        !filteredData.find(
-          (d) => new Date(d.date).getTime() === end8PM.getTime()
-        )
-      ) {
-        const lastPoint = filteredData[filteredData.length - 1];
-        if (lastPoint) {
-          filteredData.push({
-            ...lastPoint,
-            date: end8PM.toISOString(),
-            close: lastPoint.close,
-          });
-        }
-      }
-    }
-
-    return filteredData.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
   const filteredData = useMemo(
@@ -146,422 +58,146 @@ const StockPriceChart: React.FC<StockChartProps> = ({ symbol }) => {
     [timeseriesData, timeframe]
   );
 
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [todayPrices, setTodayPrices] = useState<{
-    prevClose: number | null;
-    preMarket: number | null;
-    regular: number | null;
-    afterHours: number | null;
-    regularOpen: number | null;
-    percentChange: number | null;
-    priceDifference: number | null;
-    mostRecentDate?: string | null;
-    atClose?: number | null;
-  }>({
-    prevClose: null,
-    atClose: null,
-    preMarket: null,
-    regular: null,
-    afterHours: null,
-    regularOpen: null,
-    percentChange: null,
-    priceDifference: null,
-    mostRecentDate: null,
-  });
-
   const yDomain = useMemo(() => {
     if (filteredData.length === 0) return ["auto", "auto"];
 
     const prices = filteredData.map((d) => d.close);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    const padding = (max - min) * 0.1; // 10% padding
+    const padding = (max - min) * 0.1;
 
     return [
-      Math.floor((min - padding) * 100) / 100, // Round down to 2 decimal places
-      Math.ceil((max + padding) * 100) / 100, // Round up to 2 decimal places
+      Math.floor((min - padding) * 100) / 100,
+      Math.ceil((max + padding) * 100) / 100,
     ];
   }, [filteredData]);
 
-  // Add useEffect for time updates
-  useEffect(() => {
-    // Update time every second for more accurate display
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    // Set initial time
-    setCurrentTime(new Date());
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(timer);
-  }, []);
-
-  // Cleanup function will be called when component unmounts
-  const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const currentTimeout = reconnectTimeout.current;
-    return () => {
-      if (currentTimeout) {
-        clearTimeout(currentTimeout);
-      }
-    };
-  }, []);
-
-  // Add a new state for current price data
-  const [currentPriceData, setCurrentPriceData] = useState<StockData | null>(
-    null
-  );
-
-  // Add this state at the top of the component with other states
-  const [storedAfterHoursData, setStoredAfterHoursData] = useState<{
-    price: number | null;
-    atClose: number | null;
-  } | null>(null);
-
-  // Modify the useEffect
-  useEffect(() => {
-    if (!timeseriesData?.length) return;
-
-    // Get the most recent regular market data
-    const regularMarketData = timeseriesData
-      .filter((d) => d.marketSession === "regular")
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    const mostRecentRegularClose = regularMarketData[0];
-    const prevDayClose = regularMarketData[1]?.close;
-
-    // Get after hours from the most recent data point
-    const mostRecentData = timeseriesData.reduce((latest, current) => {
-      if (!latest) return current;
-      return new Date(current.date) > new Date(latest.date) ? current : latest;
-    });
-
-    // If this is 1-day view, store the after-hours data
-    if (timeframe === "1D" && mostRecentData.marketSession === "post") {
-      setStoredAfterHoursData({
-        price: mostRecentData.close,
-        atClose: mostRecentRegularClose?.close || null,
-      });
-    }
-
-    setCurrentPriceData(mostRecentData);
-    setTodayPrices((prev) => ({
-      ...prev,
-      prevClose: prevDayClose || null,
-      preMarket:
-        mostRecentData.marketSession === "pre" ? mostRecentData.close : null,
-      regular: mostRecentRegularClose?.close || null,
-      afterHours:
-        storedAfterHoursData?.price ||
-        (mostRecentData.marketSession === "post" ? mostRecentData.close : null),
-      regularOpen: regularMarketData[0]?.open || null,
-      percentChange: prevDayClose
-        ? ((mostRecentData.close - prevDayClose) / prevDayClose) * 100
-        : null,
-      priceDifference: prevDayClose
-        ? mostRecentData.close - prevDayClose
-        : null,
-      mostRecentDate: mostRecentRegularClose?.date,
-      atClose:
-        storedAfterHoursData?.atClose || mostRecentRegularClose?.close || null,
-    }));
-  }, [timeseriesData, timeframe]);
-
-  const TimeframeButton = React.memo(
-    ({
-      tf,
-      active,
-      onTimeframeChange,
-    }: {
-      tf: string;
-      active: boolean;
-      onTimeframeChange: (timeframe: string) => void;
-    }) => (
-      <button
-        type="button"
-        onClick={() => onTimeframeChange(tf)}
-        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer ${
-          active
-            ? "bg-gray-600/10 text-gray-600 dark:bg-gray-400/10 dark:text-gray-400"
-            : "text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-        }`}
-      >
-        {tf}
-      </button>
-    )
-  );
-  TimeframeButton.displayName = "TimeframeButton";
-
-  // Update the price display section to use currentPriceData
-  const PriceDisplay = React.memo(() => (
-    <div className="flex items-baseline gap-1">
-      <span
-        className={`font-bold text-2xl ${
-          todayPrices.percentChange && todayPrices.percentChange > 0
-            ? "text-emerald-600 dark:text-emerald-500"
-            : "text-red-600 dark:text-red-500"
-        }`}
-      >
-        ${currentPriceData?.close.toFixed(2)}
-      </span>
-      {todayPrices.percentChange !== null && (
-        <span
-          className={`text-sm font-medium ${
-            todayPrices.percentChange > 0
-              ? "text-emerald-600 dark:text-emerald-500"
-              : "text-red-600 dark:text-red-500"
-          }`}
+  if (isLoading) {
+    return (
+      <div className="h-full w-full bg-gray-50/50 dark:bg-slate-800/50 rounded-lg">
+        <AreaChart
+          data={[{ value: 0 }, { value: 100 }]}
+          margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
         >
-          {todayPrices.percentChange > 0 ? "▲" : "▼"}
-          {todayPrices.priceDifference?.toFixed(2)}(
-          {todayPrices.percentChange.toFixed(2)}%)
-        </span>
-      )}
-    </div>
-  ));
-  PriceDisplay.displayName = "PriceDisplay";
-
-  return (
-    <div className="h-full w-full flex flex-col">
-      <div className="mb-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center divide-x divide-gray-200 dark:divide-gray-700">
-              <div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <PriceDisplay />
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    As of{" "}
-                    {(() => {
-                      const estHour = currentTime.getHours();
-                      if (estHour >= 16) {
-                        return "4:00 PM";
-                      }
-                      return currentTime.toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        timeZone: "America/New_York",
-                        hour12: true,
-                      });
-                    })()}{" "}
-                    EST.{" "}
-                    {(() => {
-                      const estHour = currentTime.getHours();
-                      const estMinutes = currentTime.getMinutes();
-                      if (estHour < 9 || (estHour === 9 && estMinutes < 30)) {
-                        return "Market Closed";
-                      } else if (estHour >= 16) {
-                        return "Market Closed";
-                      } else {
-                        return "Market Open";
-                      }
-                    })()}
-                  </div>
-                  {(new Date().getHours() >= 16 ||
-                    new Date().getHours() < 9 ||
-                    (new Date().getHours() === 9 &&
-                      new Date().getMinutes() < 30)) && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                      At close,{" "}
-                      {todayPrices.mostRecentDate
-                        ? new Date(
-                            new Date(todayPrices.mostRecentDate).getTime() +
-                              24 * 60 * 60 * 1000
-                          ).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "MM/DD/YYYY"}{" "}
-                      at 4:00pm EST, USD
-                      <div className="w-4 h-4 rounded-full border-2 border-gray-400 dark:border-gray-500 flex items-center justify-center">
-                        <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300">
-                          !
-                        </span>
-                      </div>
-                    </span>
-                  )}
-
-                  {todayPrices.afterHours && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        After Hours
-                      </span>
-                      <span
-                        className={`text-sm ${
-                          todayPrices.afterHours > (todayPrices.atClose || 0)
-                            ? "text-emerald-600 dark:text-emerald-500"
-                            : "text-red-600 dark:text-red-500"
-                        }`}
-                      >
-                        ${todayPrices.afterHours.toFixed(2)}
-                      </span>
-                      {todayPrices.regular && (
-                        <span
-                          className={`text-sm font-medium ${
-                            todayPrices.afterHours > (todayPrices.atClose || 0)
-                              ? "text-emerald-600 dark:text-emerald-500"
-                              : "text-red-600 dark:text-red-500"
-                          }`}
-                        >
-                          $
-                          {Math.abs(
-                            todayPrices.afterHours - (todayPrices.atClose || 0)
-                          ).toFixed(2)}{" "}
-                          (
-                          {(
-                            ((todayPrices.afterHours -
-                              (todayPrices.atClose || 0)) /
-                              (todayPrices.atClose || 0)) *
-                            100
-                          ).toFixed(2)}
-                          %)
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-[300px] relative">
-        {isLoading ? (
+          <CartesianGrid
+            strokeDasharray="2 4"
+            vertical={false}
+            stroke="#e5e7eb"
+            className="dark:stroke-gray-700/30"
+          />
+          <YAxis hide domain={[0, 100]} />
+          <XAxis hide dataKey="value" />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="transparent"
+            fill="transparent"
+          />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="h-5 w-5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
           </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={filteredData}
-              margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="2 4"
-                vertical={false}
-                stroke="#e5e7eb"
-                className="dark:stroke-gray-700/30"
-              />
-
-              <YAxis
-                domain={yDomain}
-                tickLine={false}
-                axisLine={{
-                  stroke: "#94a3b8",
-                  strokeWidth: 1.5,
-                  className: "dark:stroke-gray-600",
-                }}
-                tickFormatter={(value) => `$${value.toFixed(2)}`}
-                width={65}
-                tick={{
-                  fontSize: 10,
-                  fill: "#94a3b8",
-                }}
-                className="text-gray-400"
-                allowDataOverflow={false}
-                scale="linear"
-                padding={{ top: 20, bottom: 20 }}
-                interval="preserveStartEnd"
-                tickCount={7}
-              />
-              <XAxis
-                dataKey="date"
-                height={40}
-                domain={["dataMin", "dataMax"]}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  if (timeframe === "1D") {
-                    return date.toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    });
-                  }
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  });
-                }}
-                ticks={
-                  timeframe === "1D"
-                    ? [
-                        "04:00",
-                        "06:00",
-                        "08:00",
-                        "10:00",
-                        "12:00",
-                        "14:00",
-                        "16:00",
-                        "18:00",
-                        "20:00",
-                      ].map((time) => {
-                        const [hours, minutes] = time.split(":").map(Number);
-                        const date = new Date();
-                        date.setHours(hours, minutes, 0, 0);
-                        return date.toISOString();
-                      })
-                    : undefined
-                }
-                interval={timeframe === "1D" ? 0 : "preserveStartEnd"}
-                minTickGap={timeframe === "1D" ? 0 : 50}
-                tick={{
-                  fontSize: 11,
-                  fill: "#64748b",
-                  dy: 10,
-                }}
-                className="text-gray-500 dark:text-gray-400"
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload?.[0]) {
-                    const data = payload[0].payload as StockData;
-                    return (
-                      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-3 border border-gray-100 dark:border-gray-700">
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            ${data.close.toFixed(2)}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(data.date).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              {filteredData.length > 0 && (
-                <Area
-                  type="monotoneX"
-                  dataKey="close"
-                  stroke={
-                    todayPrices.percentChange && todayPrices.percentChange > 0
-                      ? "#10b981"
-                      : "#ef4444"
-                  }
-                  strokeWidth={1.5}
-                  fill={`url(#${
-                    todayPrices.percentChange && todayPrices.percentChange > 0
-                      ? "colorUpGradient"
-                      : "colorDownGradient"
-                  })`}
-                  connectNulls={true}
-                  isAnimationActive={false}
-                  dot={false}
-                />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
-        )}
+        </AreaChart>
       </div>
-    </div>
+    );
+  }
+
+  const isPositive =
+    filteredData.length > 1 &&
+    filteredData[filteredData.length - 1].close > filteredData[0].close;
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart
+        data={filteredData}
+        margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+      >
+        <CartesianGrid
+          strokeDasharray="2 4"
+          vertical={false}
+          stroke="#e5e7eb"
+          className="dark:stroke-gray-700/30"
+        />
+        <YAxis
+          domain={yDomain}
+          tickLine={false}
+          axisLine={{
+            stroke: "#94a3b8",
+            strokeWidth: 1.5,
+            className: "dark:stroke-gray-600",
+          }}
+          tickFormatter={(value) => `$${value.toFixed(2)}`}
+          width={65}
+          tick={{
+            fontSize: 10,
+            fill: "#94a3b8",
+          }}
+          className="text-gray-400"
+          allowDataOverflow={false}
+          scale="linear"
+          padding={{ top: 20, bottom: 20 }}
+          interval="preserveStartEnd"
+          tickCount={7}
+        />
+        <XAxis
+          dataKey="date"
+          tickFormatter={(value) => {
+            const date = new Date(value);
+            return date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
+          }}
+          height={40}
+          tick={{
+            fontSize: 11,
+            fill: "#64748b",
+            dy: 10,
+          }}
+          minTickGap={50}
+          interval="preserveStartEnd"
+        />
+        <Tooltip
+          content={({ active, payload }) => {
+            if (active && payload?.[0]) {
+              const data = payload[0].payload as StockData;
+              return (
+                <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-3 border border-gray-100 dark:border-gray-700">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      ${data.close.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(data.date).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          }}
+        />
+        <Area
+          type="monotoneX"
+          dataKey="close"
+          stroke={isPositive ? "#10b981" : "#ef4444"}
+          strokeWidth={1.5}
+          fill={`url(#${isPositive ? "colorUpGradient" : "colorDownGradient"})`}
+          connectNulls={true}
+          isAnimationActive={false}
+          dot={false}
+        />
+        <defs>
+          <linearGradient id="colorUpGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="colorDownGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };
 

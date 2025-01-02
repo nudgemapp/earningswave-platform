@@ -32,6 +32,7 @@ import { useInView } from "react-intersection-observer";
 import { Separator } from "@/components/ui/separator";
 import DailyStockChart from "@/components/DailyStockChart";
 import { useTimeframeStore } from "@/store/TimeframeStore";
+import StockPriceHeader from "@/components/StockPriceHeader";
 // import {
 //   CustomTabs,
 //   CustomTabsList,
@@ -66,8 +67,24 @@ interface CompanyHeaderProps {
 }
 
 const StockChartSkeleton = () => (
-  <div className="bg-gray-50/50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700/50 p-4">
-    <div className="h-[400px] w-full bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+  <div className="space-y-2">
+    {/* Stock Price Header Skeleton */}
+    <div className="flex justify-between items-center">
+      <Skeleton className="h-8 w-[150px]" />
+      <Skeleton className="h-8 w-[100px]" />
+    </div>
+
+    {/* Chart Skeleton */}
+    <div className="h-[330px] bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+
+    {/* Timeframe Buttons Skeleton */}
+    <div className="w-full mb-8">
+      <div className="flex items-center justify-between w-full gap-2">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Skeleton key={i} className="h-8 w-16" />
+        ))}
+      </div>
+    </div>
   </div>
 );
 
@@ -90,12 +107,14 @@ const TranscriptsSkeleton = () => (
 const StockChartContainer: React.FC<{ symbol: string }> = ({ symbol }) => {
   const timeframe = useTimeframeStore((state) => state.timeframe);
   const setTimeframe = useTimeframeStore((state) => state.setTimeframe);
-
   const timeframeButtons = ["1D", "1W", "1M", "6M", "1Y"];
 
   return (
     <div className="space-y-2">
-      <div className="h-[400px]">
+      <StockPriceHeader symbol={symbol} />
+
+      {/* Fixed height container for chart */}
+      <div className="h-[330px] relative">
         {timeframe === "1D" ? (
           <DailyStockChart symbol={symbol} />
         ) : (
@@ -103,6 +122,7 @@ const StockChartContainer: React.FC<{ symbol: string }> = ({ symbol }) => {
         )}
       </div>
 
+      {/* Timeframe buttons in a separate container */}
       <div className="w-full mb-8">
         <div className="flex items-center justify-between w-full gap-2">
           {timeframeButtons.map((tf) => (
@@ -330,7 +350,7 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             {/* <CustomTabsContent value="general" className="space-y-8 px-5"> */}
             <div className="space-y-8 px-5">
               <Suspense fallback={<StockChartSkeleton />}>
-                <div className="h-[400px] w-full mb-12">
+                <div className="h-[400px] w-full mb-16">
                   <StockChartContainer symbol={company.symbol} />
                 </div>
               </Suspense>

@@ -297,10 +297,18 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
           year: earning.year,
           audioUrl: null,
           MarketTime: earning.hour.toUpperCase() as MarketTime,
-          epsEstimate: Number(earning.epsEstimate.toFixed(2)),
-          epsActual: earning.epsActual,
-          revenueEstimate: earning.revenueEstimate / 1e9,
-          revenueActual: earning.revenueActual,
+          epsEstimate:
+            earning.epsEstimate != null
+              ? Number(earning.epsEstimate.toFixed(2))
+              : null,
+          epsActual:
+            earning.epsActual != null ? Number(earning.epsActual) : null,
+          revenueEstimate:
+            earning.revenueEstimate != null
+              ? earning.revenueEstimate / 1e9
+              : null,
+          revenueActual:
+            earning.revenueActual != null ? earning.revenueActual : null,
           fullText: null,
           speakers: null,
           aiSummary: null,
