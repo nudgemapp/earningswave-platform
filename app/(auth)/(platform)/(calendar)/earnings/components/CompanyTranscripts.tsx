@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import {
   Company,
   MarketTime,
@@ -19,10 +19,12 @@ import { useEarningsStore } from "@/store/EarningsStore";
 import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
 import { formatCurrency } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
 import AIEarningsAnalysis from "./AIEarnings";
+import { useUpcomingEarnings } from "@/app/hooks/use-upcoming-earnings";
+import { useCalendarStore } from "@/store/CalendarStore";
 
 interface CompanyTranscriptsProps {
   transcripts: Transcript[];
@@ -192,6 +194,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
   } = useEarningsStore();
 
   const { data: subscription } = useUserSubscription(user?.id);
+  const { data: earningsData } = useUpcomingEarnings(company.symbol);
 
   const hasActiveSubscription = subscription?.isActive;
 
@@ -201,6 +204,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
       year: "numeric",
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     });
   };
 
@@ -236,24 +240,19 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
     }
   };
 
-  // const upcomingTranscripts = transcripts.filter(
-  //   (t) => t.status === "SCHEDULED"
-  // );
-  // const recentTranscripts = transcripts.filter((t) => t.status === "COMPLETED");
-
   const [finnhubData, setFinnhubData] = useState<FinnhubEarnings[]>([]);
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isFinnhubLoading, setIsFinnhubLoading] = useState(true);
+  const { currentDate, view } = useCalendarStore();
 
+  // Fetch Finnhub data
   useEffect(() => {
     const fetchFinnhubData = async () => {
+      setIsFinnhubLoading(true);
       try {
-        // setIsLoading(true);
-        // Get dates from today to 5 years in future
         const from = new Date().toISOString().split("T")[0];
         const to = new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000)
           .toISOString()
           .split("T")[0];
-
         const response = await fetch(
           `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${company.symbol}&token=${process.env.NEXT_PUBLIC_FINNHUB_API_KEY}`
         );
@@ -261,48 +260,108 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
         if (!response.ok) throw new Error("Failed to fetch Finnhub data");
 
         const data = await response.json();
-        console.log("Finnhub data:", data);
         setFinnhubData(data.earningsCalendar || []);
       } catch (error) {
         console.error("Error fetching Finnhub data:", error);
+        setFinnhubData([]);
       } finally {
-        // setIsLoading(false);
+        setIsFinnhubLoading(false);
       }
     };
 
-    if (company.symbol) {
-      fetchFinnhubData();
-    }
+    fetchFinnhubData();
   }, [company.symbol]);
 
-  // Replace upcomingTranscripts definition with Finnhub data transformation
-  const upcomingTranscripts = finnhubData.map((earning) => ({
-    id: `${earning.symbol}_${earning.year}_Q${earning.quarter}`,
-    companyId: company.id,
-    title: `${earning.symbol} Q${earning.quarter} ${earning.year} Earnings Call`,
-    status: "SCHEDULED" as TranscriptStatus,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    scheduledAt: new Date(`${earning.date}T23:59:59.999Z`),
-    quarter: earning.quarter,
-    year: earning.year,
-    audioUrl: null,
-    MarketTime:
-      earning.hour.toUpperCase() === "AMC" ? "AMC" : ("BMO" as MarketTime),
-    epsEstimate: earning.epsEstimate,
-    epsActual: earning.epsActual,
-    revenueEstimate: earning.revenueEstimate,
-    revenueActual: earning.revenueActual,
-    fullText: null,
-    speakers: null,
-    aiSummary: null,
-    aiKeyPoints: null,
-    aiSentimentAnalysis: null,
-    aiLastUpdated: null,
-  }));
+  // Filter and combine earnings data
+  const upcomingTranscripts = useMemo(() => {
+    // Don't process anything while Finnhub is loading
+    if (isFinnhubLoading) {
+      return [];
+    }
+
+    // First check if we have Finnhub data
+    if (finnhubData.length > 0) {
+      const finnhubTranscripts = finnhubData.map((earning) => {
+        const [year, month, day] = earning.date.split("-").map(Number);
+        const scheduledDate = new Date(Date.UTC(year, month - 1, day));
+
+        return {
+          id: `${earning.symbol}_${earning.year}_Q${earning.quarter}`,
+          companyId: company.id,
+          title: `${earning.symbol} Q${earning.quarter} ${earning.year} Earnings Call`,
+          status: "SCHEDULED" as TranscriptStatus,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          scheduledAt: scheduledDate,
+          quarter: earning.quarter,
+          year: earning.year,
+          audioUrl: null,
+          MarketTime: earning.hour.toUpperCase() as MarketTime,
+          epsEstimate: Number(earning.epsEstimate.toFixed(2)),
+          epsActual: earning.epsActual,
+          revenueEstimate: earning.revenueEstimate / 1e9,
+          revenueActual: earning.revenueActual,
+          fullText: null,
+          speakers: null,
+          aiSummary: null,
+          aiKeyPoints: null,
+          aiSentimentAnalysis: null,
+          aiLastUpdated: null,
+        };
+      });
+
+      // console.log("Returning Finnhub transcripts:", finnhubTranscripts);
+      return finnhubTranscripts;
+    }
+
+    // Only use earnings data if Finnhub returned no results
+    if (earningsData?.upcomingEarnings) {
+      // console.log(
+      //   "Falling back to database earnings:",
+      //   earningsData.upcomingEarnings
+      // );
+      return earningsData.upcomingEarnings.map((earning) => ({
+        id: earning.id,
+        companyId: company.id,
+        title: `${earning.symbol} Q${earning.quarter} ${earning.year} Earnings Call`,
+        status: "SCHEDULED" as TranscriptStatus,
+        createdAt: earning.createdAt,
+        updatedAt: earning.updatedAt,
+        scheduledAt: new Date(earning.earningsDate),
+        quarter: earning.quarter,
+        year: earning.year,
+        audioUrl: null,
+        MarketTime: earning.marketTime || "BMO",
+        epsEstimate: earning.earningsEstimate,
+        epsActual: null,
+        revenueEstimate: earning.revenueEstimate
+          ? parseFloat(earning.revenueEstimate)
+          : null,
+        revenueActual: null,
+        fullText: null,
+        speakers: null,
+        aiSummary: null,
+        aiKeyPoints: null,
+        aiSentimentAnalysis: null,
+        aiLastUpdated: null,
+      }));
+    }
+
+    return [];
+  }, [
+    finnhubData,
+    isFinnhubLoading,
+    earningsData?.upcomingEarnings,
+    company.id,
+  ]);
 
   // Filter recentTranscripts to only show completed ones
   const recentTranscripts = transcripts.filter((t) => t.status === "COMPLETED");
+
+  // Show loading state while fetching Finnhub data
+  if (isFinnhubLoading) {
+    return <div>Loading earnings data...</div>;
+  }
 
   return (
     <div className="space-y-6">

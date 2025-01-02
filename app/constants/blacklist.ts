@@ -145,6 +145,7 @@ export const BLACKLISTED_SYMBOLS: string[] = [
   "RETA",
   "IMGN",
   "SNCE",
+  "TTAN",
   "STIX",
   "HZNP",
   "THRX",

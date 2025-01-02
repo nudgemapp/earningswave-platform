@@ -30,6 +30,7 @@ import {
 import LiveEarningsCall from "./LiveEarningsCall";
 import { useInView } from "react-intersection-observer";
 import { Separator } from "@/components/ui/separator";
+import DailyStockChart from "@/components/DailyStockChart";
 // import {
 //   CustomTabs,
 //   CustomTabsList,
@@ -199,14 +200,6 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
   const { data: isWatchlisted, isLoading: isCheckingWatchlist } =
     useWatchlistCheck(SelectedCompany?.companyId);
 
-  const hasValidTranscripts = (
-    company: ExtendedCompany | undefined
-  ): company is ExtendedCompany & { recentTranscripts: Transcript[] } => {
-    return Boolean(
-      company?.recentTranscripts && company.recentTranscripts.length > 0
-    );
-  };
-
   const { ref: transcriptsRef, inView: isTranscriptsVisible } = useInView({
     threshold: 0,
     triggerOnce: true,
@@ -300,21 +293,24 @@ const FutureEarnings: React.FC<FutureEarningsProps> = ({ SelectedCompany }) => {
             <div className="space-y-8 px-5">
               <Suspense fallback={<StockChartSkeleton />}>
                 <div className="h-[400px] w-full mb-12">
-                  <StockPriceChart symbol={company.symbol} />
+                  <DailyStockChart symbol={company.symbol} />
                 </div>
               </Suspense>
+              {/* <Suspense fallback={<StockChartSkeleton />}>
+                <div className="h-[400px] w-full mb-12">
+                  <StockPriceChart symbol={company.symbol} />
+                </div>
+              </Suspense> */}
               <Suspense fallback={null}>
                 <LiveEarningsCall companyId={company.id} />
               </Suspense>
               <div ref={transcriptsRef}>
-                {isTranscriptsVisible && hasValidTranscripts(company) && (
-                  <Suspense fallback={<TranscriptsSkeleton />}>
-                    <CompanyTranscripts
-                      transcripts={company.recentTranscripts}
-                      company={company}
-                    />
-                  </Suspense>
-                )}
+                <Suspense fallback={<TranscriptsSkeleton />}>
+                  <CompanyTranscripts
+                    transcripts={company.recentTranscripts}
+                    company={company}
+                  />
+                </Suspense>
               </div>
             </div>
             {/* </CustomTabsContent> */}
