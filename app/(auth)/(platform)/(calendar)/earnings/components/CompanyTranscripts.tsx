@@ -366,7 +366,7 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
 
   // Show loading state while fetching Finnhub data
   if (isFinnhubLoading) {
-    return <div>Loading earnings data...</div>;
+    return;
   }
 
   return (

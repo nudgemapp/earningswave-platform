@@ -20,6 +20,8 @@ export async function POST(req: Request) {
             data: {
               id: payload.data.id,
               email: payload.data.email_addresses[0].email_address,
+              firstName: payload.data.first_name || null,
+              lastName: payload.data.last_name || null,
             },
           });
           console.log("New user created:", user);

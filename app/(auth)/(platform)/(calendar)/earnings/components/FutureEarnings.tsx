@@ -9,7 +9,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { ChevronLeft, Star as StarIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ShareIcon,
+  Star as StarIcon,
+  ExternalLink,
+} from "lucide-react";
 import { useEarningsStore } from "@/store/EarningsStore";
 import StockPriceChart from "./StockPriceChart";
 import { useWatchlistMutations } from "@/app/hooks/use-watchlist-mutations";
@@ -161,84 +166,109 @@ const CompanyHeader: React.FC<CompanyHeaderProps> = ({
       >
         <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
       </button>
-      {company.logo && (
-        <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
-          <Image
-            src={company.logo}
-            alt={`${company.name} logo`}
-            layout="fill"
-            objectFit="contain"
-            className="rounded-lg"
-          />
-        </div>
-      )}
-      <div className="min-w-0">
-        <CardTitle className="text-xl font-semibold break-words text-gray-900 dark:text-gray-100">
-          {company.name}
-        </CardTitle>
-        <div className="flex flex-col space-y-1">
-          <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
-            {company.symbol}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {company.exchange}
-          </span>
+      <div
+        onClick={() => (window.location.href = `/quote/${company.symbol}`)}
+        className="flex items-center gap-4 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+      >
+        {company.logo && (
+          <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700">
+            <Image
+              src={company.logo}
+              alt={`${company.name} logo`}
+              layout="fill"
+              objectFit="contain"
+              className="rounded-lg"
+            />
+          </div>
+        )}
+        <div className="min-w-0">
+          <CardTitle className="text-xl font-semibold break-words text-gray-900 dark:text-gray-100">
+            {company.name}
+          </CardTitle>
+          <div className="flex flex-col space-y-1">
+            <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+              {company.symbol}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {company.exchange}
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
-    <HoverCard openDelay={200}>
-      <HoverCardTrigger asChild>
-        <button
-          onClick={onWatchlistClick}
-          className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
+    <div className="flex items-center gap-2">
+      <HoverCard openDelay={200}>
+        <HoverCardTrigger asChild>
+          <button
+            onClick={() => (window.location.href = `/quote/${company.symbol}`)}
+            className="shrink-0 inline-flex items-center gap-2 p-2 text-sm font-medium rounded-full transition-colors
+              bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300
+              hover:bg-opacity-90 border border-gray-200 dark:border-slate-700"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-32">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            View details
+          </p>
+        </HoverCardContent>
+      </HoverCard>
+
+      <HoverCard openDelay={200}>
+        <HoverCardTrigger asChild>
+          <button
+            onClick={onWatchlistClick}
+            className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
     ${
       isWatchlisted
         ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
         : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300"
     } 
     hover:bg-opacity-90 border border-gray-200 dark:border-slate-700`}
-          disabled={
-            isCheckingWatchlist ||
-            addToWatchlist.isPending ||
-            removeFromWatchlist.isPending
-          }
-        >
-          <StarIcon
-            className={`w-4 h-4 ${
-              isWatchlisted ? "fill-blue-500 text-blue-500" : "text-gray-400"
-            }`}
-            fill={isWatchlisted ? "currentColor" : "none"}
-            strokeWidth={1.5}
-          />
-          {!isWatchlisted && <span>Watch</span>}
-        </button>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            Company Following
-          </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Watchlist this company to receive notifications about:
-            <ul className="mt-2 space-y-1 list-none">
-              {[
-                "New earnings transcripts",
-                "Important company news",
-                "Price changes",
-                "Market sentiment updates",
-                "Financial reports",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-blue-500" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </p>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+            disabled={
+              isCheckingWatchlist ||
+              addToWatchlist.isPending ||
+              removeFromWatchlist.isPending
+            }
+          >
+            <StarIcon
+              className={`w-4 h-4 ${
+                isWatchlisted ? "fill-blue-500 text-blue-500" : "text-gray-400"
+              }`}
+              fill={isWatchlisted ? "currentColor" : "none"}
+              strokeWidth={1.5}
+            />
+            {!isWatchlisted && <span>Watch</span>}
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Company Following
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Watchlist this company to receive notifications about:
+              <ul className="mt-2 space-y-1 list-none">
+                {[
+                  "New earnings transcripts",
+                  "Important company news",
+                  "Price changes",
+                  "Market sentiment updates",
+                  "Financial reports",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-blue-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </p>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    </div>
   </div>
 );
 

@@ -51,7 +51,6 @@ export function SubscriptionModal() {
 
       if (data.sessionId) {
         const stripe = await stripePromise;
-        console.log(stripe);
 
         if (stripe) {
           const response = await stripe.redirectToCheckout({

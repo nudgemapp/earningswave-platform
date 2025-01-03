@@ -20,6 +20,7 @@ model User {
   lastName     String?
   email        String?      @unique
   subscription Subscription? @relation("UserSubscription")
+  messageCount Int          @default(0)
   invoices     Invoice[]    @relation("UserInvoices")
   watchlist    WatchlistEntry[]
   chats        Chat[]       @relation("UserChats")

@@ -173,8 +173,6 @@ export function SidebarHistory() {
     fallbackData: [],
   });
 
-  console.log(history);
-
   useEffect(() => {
     mutate();
   }, [pathname, mutate]);

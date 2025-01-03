@@ -37,16 +37,15 @@ function PureChatHeader({
   const authModal = useAuthModal();
   const subscriptionModal = useSubscriptionModal();
   const { data: subscription } = useUserSubscription(user?.id);
-  const hasActiveSubscription = subscription?.isActive;
+  const hasActiveSubscription =
+    subscription &&
+    subscription.status === "active" &&
+    subscription.start_date &&
+    subscription.end_date &&
+    new Date() >= new Date(subscription.start_date) &&
+    new Date() <= new Date(subscription.end_date);
 
   const { width: windowWidth } = useWindowSize();
-
-  const navigationLinks = [
-    { route: "/", name: "Calendar" },
-    { route: "/api", name: "API" },
-    { route: "/pricing", name: "Pricing" },
-    { route: "/chat", name: "Chat" },
-  ];
 
   return (
     <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
@@ -80,22 +79,6 @@ function PureChatHeader({
             selectedVisibilityType={selectedVisibilityType}
           />
         )}
-      </div>
-
-      <div className="hidden md:flex gap-2 absolute left-1/2 transform -translate-x-1/2">
-        {navigationLinks.map((link) => (
-          <Button
-            key={link.route}
-            variant="ghost"
-            className="px-2 h-[34px]"
-            onClick={() => {
-              router.push(link.route);
-              router.refresh();
-            }}
-          >
-            {link.name}
-          </Button>
-        ))}
       </div>
 
       <Button

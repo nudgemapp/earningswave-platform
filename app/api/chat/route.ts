@@ -59,6 +59,50 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // Get user with their subscription status and message count
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { subscription: true },
+  });
+
+  if (!user) {
+    return new Response("User not found", { status: 404 });
+  }
+
+  // Check if user has an active subscription
+  const hasActiveSubscription =
+    user.subscription &&
+    user.subscription.status === "active" &&
+    user.subscription.start_date &&
+    user.subscription.end_date &&
+    new Date() >= new Date(user.subscription.start_date) &&
+    new Date() <= new Date(user.subscription.end_date);
+
+  console.log(hasActiveSubscription);
+
+  // Check if user has reached message limit
+  const MESSAGE_LIMIT = 5;
+  if (!hasActiveSubscription && user.messageCount >= MESSAGE_LIMIT) {
+    return new Response(
+      JSON.stringify({
+        error: "Message limit reached",
+        message: "Please subscribe to continue chatting",
+      }),
+      {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  // Increment message count for non-subscribed users
+  if (!hasActiveSubscription) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { messageCount: user.messageCount + 1 },
+    });
+  }
+
   const model = models.find((model) => model.id === modelId);
 
   console.log(model);

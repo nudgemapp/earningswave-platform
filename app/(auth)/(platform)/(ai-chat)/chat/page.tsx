@@ -14,13 +14,15 @@ export default async function Page() {
     DEFAULT_MODEL_NAME;
 
   return (
-    <Chat
-      key={id}
-      id={id}
-      initialMessages={[]}
-      selectedModelId={selectedModelId}
-      selectedVisibilityType="private"
-      isReadonly={false}
-    />
+    <div className="h-[calc(100vh-64px)] flex flex-col">
+      <Chat
+        key={id}
+        id={id}
+        initialMessages={[]}
+        selectedModelId={selectedModelId}
+        selectedVisibilityType="private"
+        isReadonly={false}
+      />
+    </div>
   );
 }

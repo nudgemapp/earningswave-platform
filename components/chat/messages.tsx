@@ -1,9 +1,12 @@
 import { ChatRequestOptions, Message } from "ai";
 import { useScrollToBottom } from "../use-scroll-to-bottom";
 import { Overview } from "./overview";
-import { Dispatch, memo, SetStateAction } from "react";
+import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
 import { PreviewMessage, ThinkingMessage } from "./message";
 import { UIBlock } from "./block";
+import { useUserSubscription } from "@/app/hooks/use-user-subscription";
+import { useUser } from "@clerk/nextjs";
+import useGetMessageCount from "@/features/user/api/use-get-message-count";
 
 interface MessagesProps {
   chatId: string;
@@ -34,12 +37,30 @@ function PureMessages({
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
+  const { user } = useUser();
+  const { data: subscription } = useUserSubscription(user?.id);
+
+  const { data: messageCount } = useGetMessageCount();
+
+  const hasActiveSubscription =
+    subscription &&
+    subscription.status === "active" &&
+    subscription.start_date &&
+    subscription.end_date &&
+    new Date() >= new Date(subscription.start_date) &&
+    new Date() <= new Date(subscription.end_date);
 
   return (
     <div
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-8 flex-1 overflow-y-scroll py-6 px-2"
     >
+      {!hasActiveSubscription && (
+        <div className="text-sm text-muted-foreground text-center">
+          {`${5 - messageCount} messages remaining in free trial`}
+        </div>
+      )}
+
       {messages.length === 0 && <Overview />}
 
       {messages.map((message, index) => (
