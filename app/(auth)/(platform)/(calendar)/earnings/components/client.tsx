@@ -88,6 +88,7 @@ const EarningsClient = () => {
 
     setSelectedCompany({
       companyId: transcriptInfo.company.id,
+      symbol: transcriptInfo.company.symbol,
     });
     setSelectedTranscript(null);
   };

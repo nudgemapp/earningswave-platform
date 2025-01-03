@@ -18,7 +18,7 @@ import {
 import { useEarningsStore } from "@/store/EarningsStore";
 import { useUser } from "@clerk/nextjs";
 import { useAuthModal } from "@/store/AuthModalStore";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { useRef } from "react";
 import { useSubscriptionModal } from "@/store/SubscriptionModalStore";
 import { useUserSubscription } from "@/app/hooks/use-user-subscription";
@@ -196,16 +196,6 @@ const CompanyTranscripts: React.FC<CompanyTranscriptsProps> = ({
   const { data: earningsData } = useUpcomingEarnings(company.symbol);
 
   const hasActiveSubscription = subscription?.isActive;
-
-  const formatDate = (dateString: string | Date) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    });
-  };
 
   const handleTranscriptClick = (transcriptId: string) => {
     if (!user) {

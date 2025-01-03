@@ -13,6 +13,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const formatDate = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+};
+
 export const formatCurrency = (amount: number, isRevenue = false) => {
   if (isRevenue) {
     // Format revenue in millions/billions

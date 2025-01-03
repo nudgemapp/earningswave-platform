@@ -5,12 +5,20 @@ type ExtendedCompany = Company & {
   recentTranscripts?: Transcript[];
 };
 
-export const useGetCompany = (companyId: string | undefined) => {
+export const useGetCompany = (
+  identifier: string | undefined,
+  type: "id" | "symbol" = "id"
+) => {
   return useQuery<ExtendedCompany>({
-    queryKey: ["company", companyId],
+    queryKey: ["company", type, identifier],
     queryFn: async () => {
-      if (!companyId) throw new Error("No company ID provided");
-      const response = await fetch(`/api/companies/${companyId}`, {
+      if (!identifier) throw new Error("No identifier provided");
+      const endpoint =
+        type === "id"
+          ? `/api/companies/${identifier}`
+          : `/api/companies/symbol/${identifier}`;
+
+      const response = await fetch(endpoint, {
         headers: {
           "Cache-Control": "public, max-age=300",
         },
@@ -18,7 +26,7 @@ export const useGetCompany = (companyId: string | undefined) => {
       if (!response.ok) throw new Error("Failed to fetch company data");
       return response.json();
     },
-    enabled: !!companyId,
+    enabled: !!identifier,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -28,13 +36,19 @@ export const useGetCompany = (companyId: string | undefined) => {
 };
 
 export const prefetchCompany = async (
-  companyId: string,
+  identifier: string,
+  type: "id" | "symbol",
   queryClient: QueryClient
 ) => {
   return queryClient.prefetchQuery({
-    queryKey: ["company", companyId],
+    queryKey: ["company", type, identifier],
     queryFn: async () => {
-      const response = await fetch(`/api/companies/${companyId}`, {
+      const endpoint =
+        type === "id"
+          ? `/api/companies/${identifier}`
+          : `/api/companies/symbol/${identifier}`;
+
+      const response = await fetch(endpoint, {
         headers: {
           "Cache-Control": "public, max-age=300",
         },
